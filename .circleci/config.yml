@@ -11,7 +11,7 @@ orbs:
 jobs:
   build:
     docker:
-      - image: ubuntu:bionic
+      - image: alpine:3.11
     steps:
       - checkout
       - run:
