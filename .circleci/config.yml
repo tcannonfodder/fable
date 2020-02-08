@@ -15,7 +15,7 @@ jobs:
     steps:
       - checkout
       - ruby/install:
-        - mruby
+          version: mruby
       - run:
           name: Which bundler?
           command: bundle -v
