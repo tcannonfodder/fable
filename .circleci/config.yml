@@ -18,6 +18,7 @@ jobs:
           name: Which bundler?
           command: bundle -v
       - ruby/install-deps
+      - ruby/save-cache
 
 # What to do next? Set up a test job. Please see
 # https://circleci.com/docs/2.0/configuration-reference/, for more  info on how to get started.
