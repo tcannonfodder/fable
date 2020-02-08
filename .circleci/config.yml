@@ -15,6 +15,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Install Bundler 2.1.4
+          command: gem install bundler:2.1.4
+      - run:
           name: Which bundler?
           command: bundle -v
       - ruby/install-deps
