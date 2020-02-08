@@ -8,4 +8,8 @@ class RubyRedInkTest < Minitest::Test
   def test_it_does_something_useful
     assert false
   end
+
+  def test_loads_json
+    refute_empty load_json_export
+  end
 end
