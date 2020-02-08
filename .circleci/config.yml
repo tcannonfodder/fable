@@ -11,11 +11,9 @@ orbs:
 jobs:
   build:
     docker:
-      - image: circleci/buildpack-deps
+      - image: circleci/ruby:2.6.5
     steps:
       - checkout
-      - ruby/install:
-          version: mruby
       - run:
           name: Which bundler?
           command: bundle -v
