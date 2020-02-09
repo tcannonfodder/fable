@@ -12,7 +12,7 @@ module RubyRedInk
       self.parent = parent
 
       if parent.nil?
-        self.path_string = Path.append_path_string("", (name || fallback_identifier))
+        self.path_string = ""
       else
         self.path_string = Path.append_path_string(parent.path_string, (name || fallback_identifier))
       end
