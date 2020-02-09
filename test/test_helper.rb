@@ -13,3 +13,7 @@ end
 def build_container(object)
   RubyRedInk::Container.new(object)
 end
+
+def parse_path(path_string)
+  RubyRedInk::Path.parse(path_string)
+end
