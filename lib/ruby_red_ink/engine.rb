@@ -8,7 +8,7 @@ module RubyRedInk
     end
 
     def step
-      # debugger
+      puts current_pointer
       current_pointer_path = Path.parse(current_pointer)
       current_element = navigate_down_tree(nil, current_pointer_path)
 
@@ -19,13 +19,16 @@ module RubyRedInk
         element_to_move_to = stack_to_move_to.elements.first
         element_path = stack_to_move_to.path_string_for(element_to_move_to)
         self.current_pointer = element_path
-        step
         return
       end
 
-      puts current_element
+      if current_element.nil?
+        self.current_pointer = Path.jump_up_level(current_pointer).succ
+        return
+      end
+
       self.current_pointer = current_pointer.succ
-      return
+      return current_element
     end
 
     def navigate_down_tree(parent_stack, current_pointer_path)

@@ -5,11 +5,21 @@ class StoryTest < Minitest::Test
     json = load_json_export("test/fixtures/hello-world.expanded.ink.json")
     story = RubyRedInk::Story.new(json)
     story.root
+    puts "---" * 20
+
     puts story.engine.step
     puts story.engine.step
     puts story.engine.step
     puts story.engine.step
     puts story.engine.step
+    puts story.engine.step
+    puts story.engine.step
+    puts story.engine.step
+    puts story.engine.step
+    puts story.engine.step
+    puts story.engine.step
+
+    puts "---" * 20
   end
 
   def test_navigate
