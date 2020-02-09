@@ -1,6 +1,6 @@
 module RubyRedInk
   class Container
-    attr_accessor :original_object, :elements, :nested_containers, :final_attribute, :record_visits, :record_turn_index, :count_start_only, :path_string
+    attr_accessor :original_object, :elements_set, :elements_array, :nested_containers, :final_attribute, :record_visits, :record_turn_index, :count_start_only, :path_string
 
     def initialize(original_object, parent_path_string, fallback_identifier = 0)
       self.original_object = original_object
@@ -31,21 +31,27 @@ module RubyRedInk
     end
 
     def process_elements
-      self.elements = []
+      @elements_array = []
 
       original_object[0..-2].each_with_index do |value, index|
         if value.is_a?(Array)
-          elements << self.class.new(value, path_string, index)
+          @elements_array << self.class.new(value, path_string, index)
           next
         end
 
         if ControlCommands.is_control_command?(value)
-          elements << ControlCommands.get_control_command(value)
+          @elements_array << ControlCommands.get_control_command(value)
           next
         end
 
-        elements << Values.parse(value)
+        @elements_array << Values.parse(value)
       end
+
+      self.elements_set = ContainerElementsSet.new(@elements_array)
+    end
+
+    def elements
+      elements_set.elements_hash
     end
 
     def process_nested_containers

@@ -2,6 +2,9 @@ module RubyRedInk
   module Values
     VOID = :VOID_VALUE
 
+    # VALUES NEED TO BE A CLASS THAT STORE THEIR PATH FOR NAVIGATION
+    # CONTROLCOMMAND VALUE?
+
     def self.parse(value)
       return parse_divergent(value) if is_divergent?(value)
       return VOID if is_void?(value)
