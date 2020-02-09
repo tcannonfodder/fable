@@ -33,20 +33,21 @@ module RubyRedInk
       return
     end
 
-    def navigate_down_tree(current_element, current_pointer_path)
+    def navigate_down_tree(parent_stack, current_pointer_path)
       current_pointer_path.each do |current_key, rest_of_path|
-        # debugger if current_key == 1
+        # If we're at the root path, start traveling recursively down the
+        # stacks, starting with the root container's stack.
         if current_key == Path::ROOT_PATH
-          return navigate_down_tree(self.story.root, rest_of_path)
+          return navigate_down_tree(self.story.root.stack, rest_of_path)
         end
 
-        if rest_of_path.empty?
-          return [current_key, current_element]
+        future_element = parent_stack.element_tree[current_key]
+
+        if future_element.is_a?(Container)
+          return navigate_down_tree(future_element.stack, rest_of_path)
         end
 
-        # debugger if current_key == 1
-
-        return navigate_down_tree(current_element.elements, rest_of_path)
+        return future_element
       end
     end
 
