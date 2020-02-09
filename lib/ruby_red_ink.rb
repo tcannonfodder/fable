@@ -7,6 +7,7 @@ require 'ruby_red_ink/values'
 require 'ruby_red_ink/story'
 require 'ruby_red_ink/story_state'
 require 'ruby_red_ink/engine'
+require 'ruby_red_ink/call_stack'
 
 module RubyRedInk
   class Error < StandardError; end
