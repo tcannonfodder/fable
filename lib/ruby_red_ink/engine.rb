@@ -8,32 +8,31 @@ module RubyRedInk
     end
 
     def step
+      # debugger
       current_pointer_path = Path.parse(current_pointer)
+      current_element = navigate_down_tree(nil, current_pointer_path)
 
-      puts current_pointer_path
-      current_key, current_element = navigate_down_tree(nil, current_pointer_path)
-      puts [current_key, current_element]
-
-
+      # We've hit a container, so need to go to the first element within the container and set that
+      # as the current pointer
       if current_element.is_a?(Container)
-        self.current_pointer = Path.append_path_string(current_element.path_string, 0)
-        puts self.current_pointer
+        stack_to_move_to = current_element.stack
+        element_to_move_to = stack_to_move_to.elements.first
+        element_path = stack_to_move_to.path_string_for(element_to_move_to)
+        self.current_pointer = element_path
+        step
         return
       end
 
-      if current_key.is_a?(Numeric)
-        self.current_pointer = current_pointer.succ
-      end
-      # else
-      #   self.current_pointer = Path.append_path_string(self.current_pointer, current_key)
-      # end
-
-      puts self.current_pointer
       puts current_element
+      self.current_pointer = current_pointer.succ
       return
     end
 
     def navigate_down_tree(parent_stack, current_pointer_path)
+      if current_pointer_path.empty?
+        return parent_stack.elements.first
+      end
+
       current_pointer_path.each do |current_key, rest_of_path|
         # If we're at the root path, start traveling recursively down the
         # stacks, starting with the root container's stack.
