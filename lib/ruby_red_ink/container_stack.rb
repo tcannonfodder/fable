@@ -1,31 +1,35 @@
 module RubyRedInk
   class ContainerStack
-    attr_accessor :container, :elements
+    attr_accessor :container, :element_tree
 
     def initialize(container)
       self.container = container
-      self.elements = {}
-      process_elements
+      self.element_tree = {}
+      build_element_tree
     end
 
-    def process_elements
-      container.elements_array.each_with_index do |element, index|
-        elements[index] = element
+    def elements
+      container.elements_array
+    end
+
+    def build_element_tree
+      elements.each_with_index do |element, index|
+        element_tree[index] = element
         if element.is_a?(Container) && !element.name.nil?
-          elements[element.name] = element
+          element_tree[element.name] = element
         end
       end
     end
 
     def path_string_for_key(key)
-      if elements.has_key?(key)
+      if element_tree.has_key?(key)
         Path.append_path_string(container.path_string, key)
       end
     end
 
     def path_string_for(element)
-      if elements.has_value?(element)
-        path_string_for_key(elements.key(element))
+      if element_tree.has_value?(element)
+        path_string_for_key(element_tree.key(element))
       end
     end
   end
