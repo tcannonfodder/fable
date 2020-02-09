@@ -1,5 +1,5 @@
 module RubyRedInk
-  class ContainerElementsSet
+  class ContainerStack
     attr_accessor :elements, :elements_hash
 
     def initialize(elements)

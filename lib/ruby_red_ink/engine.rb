@@ -12,28 +12,30 @@ module RubyRedInk
 
       puts current_pointer_path
       current_key, current_element = navigate_down_tree(nil, current_pointer_path)
-      puts current_element
-      # if current_element.is_a?(Container)
-      #   self.current_pointer = Path.append_path_string(self.current_pointer, current_key+1)
-      #   return
-      # end
+      puts [current_key, current_element]
 
-      if current_key.is_a?(Numeric)
-        self.current_pointer = Path.append_path_string(self.current_pointer, current_key)
-      else
-        self.current_pointer = Path.append_path_string(self.current_pointer, current_key)
+
+      if current_element.is_a?(Container)
+        self.current_pointer = Path.append_path_string(current_element.path_string, 0)
+        puts self.current_pointer
+        return
       end
 
+      if current_key.is_a?(Numeric)
+        self.current_pointer = current_pointer.succ
+      end
+      # else
+      #   self.current_pointer = Path.append_path_string(self.current_pointer, current_key)
+      # end
+
       puts self.current_pointer
-
-      return if current_element.is_a?(Container)
-
       puts current_element
       return
     end
 
     def navigate_down_tree(current_element, current_pointer_path)
       current_pointer_path.each do |current_key, rest_of_path|
+        # debugger if current_key == 1
         if current_key == Path::ROOT_PATH
           return navigate_down_tree(self.story.root, rest_of_path)
         end
@@ -42,7 +44,9 @@ module RubyRedInk
           return [current_key, current_element]
         end
 
-        return navigate_down_tree(current_element.elements[current_key], rest_of_path)
+        # debugger if current_key == 1
+
+        return navigate_down_tree(current_element.elements, rest_of_path)
       end
     end
 

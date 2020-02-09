@@ -1,7 +1,7 @@
 require "ruby_red_ink/version"
 require 'ruby_red_ink/path'
-require 'ruby_red_ink/container_elements_set'
 require 'ruby_red_ink/container'
+require 'ruby_red_ink/container_stack'
 require 'ruby_red_ink/control_commands'
 require 'ruby_red_ink/values'
 require 'ruby_red_ink/story'

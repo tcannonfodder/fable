@@ -1,12 +1,22 @@
 module RubyRedInk
   class Container
-    attr_accessor :original_object, :elements_set, :elements_array, :nested_containers, :final_attribute, :record_visits, :record_turn_index, :count_start_only, :path_string
+    attr_accessor :original_object, :parent, :path_string,
+      :container_stack, :elements_array,
+      :nested_containers,
+      :final_attribute,
+      :record_visits, :record_turn_index, :count_start_only
 
-    def initialize(original_object, parent_path_string, fallback_identifier = 0)
+    def initialize(original_object, parent, fallback_identifier = 0)
       self.original_object = original_object
       self.final_attribute = original_object.last
+      self.parent = parent
 
-      self.path_string = Path.append_path_string(parent_path_string, (name || fallback_identifier))
+      if parent.nil?
+        self.path_string = Path.append_path_string("", (name || fallback_identifier))
+      else
+        self.path_string = Path.append_path_string(parent.path_string, (name || fallback_identifier))
+      end
+
       process_elements
       process_nested_containers
       process_bit_flags
@@ -35,7 +45,7 @@ module RubyRedInk
 
       original_object[0..-2].each_with_index do |value, index|
         if value.is_a?(Array)
-          @elements_array << self.class.new(value, path_string, index)
+          @elements_array << self.class.new(value, self, index)
           next
         end
 
@@ -47,11 +57,11 @@ module RubyRedInk
         @elements_array << Values.parse(value)
       end
 
-      self.elements_set = ContainerElementsSet.new(@elements_array)
+      self.container_stack = ContainerStack.new(@elements_array)
     end
 
-    def elements
-      elements_set.elements_hash
+    def stack
+      container_stack.elements_hash
     end
 
     def process_nested_containers
@@ -60,7 +70,7 @@ module RubyRedInk
 
       final_attribute.each do |key, nested_container|
         next if key == "#n" || key == "#f"
-        nested_containers[key] = self.class.new(nested_container, path_string, key)
+        nested_containers[key] = self.class.new(nested_container, self, key)
       end
     end
 

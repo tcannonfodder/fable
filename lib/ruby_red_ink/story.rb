@@ -10,7 +10,7 @@ module RubyRedInk
     end
 
     def root
-      self.root_container ||= Container.new(original_object["root"], "")
+      self.root_container ||= Container.new(original_object["root"], nil)
     end
 
     def ink_version
