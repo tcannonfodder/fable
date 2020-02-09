@@ -41,5 +41,11 @@ module RubyRedInk
 
       path_tree
     end
+
+    def self.jump_up_level(path_string)
+      elements = path_string.split('.')
+      elements.pop
+      elements.join('.')
+    end
   end
 end
