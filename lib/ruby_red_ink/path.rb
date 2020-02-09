@@ -4,6 +4,14 @@ module RubyRedInk
     RELATIVE_PATH = :RELATIVE_PATH
     ROOT_PATH = :ROOT_PATH
 
+    def self.append_path_string(parent_string, identifier)
+      if parent_string == ""
+        identifier.to_s
+      else
+        "#{parent_string}.#{identifier}"
+      end
+    end
+
     def self.parse(path_string)
       path_tree = {}
       if path_string.start_with?(".")
