@@ -1,14 +1,16 @@
 module RubyRedInk
   class Story
-    attr_accessor :original_object, :root_container
+    attr_accessor :original_object, :root_container, :engine, :state
 
     def initialize(original_object)
       self.original_object = original_object
-      process_containers
+      self.state = StoryState.new
+      self.engine = Engine.new(state, self)
+      self.state.current_pointer = root.path_string
     end
 
     def root
-      self.root_container = Container.new(original_object["root"])
+      self.root_container ||= Container.new(original_object["root"], "")
     end
 
     def ink_version
