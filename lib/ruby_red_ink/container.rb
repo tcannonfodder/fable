@@ -1,7 +1,7 @@
 module RubyRedInk
   class Container
     attr_accessor :original_object, :parent, :path_string,
-      :container_stack, :elements_array,
+      :stack, :elements_array,
       :nested_containers,
       :final_attribute,
       :record_visits, :record_turn_index, :count_start_only
@@ -17,7 +17,7 @@ module RubyRedInk
         self.path_string = Path.append_path_string(parent.path_string, (name || fallback_identifier))
       end
 
-      process_elements
+      build_stack
       process_nested_containers
       process_bit_flags
     end
@@ -40,7 +40,7 @@ module RubyRedInk
       final_attribute["#f"]
     end
 
-    def process_elements
+    def build_stack
       @elements_array = []
 
       original_object[0..-2].each_with_index do |value, index|
@@ -57,11 +57,7 @@ module RubyRedInk
         @elements_array << Values.parse(value)
       end
 
-      self.container_stack = ContainerStack.new(@elements_array)
-    end
-
-    def stack
-      container_stack.elements_hash
+      self.stack = ContainerStack.new(self)
     end
 
     def process_nested_containers
