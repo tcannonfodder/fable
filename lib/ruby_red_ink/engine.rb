@@ -14,6 +14,7 @@ module RubyRedInk
 
       stack_output = current_call_stack.step
       value_from_stack = stack_output[:element]
+      self.current_pointer = stack_output[:path]
 
       case stack_output[:action]
       when :new_callstack
