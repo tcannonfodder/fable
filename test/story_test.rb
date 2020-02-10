@@ -7,17 +7,11 @@ class StoryTest < Minitest::Test
     story.root
     puts "---" * 20
 
-    puts story.engine.step
-    puts story.engine.step
-    puts story.engine.step
-    puts story.engine.step
-    puts story.engine.step
-    puts story.engine.step
-    puts story.engine.step
-    puts story.engine.step
-    puts story.engine.step
-    puts story.engine.step
-    puts story.engine.step
+    20.times do
+        value = story.engine.step
+        puts value unless value.nil?
+    end
+
 
     puts "---" * 20
   end

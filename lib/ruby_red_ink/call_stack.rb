@@ -1,22 +1,33 @@
 module RubyRedInk
   class CallStack
+    attr_accessor :current_stack_index, :container_stack
 
-    def initialize(value = nil)
-      @flag = value
+    def initialize(container_stack)
+      @current_stack_index = 0
+      @container_stack = container_stack
     end
 
     def step
-      @counter ||= 0
-
-      return ControlCommands.get_control_command('done') if @counter > 3
-
-      if @counter == 2 && @flag != :a
-        new_call_stack = self.class.new(:a)
-        @counter += 1
-        return new_call_stack
+      current_stack_element = container_stack.elements[current_stack_index]
+      @current_stack_index += 1
+      if current_stack_element.is_a?(Container)
+        return {
+          action: :new_callstack,
+          element: current_stack_element.stack
+        }
       end
 
-      return "#{@counter += 1}:#{@flag}"
+      if current_stack_element.nil? || current_stack_element == ControlCommands.get_control_command('done')
+        return {
+          action: :pop_stack,
+          element: current_stack_element
+        }
+      end
+
+      return {
+        action: :output,
+        element: current_stack_element
+      }
     end
   end
 end
