@@ -18,6 +18,23 @@ class StoryTest < Minitest::Test
     puts "---" * 20
   end
 
+  def test_load_hello_world_choice
+    json = load_json_export("test/fixtures/hello-world-choice.expanded.ink.json")
+    story = RubyRedInk::Story.new(json)
+    story.root
+    puts "---" * 20
+
+    20.times do
+        value = story.engine.step
+        next if value.nil?
+        puts value
+        puts "📌[#{story.engine.current_pointer}]"
+    end
+
+
+    puts "---" * 20
+  end
+
   def test_navigate
     json = load_json_export("test/fixtures/hello-world.expanded.ink.json")
     story = RubyRedInk::Story.new(json)
