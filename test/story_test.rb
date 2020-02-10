@@ -9,7 +9,9 @@ class StoryTest < Minitest::Test
 
     20.times do
         value = story.engine.step
-        puts value unless value.nil?
+        next if value.nil?
+        puts value
+        puts "📌[#{story.engine.current_pointer}]"
     end
 
 
