@@ -1,0 +1,1 @@
+﻿{"inkVersion":19,"root":[["^This is some text","\n",{"->":"x","var":true},["done",{"#f":5,"#n":"g-0"}],null],"done",{"top_knot":["^Hello world!","\n","end",{"#f":3}],"global decl":["ev",{"^->":"top_knot"},{"VAR=":"x"},"/ev","end",null],"#f":1}],"listDefs":{}}
