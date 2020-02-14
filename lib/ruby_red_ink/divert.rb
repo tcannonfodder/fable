@@ -1,6 +1,6 @@
 module RubyRedInk
   class Divert
-    class UnknownDivert < Error ; end
+    class UnknownDivert < RubyRedInk::Error ; end
 
     attr_accessor :original_object
 
@@ -26,6 +26,10 @@ module RubyRedInk
       end
 
       raise UnknownDivert, ""
+    end
+
+    def self.is_divert?(original_object)
+      ["->", "f()", "->t->", "x()"].any? {|key| original_object.has_key?(key)}
     end
 
     def initialize(original_object)
