@@ -1,3 +1,7 @@
+module RubyRedInk
+  class Error < StandardError; end
+end
+
 require "ruby_red_ink/version"
 require 'ruby_red_ink/path'
 require 'ruby_red_ink/container'
@@ -10,7 +14,3 @@ require 'ruby_red_ink/story'
 require 'ruby_red_ink/story_state'
 require 'ruby_red_ink/engine'
 require 'ruby_red_ink/call_stack'
-
-module RubyRedInk
-  class Error < StandardError; end
-end
