@@ -5,7 +5,7 @@ module RubyRedInk
     def initialize(state, story)
       self.state = state
       self.story = story
-      self.call_stacks = [CallStack.new(story.root.stack)]
+      self.call_stacks = [CallStack.new(story.root.stack, state)]
       self.current_call_stack = call_stacks.first
     end
 
@@ -18,7 +18,7 @@ module RubyRedInk
 
       case stack_output[:action]
       when :new_callstack
-        new_callstack = CallStack.new(value_from_stack)
+        new_callstack = CallStack.new(value_from_stack, state)
         call_stacks << new_callstack
         self.current_call_stack = new_callstack
         return nil
