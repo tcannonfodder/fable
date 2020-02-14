@@ -13,5 +13,9 @@ module RubyRedInk
     def current_pointer
       state["current_pointer"]
     end
+
+    def temporary_variables
+      state["temporary_variables"] ||= {}
+    end
   end
 end
