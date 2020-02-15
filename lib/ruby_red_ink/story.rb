@@ -16,5 +16,9 @@ module RubyRedInk
     def ink_version
       original_object["inkVersion"]
     end
+
+    def global_declaration
+      root.nested_containers["global decl"]
+    end
   end
 end
