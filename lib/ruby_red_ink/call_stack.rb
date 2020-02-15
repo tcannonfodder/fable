@@ -273,6 +273,30 @@ module RubyRedInk
         path: path
       }
     end
+
+    def noop(stack_element, path)
+      {
+        action: :noop,
+        element: stack_element,
+        path: path
+      }
+    end
+
+    def pop(stack_element, path)
+      {
+        action: :pop,
+        element: stack_element,
+        path: path
+      }
+    end
+
+    def new_callstack(stack, path)
+      {
+        action: :new_callstack,
+        element: stack,
+        path: path
+      }
+    end
   end
 
   class EvaluationStack
