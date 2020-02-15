@@ -264,7 +264,7 @@ module RubyRedInk
     end
 
     def push(value)
-      debugger if value.is_a?(StandardDivert)
+      # debugger if value.is_a?(StandardDivert)
       if string_evaluation_mode?
         self.string_evaluation_mode_stack.unshift(value)
         puts self.string_evaluation_mode_stack.inspect
