@@ -97,7 +97,11 @@ module RubyRedInk
     def all_named_containers
       non_numeric_tree_keys = stack.element_tree.keys.reject{|x| x.is_a?(Numeric)}
       containers_from_tree = stack.element_tree.slice(non_numeric_tree_keys)
-      nested_containers.merge.merge(containers_from_tree)
+      nested_containers.merge(containers_from_tree)
+    end
+
+    def all_elements
+      stack.element_tree.merge(nested_containers)
     end
 
   end
