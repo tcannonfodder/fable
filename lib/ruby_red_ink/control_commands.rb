@@ -1,6 +1,7 @@
 module RubyRedInk
   module ControlCommands
     COMMANDS = {
+      SEED_RANDOM: "srnd",
       GLUE: "<>",
       BEGIN_LOGICAL_EVALUATION_MODE: "ev",
       END_LOGICAL_EVALUATION_MODE: "/ev",

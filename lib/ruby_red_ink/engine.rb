@@ -20,6 +20,9 @@ module RubyRedInk
       self.current_pointer = stack_output[:path]
 
       case stack_output[:action]
+      when :set_randomizer_seed
+        state.randomizer_seed = stack_output[:element]
+        return step
       when :new_callstack
         new_callstack = CallStack.new(value_from_stack, state, self)
         call_stacks << new_callstack

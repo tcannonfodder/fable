@@ -97,6 +97,9 @@ module RubyRedInk
             next_item = container_stack.elements[self.current_stack_index]
             puts "EVAL MODE COMMAND: #{next_item}"
             case next_item
+            when :SEED_RANDOM
+              state.randomizer_seed = evaluation_stack.pop
+              evaluation_stack.push(Values::VOID)
             when :END_LOGICAL_EVALUATION_MODE
               reached_end = true
             when :MAIN_STORY_OUTPUT
@@ -299,6 +302,14 @@ module RubyRedInk
       {
         action: :new_callstack,
         element: stack,
+        path: path
+      }
+    end
+
+    def set_randomizer_seed(value, path)
+      {
+        action: :set_randomizer_seed,
+        element: value,
         path: path
       }
     end
