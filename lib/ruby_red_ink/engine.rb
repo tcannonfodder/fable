@@ -41,6 +41,8 @@ module RubyRedInk
         # remove the newline from the stream
         output_stream.seek(-1, IO::SEEK_END)
         return step
+      when :noop, :pop
+        return step
       when :output
         output_stream << value_from_stack
         return step

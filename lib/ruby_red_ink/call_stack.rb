@@ -70,6 +70,11 @@ module RubyRedInk
 
       if ControlCommands::COMMANDS.has_key?(current_stack_element)
         case current_stack_element
+        when :NOOP
+          return noop(current_stack_element, current_stack_path)
+        when :POP
+          evaluation_stack.pop
+          return noop(current_stack_element, current_stack_path)
         when :GLUE
           return glue(current_stack_element, current_stack_path)
         when :DONE, :TUNNEL_POP, :FUNCTION_POP
