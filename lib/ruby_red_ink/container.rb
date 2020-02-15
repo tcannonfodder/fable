@@ -94,5 +94,11 @@ module RubyRedInk
       count_start_only
     end
 
+    def all_named_containers
+      non_numeric_tree_keys = stack.element_tree.keys.reject{|x| x.is_a?(Numeric)}
+      containers_from_tree = stack.element_tree.slice(non_numeric_tree_keys)
+      nested_containers.merge.merge(containers_from_tree)
+    end
+
   end
 end
