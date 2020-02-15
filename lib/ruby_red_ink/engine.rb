@@ -1,10 +1,11 @@
 module RubyRedInk
   class Engine
-    attr_accessor :state, :story, :call_stacks, :current_call_stack
+    attr_accessor :state, :story, :call_stacks, :current_call_stack, :named_container_pool
 
     def initialize(state, story)
       self.state = state
       self.story = story
+      build_named_container_pool
       process_global_declaration
       self.call_stacks = [CallStack.new(story.root.stack, state)]
       self.current_call_stack = call_stacks.first
@@ -65,6 +66,21 @@ module RubyRedInk
 
       while !step_value.nil?
         step_value = step
+      end
+    end
+
+    def build_named_container_pool
+      self.named_container_pool = {}
+
+      add_to_named_container_pool(story.root)
+      debugger
+    end
+
+    def add_to_named_container_pool(container)
+      named_container_pool.merge!(container.all_named_containers)
+
+      container.stack.elements.select{|x| x.is_a?(Container)}.each do |container|
+        add_to_named_container_pool(container)
       end
     end
   end
