@@ -8,9 +8,19 @@ module RubyRedInk
       @evaluation_stack = EvaluationStack.new
       @state = state
       @engine = engine
+
+      if container_stack.container.record_visits? && !container_stack.container.count_start_only?
+        state.record_visit(container_stack.container.path_string)
+      end
     end
 
     def step
+      if container_stack.container.record_visits? && container_stack.container.count_start_only?
+        if current_stack_index == 0
+          state.record_visit(container_stack.container.path_string)
+        end
+      end
+
       current_stack_element = container_stack.elements[current_stack_index]
       current_stack_path = container_stack.path_string_for_key(current_stack_index)
       @current_stack_index += 1
