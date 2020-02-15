@@ -7,7 +7,7 @@ module RubyRedInk
       self.story = story
       build_named_container_pool
       process_global_declaration
-      self.call_stacks = [CallStack.new(story.root.stack, state)]
+      self.call_stacks = [CallStack.new(story.root.stack, state, self)]
       self.current_call_stack = call_stacks.first
       self.output_stream = StringIO.new
     end
@@ -21,14 +21,14 @@ module RubyRedInk
 
       case stack_output[:action]
       when :new_callstack
-        new_callstack = CallStack.new(value_from_stack, state)
+        new_callstack = CallStack.new(value_from_stack, state, self)
         call_stacks << new_callstack
         self.current_call_stack = new_callstack
         return step
       when :tunnel
         tunnel_divert = value_from_stack
         target_container = named_container_pool[tunnel_divert.target]
-        new_callstack = CallStack.new(target_container.stack, state)
+        new_callstack = CallStack.new(target_container.stack, state, self)
         call_stacks << new_callstack
         self.current_call_stack = new_callstack
         return step
@@ -78,7 +78,7 @@ module RubyRedInk
       return nil if !story.global_declaration
       global_declaration = story.global_declaration
       self.output_stream = StringIO.new
-      self.call_stacks = [CallStack.new(global_declaration.stack, state)]
+      self.call_stacks = [CallStack.new(global_declaration.stack, state, self)]
       self.current_call_stack = call_stacks.first
 
       step_value = step

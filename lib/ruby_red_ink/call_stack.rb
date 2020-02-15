@@ -1,12 +1,13 @@
 module RubyRedInk
   class CallStack
-    attr_accessor :current_stack_index, :container_stack, :evaluation_stack, :state
+    attr_accessor :current_stack_index, :container_stack, :evaluation_stack, :state, :engine
 
-    def initialize(container_stack, state)
+    def initialize(container_stack, state, engine)
       @current_stack_index = 0
       @container_stack = container_stack
       @evaluation_stack = EvaluationStack.new
       @state = state
+      @engine = engine
     end
 
     def step
