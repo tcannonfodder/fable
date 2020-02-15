@@ -47,5 +47,33 @@ module RubyRedInk
       elements.pop
       elements.join('.')
     end
+
+    def self.travel(path_tree, root, current_container, current_pointer)
+      label, rest_of_tree = path_tree.first
+
+      if rest_of_tree.empty?
+        return current_pointer.all_elements[label]
+      end
+
+      if label == ROOT_PATH
+        current_pointer = root
+      elsif label == RELATIVE_PATH
+        current_pointer = current_container
+      elsif label == PARENT
+        current_pointer = current_container
+        current_container = current_pointer.parent
+      else
+        current_pointer = current_pointer.all_containers[label]
+      end
+
+      travel(rest_of_tree, root, current_container, current_pointer)
+    end
+
+    def self.navigate(root, current_container, path_string)
+      path_tree = parse(path_string)
+
+      current_pointer = nil
+      travel(path_tree, root, current_container, current_pointer)
+    end
   end
 end
