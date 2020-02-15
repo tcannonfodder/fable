@@ -72,4 +72,23 @@ class OriginalSpecTest < Minitest::Test
 
     assert_equal result, story.engine.current_text
   end
+
+  def test_all_sequence_types
+    json = load_json_export("test/fixtures/original-specs/test-all-sequence-types.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_nil story.engine.step
+
+    result = <<~STORY
+    Once: one two
+    Stopping: one two two two
+    Default: one two two two
+    Cycle: one two one two
+    Shuffle: two one two one
+    Shuffle stopping: one two final final
+    Shuffle once: two one
+    STORY
+
+    assert_equal result, story.engine.current_text
+  end
 end
