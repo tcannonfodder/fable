@@ -38,6 +38,8 @@ module RubyRedInk
           element: current_stack_element,
           path: current_stack_path
         }
+      when FunctionCallDivert
+        return function_push(current_stack_element, current_stack_path)
       when StandardDivert
         run_divert = true
         if current_stack_element.is_conditional?
@@ -243,6 +245,15 @@ module RubyRedInk
               state.globals[next_item.name] = evaluation_stack.pop
             when VariableReference
               evaluation_stack.push(state.get_variable_value(next_item.name))
+            when FunctionCallDivert
+              target_container = engine.navigate_from(container_stack.container, next_item.target)
+
+              function_call_stack = CallStack.new(target_container.stack, state, engine)
+
+              function_engine = Engine.new(state, engine.story, function_call_stack)
+              function_engine.step
+
+              evaluation_stack.push(function_engine.current_text)
             else
               evaluation_stack.push(next_item)
             end
@@ -310,6 +321,14 @@ module RubyRedInk
       {
         action: :set_randomizer_seed,
         element: value,
+        path: path
+      }
+    end
+
+    def function_push(stack_element,path)
+      {
+        action: :function,
+        element: stack_element,
         path: path
       }
     end

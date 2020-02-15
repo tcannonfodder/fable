@@ -33,7 +33,7 @@ module RubyRedInk
         call_stacks << new_callstack
         self.current_call_stack = new_callstack
         return step
-      when :tunnel, :standard_divert
+      when :tunnel, :function, :standard_divert
         tunnel_divert = value_from_stack
         target_container = named_container_pool[tunnel_divert.target]
         if target_container.nil?
