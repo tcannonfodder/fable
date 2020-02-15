@@ -80,7 +80,6 @@ module RubyRedInk
       self.named_container_pool = {}
 
       add_to_named_container_pool(story.root)
-      debugger
     end
 
     def add_to_named_container_pool(container)
