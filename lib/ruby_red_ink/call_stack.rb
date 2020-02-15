@@ -29,24 +29,41 @@ module RubyRedInk
       current_stack_path = container_stack.path_string_for_key(current_stack_index)
       @current_stack_index += 1
 
-      if current_stack_element.is_a?(Container)
-        return {
-          action: :new_callstack,
-          element: current_stack_element.stack,
-          path: current_stack_path
-        }
-      end
-
-      if current_stack_element.nil?
-        return tunnel_or_function_pop(current_stack_element, current_stack_path)
-      end
-
-      if current_stack_element.is_a?(TunnelDivert)
+      # Process diverts first
+      case current_stack_element
+      when TunnelDivert
         return {
           action: :tunnel,
           element: current_stack_element,
           path: current_stack_path
         }
+      when StandardDivert
+        run_divert = true
+        if current_stack_element.is_conditional?
+          boolean_value = evaluation_stack.pop
+          run_divert = false if boolean_value == 0
+        end
+
+        if run_divert
+          target_element = engine.navigate_from(container_stack.container, current_stack_element.target)
+
+          if target_element.is_a?(Container)
+            return new_callstack(target_element.stack, current_stack_element.target)
+          else
+            current_stack_path = current_stack_element.target
+            current_stack_element = target_element
+          end
+        else
+          return noop(current_stack_element, current_stack_path)
+        end
+      end
+
+      if current_stack_element.is_a?(Container)
+        return new_callstack(current_stack_element.stack, current_stack_path)
+      end
+
+      if current_stack_element.nil?
+        return tunnel_or_function_pop(current_stack_element, current_stack_path)
       end
 
       output_stream = StringIO.new
