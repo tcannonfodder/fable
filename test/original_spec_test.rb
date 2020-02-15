@@ -3,7 +3,7 @@ require_relative "test_helper"
 # tests ported from the main Ink API
 class OriginalSpecTest < Minitest::Test
   def test_arithmetic
-    json = load_json_export("test/fixtures/arithmetic.ink.json")
+    json = load_json_export("test/fixtures/original-specs/arithmetic.ink.json")
     story = RubyRedInk::Story.new(json)
 
     assert_nil story.engine.step
@@ -22,7 +22,7 @@ class OriginalSpecTest < Minitest::Test
   end
 
   def test_basic_string_literals
-    json = load_json_export("test/fixtures/basic-string-literals.ink.json")
+    json = load_json_export("test/fixtures/original-specs/basic-string-literals.ink.json")
     story = RubyRedInk::Story.new(json)
 
     assert_nil story.engine.step
@@ -36,7 +36,7 @@ class OriginalSpecTest < Minitest::Test
   end
 
   def test_basic_tunnel
-    json = load_json_export("test/fixtures/basic-tunnel.ink.json")
+    json = load_json_export("test/fixtures/original-specs/basic-tunnel.ink.json")
     story = RubyRedInk::Story.new(json)
 
     assert_nil story.engine.step
