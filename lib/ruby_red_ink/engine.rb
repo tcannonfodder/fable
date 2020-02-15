@@ -5,6 +5,7 @@ module RubyRedInk
     def initialize(state, story)
       self.state = state
       self.story = story
+      process_global_declaration
       self.call_stacks = [CallStack.new(story.root.stack, state)]
       self.current_call_stack = call_stacks.first
     end
@@ -37,6 +38,20 @@ module RubyRedInk
 
     def current_pointer
       state.current_pointer
+    end
+
+    def process_global_declaration
+      return nil if !story.global_declaration
+      global_declaration = story.global_declaration
+
+      self.call_stacks = [CallStack.new(global_declaration.stack, state)]
+      self.current_call_stack = call_stacks.first
+
+      step_value = step
+
+      while !step_value.nil?
+        step_value = step
+      end
     end
   end
 end
