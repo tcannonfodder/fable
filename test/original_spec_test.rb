@@ -21,4 +21,12 @@ class OriginalSpecTest < Minitest::Test
     assert_equal "8", story.engine.step
     assert_equal "\n", story.engine.step
   end
+
+  def test_basic_string_literals
+    json = load_json_export("test/fixtures/basic-string-literals.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "Hello world 1\n", story.engine.step_until_newline
+    assert_equal "Hello world 2.\n", story.engine.step_until_newline
+  end
 end
