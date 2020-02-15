@@ -7,7 +7,7 @@ require "minitest/autorun"
 require 'json'
 
 def load_json_export(filepath = "test/fixtures/the-intercept.js.json")
-  JSON.parse(File.read(filepath).force_encoding('utf-8'))
+  JSON.parse(File.read(filepath, mode: "r:bom|utf-8"))
 end
 
 def build_container(object)
