@@ -40,6 +40,20 @@ module RubyRedInk
       state.current_pointer
     end
 
+    def step_until_newline
+      stream = StringIO.new
+      last_value = step
+      while last_value != "\n"
+        stream << last_value
+        last_value = step
+      end
+
+      stream << "\n"
+
+      stream.rewind
+      stream.read
+    end
+
     def process_global_declaration
       return nil if !story.global_declaration
       global_declaration = story.global_declaration
