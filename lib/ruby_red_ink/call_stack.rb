@@ -224,10 +224,6 @@ module RubyRedInk
         path: current_stack_path
       }
     end
-
-    def process_control_command(current_stack_element)
-
-    end
   end
 
   class EvaluationStack
