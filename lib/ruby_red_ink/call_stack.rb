@@ -19,6 +19,7 @@ module RubyRedInk
     end
 
     def step
+      puts "EVAL STACK ON STEP: #{evaluation_stack.stack.inspect}"
       if container_stack.container.record_visits? && container_stack.container.count_start_only?
         if current_stack_index == 0
           state.record_visit(container_stack.container.path_string)
@@ -40,11 +41,14 @@ module RubyRedInk
       when StandardDivert
         run_divert = true
         if current_stack_element.is_conditional?
+          puts "DIVERT CHECK:"
           boolean_value = evaluation_stack.pop
+          puts "DIVERT CHECK: #{boolean_value}"
           run_divert = false if boolean_value == 0
         end
 
         if run_divert
+          puts "RUNNING DIVERT"
           target_element = engine.navigate_from(container_stack.container, current_stack_element.target)
 
           if target_element.is_a?(Container)
@@ -69,6 +73,7 @@ module RubyRedInk
       output_stream = StringIO.new
 
       if ControlCommands::COMMANDS.has_key?(current_stack_element)
+        puts "COMMAND: #{current_stack_element}"
         case current_stack_element
         when :NOOP
           return noop(current_stack_element, current_stack_path)
@@ -90,6 +95,7 @@ module RubyRedInk
 
           while !reached_end
             next_item = container_stack.elements[self.current_stack_index]
+            puts "EVAL MODE COMMAND: #{next_item}"
             case next_item
             when :END_LOGICAL_EVALUATION_MODE
               reached_end = true
@@ -159,7 +165,7 @@ module RubyRedInk
             when :EQUALS
               value_1 = evaluation_stack.pop
               value_2 = evaluation_stack.pop
-
+              puts "==: #{[value_1, value_2].inspect}"
               result = (value_2 == value_1) ? 1 : 0
 
               evaluation_stack.push(result)
@@ -304,6 +310,7 @@ module RubyRedInk
     attr_accessor :stack, :string_evaluation_mode_stack, :mode
 
     def initialize
+      puts "===NEW EVAL STACK==="
       self.stack = []
       self.string_evaluation_mode_stack = []
       self.mode = :evaluation_mode
@@ -326,24 +333,35 @@ module RubyRedInk
     def push(value)
       # debugger if value.is_a?(StandardDivert)
       if string_evaluation_mode?
+        puts "PUSH STR BEFORE -> #{value}: #{self.string_evaluation_mode_stack.inspect}"
         self.string_evaluation_mode_stack.unshift(value)
-        puts self.string_evaluation_mode_stack.inspect
+        puts "PUSH STR AFTER: #{self.string_evaluation_mode_stack.inspect}"
       else
+        puts "PUSH BEFORE -> #{value}: #{self.stack.inspect}"
         self.stack.unshift(value)
-        puts self.stack.inspect
+        puts "PUSH AFTER: #{self.stack.inspect}"
       end
     end
 
     def pop
       if string_evaluation_mode?
-        self.string_evaluation_mode_stack.shift
+        puts "POP STR BEFORE: #{self.string_evaluation_mode_stack.inspect}"
+        x = self.string_evaluation_mode_stack.shift
+        puts "POP STR AFTER: #{self.string_evaluation_mode_stack.inspect}"
+        x
       else
-        self.stack.shift
+        puts "POP BEFORE: #{self.stack.inspect}"
+        x = self.stack.shift
+        puts "POP AFTER: #{self.stack.inspect}"
+        x
       end
     end
 
     def duplicate_topmost
-      push(topmost.dup)
+      puts "DUP BEFORE: #{self.stack.inspect}"
+      x = push(topmost.dup)
+      puts "DUP AFTER: #{self.stack.inspect}"
+      x
     end
 
     def topmost
