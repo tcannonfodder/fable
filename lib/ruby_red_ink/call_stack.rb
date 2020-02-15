@@ -87,7 +87,6 @@ module RubyRedInk
           # self.evaluation_stack << evaluation_stack
 
           reached_end = false
-          items_in_evaluation_stack = []
 
           while !reached_end
             next_item = container_stack.elements[self.current_stack_index]
