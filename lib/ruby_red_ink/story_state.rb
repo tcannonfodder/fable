@@ -22,8 +22,20 @@ module RubyRedInk
       state["temporary_variables"] ||= {}
     end
 
+    def visits
+      state["visits"] ||= {}
+    end
+
     def get_variable_value(name)
       result = globals[name] || temporary_variables[name]
+    end
+
+    def record_visit(container_path)
+      if visits.has_key?(container_path)
+        visits[container_path] += 1
+      else
+        visits[container_path] ||= 0
+      end
     end
   end
 end
