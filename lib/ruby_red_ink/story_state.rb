@@ -21,5 +21,9 @@ module RubyRedInk
     def temporary_variables
       state["temporary_variables"] ||= {}
     end
+
+    def get_variable_value(name)
+      result = globals[name] || temporary_variables[name]
+    end
   end
 end
