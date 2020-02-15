@@ -2,12 +2,17 @@ module RubyRedInk
   class Engine
     attr_accessor :state, :story, :call_stacks, :current_call_stack, :named_container_pool, :output_stream
 
-    def initialize(state, story)
+    def initialize(state, story, call_stack_to_start_from = :root)
       self.state = state
       self.story = story
       build_named_container_pool
-      process_global_declaration
-      self.call_stacks = [CallStack.new(story.root.stack, state, self)]
+      if call_stack_to_start_from == :root
+        process_global_declaration
+        self.call_stacks = [CallStack.new(story.root.stack, state, self)]
+      else
+        self.call_stacks = [call_stack_to_start_from]
+      end
+
       self.current_call_stack = call_stacks.first
       self.output_stream = StringIO.new
     end
