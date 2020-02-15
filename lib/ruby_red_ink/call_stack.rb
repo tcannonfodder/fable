@@ -6,7 +6,7 @@ module RubyRedInk
       @current_stack_index = 0
       @container_stack = container_stack
       @evaluation_stack = EvaluationStack.new
-      @state = []
+      @state = state
     end
 
     def step
