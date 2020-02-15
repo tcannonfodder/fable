@@ -14,6 +14,10 @@ module RubyRedInk
       end
     end
 
+    def visits_for_current_container
+      state.visits[container_stack.container.path_string]
+    end
+
     def step
       if container_stack.container.record_visits? && container_stack.container.count_start_only?
         if current_stack_index == 0
@@ -85,7 +89,7 @@ module RubyRedInk
             when :PUSH_CHOICE_COUNT
               raise NotImplementedError, "turns not implemented yet"
             when :VISIT
-              raise NotImplementedError, "visit count not implemented yet"
+              evaluation_stack.push(visits_for_current_container)
             when :SEQ
               raise NotImplementedError, "sequence count not implemented yet"
             when :CLONE_THREAD
