@@ -21,7 +21,7 @@ module RubyRedInk
         new_callstack = CallStack.new(value_from_stack, state)
         call_stacks << new_callstack
         self.current_call_stack = new_callstack
-        return nil
+        return step
       when :pop_stack
         call_stacks.delete(current_call_stack)
         self.current_call_stack = call_stacks.last
