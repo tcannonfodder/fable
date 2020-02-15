@@ -1,6 +1,6 @@
 module RubyRedInk
   class Engine
-    attr_accessor :state, :story, :call_stacks, :current_call_stack, :named_container_pool
+    attr_accessor :state, :story, :call_stacks, :current_call_stack, :named_container_pool, :output_stream
 
     def initialize(state, story)
       self.state = state
@@ -9,6 +9,7 @@ module RubyRedInk
       process_global_declaration
       self.call_stacks = [CallStack.new(story.root.stack, state)]
       self.current_call_stack = call_stacks.first
+      self.output_stream = StringIO.new
     end
 
     def step
@@ -34,10 +35,21 @@ module RubyRedInk
       when :pop_stack
         call_stacks.delete(current_call_stack)
         self.current_call_stack = call_stacks.last
-        return value_from_stack
+        return step
+      when :glue
+        # Seeking back 1 character allows us to
+        # remove the newline from the stream
+        output_stream.seek(-1, IO::SEEK_END)
+        return step
       when :output
-        return value_from_stack
+        output_stream << value_from_stack
+        return step
       end
+    end
+
+    def current_text
+      output_stream.rewind
+      output_stream.read
     end
 
     def current_pointer=(value)
@@ -65,7 +77,7 @@ module RubyRedInk
     def process_global_declaration
       return nil if !story.global_declaration
       global_declaration = story.global_declaration
-
+      self.output_stream = StringIO.new
       self.call_stacks = [CallStack.new(global_declaration.stack, state)]
       self.current_call_stack = call_stacks.first
 
