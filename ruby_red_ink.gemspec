@@ -30,4 +30,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "byebug"
   spec.add_development_dependency "highline"
   spec.add_development_dependency "minitest-line"
+  spec.add_development_dependency "pretty-diffs"
 end

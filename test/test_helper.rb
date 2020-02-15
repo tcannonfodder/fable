@@ -4,6 +4,7 @@ require "ruby_red_ink"
 Bundler.require(:default, :development)
 
 require "minitest/autorun"
+require 'pretty_diffs'
 require 'json'
 
 def load_json_export(filepath = "test/fixtures/the-intercept.js.json")
