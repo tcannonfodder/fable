@@ -22,12 +22,8 @@ module RubyRedInk
         }
       end
 
-      if current_stack_element.nil? || current_stack_element == ControlCommands::COMMANDS[:DONE]
-        return {
-          action: :pop_stack,
-          element: current_stack_element,
-          path: current_stack_path
-        }
+      if current_stack_element.nil?
+        return tunnel_or_function_pop(current_stack_element, current_stack_path)
       end
 
       if current_stack_element.is_a?(TunnelDivert)
@@ -41,6 +37,13 @@ module RubyRedInk
       output_stream = StringIO.new
 
       if ControlCommands::COMMANDS.has_key?(current_stack_element)
+        case current_stack_element
+        when :GLUE
+          return glue(current_stack_element, current_stack_path)
+        when :DONE, :TUNNEL_POP, :FUNCTION_POP
+          return tunnel_or_function_pop(current_stack_element, current_stack_path)
+        end
+
         if current_stack_element == :BEGIN_LOGICAL_EVALUATION_MODE
           # evaluation_stack = EvaluationStack.new
 
@@ -58,13 +61,6 @@ module RubyRedInk
               output_stream << evaluation_stack.pop
             when :POP
               evaluation_stack.pop
-            when :TUNNEL_POP
-            when :FUNCTION_POP
-              return {
-                action: :pop_stack,
-                element: current_stack_element,
-                path: current_stack_path
-              }
             when :DUPLICATE_TOPMOST
               evaluation_stack.duplicate_topmost
             when :BEGIN_STRING_EVALUATION_MODE
@@ -222,6 +218,22 @@ module RubyRedInk
         action: :output,
         element: current_stack_element,
         path: current_stack_path
+      }
+    end
+
+    def tunnel_or_function_pop(stack_element, path)
+      return {
+        action: :pop_stack,
+        element: stack_element,
+        path: path
+      }
+    end
+
+    def glue(stack_element, path)
+      {
+        action: :glue,
+        element: stack_element,
+        path: path
       }
     end
   end
