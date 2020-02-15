@@ -190,6 +190,10 @@ module RubyRedInk
               result = [value_1, value_2].max
 
               evaluation_stack.push(result)
+            when GlobalVariableTarget
+              state.globals[next_item.name] = evaluation_stack.pop
+            when VariableReference
+              evaluation_stack.push(state.get_variable_value(next_item.name))
             else
               evaluation_stack.push(next_item)
             end
