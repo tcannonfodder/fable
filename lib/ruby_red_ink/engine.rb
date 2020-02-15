@@ -47,6 +47,10 @@ module RubyRedInk
       end
     end
 
+    def navigate_from(container, path_string)
+      Path.navigate(story.root, container, path_string)
+    end
+
     def current_text
       output_stream.rewind
       output_stream.read.gsub(/\n{2,}/,"\n")
