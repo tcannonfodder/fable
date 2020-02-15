@@ -17,12 +17,16 @@ module RubyRedInk
         return TemporaryVariableTarget.new(original_object)
       end
 
+      if original_object.has_key?("VAR?")
+        return VariableReference.new(original_object)
+      end
+
       raise UnknownVariableTarget, ""
     end
 
 
     def self.is_variable_target?(original_object)
-      ["^->", "VAR=", "temp="].any? {|key| original_object.has_key?(key)}
+      ["^->", "VAR=", "temp=", "VAR?"].any? {|key| original_object.has_key?(key)}
     end
 
 
@@ -54,6 +58,12 @@ module RubyRedInk
   class DivertVariableTarget < VariableTarget
     def name
       original_object["^->"]
+    end
+  end
+
+  class VariableReference < VariableTarget
+    def name
+      original_object["VAR?"]
     end
   end
 end
