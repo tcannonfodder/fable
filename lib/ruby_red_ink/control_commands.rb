@@ -1,6 +1,7 @@
 module RubyRedInk
   module ControlCommands
     COMMANDS = {
+      GLUE: "<>",
       BEGIN_LOGICAL_EVALUATION_MODE: "ev",
       END_LOGICAL_EVALUATION_MODE: "/ev",
       MAIN_STORY_OUTPUT: "out",
