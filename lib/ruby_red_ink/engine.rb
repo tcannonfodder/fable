@@ -25,9 +25,12 @@ module RubyRedInk
         call_stacks << new_callstack
         self.current_call_stack = new_callstack
         return step
-      when :tunnel
+      when :tunnel, :standard_divert
         tunnel_divert = value_from_stack
         target_container = named_container_pool[tunnel_divert.target]
+        if target_container.nil?
+          target_container = Path.navigate(story.root, current_call_stack.container_stack.container, tunnel_divert.target)
+        end
         new_callstack = CallStack.new(target_container.stack, state, self)
         call_stacks << new_callstack
         self.current_call_stack = new_callstack
