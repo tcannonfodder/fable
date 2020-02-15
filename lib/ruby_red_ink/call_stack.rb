@@ -30,6 +30,14 @@ module RubyRedInk
         }
       end
 
+      if current_stack_element.is_a?(TunnelDivert)
+        return {
+          action: :tunnel,
+          element: current_stack_element,
+          path: current_stack_path
+        }
+      end
+
       output_stream = StringIO.new
 
       if ControlCommands::COMMANDS.has_key?(current_stack_element)

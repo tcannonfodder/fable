@@ -24,6 +24,13 @@ module RubyRedInk
         call_stacks << new_callstack
         self.current_call_stack = new_callstack
         return step
+      when :tunnel
+        tunnel_divert = value_from_stack
+        target_container = named_container_pool[tunnel_divert.target]
+        new_callstack = CallStack.new(target_container.stack, state)
+        call_stacks << new_callstack
+        self.current_call_stack = new_callstack
+        return step
       when :pop_stack
         call_stacks.delete(current_call_stack)
         self.current_call_stack = call_stacks.last
