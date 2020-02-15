@@ -2,7 +2,8 @@ require_relative "test_helper"
 
 # tests ported from the main Ink API
 class OriginalSpecTest < Minitest::Test
-  include PrettyDiffs
+  # include PrettyDiffs
+  # Minitest::Test.make_my_diffs_pretty!
   def test_arithmetic
     json = load_json_export("test/fixtures/original-specs/arithmetic.ink.json")
     story = RubyRedInk::Story.new(json)
@@ -52,24 +53,23 @@ class OriginalSpecTest < Minitest::Test
 
     result = <<~STORY
     1. a
-    2.
+    2. 
     3. b
     4. b
     ---
-    1.
+    1. 
     2. a
     3. a
     ---
     1. a
-    2.
-    3.
+    2. 
+    3. 
     ---
-    1.
-    2.
-    3.
-
+    1. 
+    2. 
+    3. 
     STORY
-    puts story.engine.current_text
+
     assert_equal result, story.engine.current_text
   end
 end
