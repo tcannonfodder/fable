@@ -43,7 +43,7 @@ module RubyRedInk
     def step_until_newline
       stream = StringIO.new
       last_value = step
-      while last_value != "\n"
+      while !last_value.nil? && last_value != "\n"
         stream << last_value
         last_value = step
       end
