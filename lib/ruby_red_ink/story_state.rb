@@ -6,6 +6,21 @@ module RubyRedInk
       self.state = {}
     end
 
+    def randomizer
+      if state["randomizer_seed"].present?
+        randomizer = Random.new(state["randomizer_seed"])
+      else
+        randomizer = Random.new
+        randomizer_seed = randomizer.seed
+      end
+
+      randomizer
+    end
+
+    def randomizer_seed=(value)
+      state["randomizer_seed"] = value
+    end
+
     def current_pointer=(value)
       state["current_pointer"] = value
     end
