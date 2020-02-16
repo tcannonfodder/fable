@@ -86,6 +86,8 @@ module RubyRedInk
           return glue(current_stack_element, current_stack_path)
         when :DONE, :TUNNEL_POP, :FUNCTION_POP
           return tunnel_or_function_pop(current_stack_element, current_stack_path)
+        when :STORY_END
+          return story_end(current_stack_element, current_stack_path)
         end
 
         if current_stack_element == :BEGIN_LOGICAL_EVALUATION_MODE
@@ -352,6 +354,14 @@ module RubyRedInk
     def function_push(stack_element,path)
       {
         action: :function,
+        element: stack_element,
+        path: path
+      }
+    end
+
+    def story_end(stack_element, path)
+      {
+        action: :story_end,
         element: stack_element,
         path: path
       }

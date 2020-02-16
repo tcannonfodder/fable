@@ -61,6 +61,8 @@ module RubyRedInk
       when :output
         output_stream << value_from_stack
         return step
+      when :story_end
+        return nil
       end
     end
 
