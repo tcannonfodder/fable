@@ -68,6 +68,10 @@ module RubyRedInk
       Path.navigate(story.root, container, path_string)
     end
 
+    def closest_container_for(container, path_string)
+      Path.closest_container(story.root, container, path_string)
+    end
+
     def current_text
       output_stream.rewind
       output_stream.read.gsub(/\n{2,}/,"\n").strip
