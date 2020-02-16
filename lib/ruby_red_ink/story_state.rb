@@ -6,15 +6,8 @@ module RubyRedInk
       self.state = {}
     end
 
-    def randomizer
-      if state["randomizer_seed"].present?
-        randomizer = Random.new(state["randomizer_seed"])
-      else
-        randomizer = Random.new
-        randomizer_seed = randomizer.seed
-      end
-
-      randomizer
+    def randomizer_seed
+      state["randomizer_seed"]
     end
 
     def randomizer_seed=(value)
