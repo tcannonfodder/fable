@@ -77,7 +77,7 @@ module RubyRedInk
       if ControlCommands::COMMANDS.has_key?(current_stack_element)
         # puts "#{print_padding}COMMAND: #{current_stack_element}"
         case current_stack_element
-        when :NOOP
+        when :NOOP, :END_LOGICAL_EVALUATION_MODE
           return noop(current_stack_element, current_stack_path)
         when :POP
           evaluation_stack.pop
