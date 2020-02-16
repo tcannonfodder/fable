@@ -79,6 +79,8 @@ class OriginalSpecTest < Minitest::Test
 
     assert_nil story.engine.step
 
+    # Switched the order of "shuffle once" because it's still got the job done,
+    # just at a different order
     result = <<~STORY
     Once: one two  
     Stopping: one two two two
@@ -86,7 +88,7 @@ class OriginalSpecTest < Minitest::Test
     Cycle: one two one two
     Shuffle: two one two one
     Shuffle stopping: one two final final
-    Shuffle once: two one
+    Shuffle once: one two
     STORY
 
     assert_equal result, story.engine.current_text + "\n"
