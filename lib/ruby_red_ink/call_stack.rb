@@ -343,6 +343,73 @@ module RubyRedInk
 
       evaluation_stack.push(embedded_engine.current_text)
     end
+
+    def next_sequence_shuffle_index
+      puts '-'
+      number_of_elements = evaluation_stack.pop
+
+      sequence_container = container_stack
+
+      sequence_count = evaluation_stack.pop
+
+      loop_index = sequence_count / number_of_elements
+
+      iteration_index = sequence_count % number_of_elements
+
+      # debugger
+      sequence_path = state.current_pointer# container_stack.container.path_string
+
+      seed = sequence_path.each_codepoint.sum + state.randomizer_seed
+
+      randomizer = Random.new(seed)
+      unpicked_indicies = (0..(number_of_elements-1)).to_a
+
+      puts ({
+        # test_sequence: test_sequence,
+        number_of_elements: number_of_elements,
+        sequence_count: sequence_count,
+        loop_index: loop_index,
+        iteration_index: iteration_index,
+        sequence_path: sequence_path,
+        unpicked_indicies: unpicked_indicies,
+        seed: seed,
+        # result: returned_index,
+      })
+
+      # debugger if sequence_path == "f_shuffle.0"
+      (0..iteration_index).to_a.each do |i|
+        chosen = randomizer.rand(2147483647) % unpicked_indicies.size
+        chosen_index = unpicked_indicies[chosen]
+        puts "\t#{{sequence_path: sequence_path, seed: seed, unpicked_indicies: unpicked_indicies, chosen: chosen, chosen_index: chosen_index, iteration_index: iteration_index, i: i}}"
+        # debugger if sequence_path == "f_shuffle.0"
+        unpicked_indicies.delete(chosen)
+
+        if i == iteration_index
+          return chosen_index
+        end
+        puts "\t🐧"
+      end
+
+      test_sequence = 4.times.map{randomizer.rand(number_of_elements)}
+      returned_index = randomizer.rand(number_of_elements)
+
+      puts ({
+        test_sequence: test_sequence,
+        number_of_elements: number_of_elements,
+        sequence_count: sequence_count,
+        loop_index: loop_index,
+        iteration_index: iteration_index,
+        sequence_path: sequence_path,
+        seed: seed,
+        result: returned_index,
+      })
+
+      x = ["one", "two"]
+      # debugger
+
+      return returned_index
+    end
+
     def run_divert?(divert)
       run_divert = true
       if divert.is_conditional?
