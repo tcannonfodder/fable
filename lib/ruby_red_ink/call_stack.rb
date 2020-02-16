@@ -238,14 +238,22 @@ module RubyRedInk
             when VariableReference
               evaluation_stack.push(state.get_variable_value(next_item.name))
             when FunctionCallDivert
-              target_container = engine.navigate_from(container_stack.container, next_item.target)
-
-              function_call_stack = CallStack.new(target_container.stack, state, engine)
-
-              function_engine = Engine.new(state, engine.story, function_call_stack)
-              function_engine.step
-
-              evaluation_stack.push(function_engine.current_text)
+              run_embedded_engine(next_item.target)
+            when StandardDivert
+              puts "CHECKING DIVERT: #{next_item.target}"
+              if run_divert?(next_item)
+                puts "RUNNING EVAL DIVERT: #{next_item.target}"
+                target_element = engine.navigate_from(container_stack.container, next_item.target)
+                if target_element.is_a?(Container)
+                  puts "RUNNING CONTAINER"
+                  run_embedded_engine(next_item.target)
+                else
+                  puts "ELEMENT: #{target_element}"
+                  if target_element != :NOOP
+                    evaluation_stack.push(target_element)
+                  end
+                end
+              end
             else
               evaluation_stack.push(next_item)
             end
@@ -325,6 +333,16 @@ module RubyRedInk
       }
     end
 
+    def run_embedded_engine(target)
+      target_container = engine.navigate_from(container_stack.container, target)
+
+      emedded_call_stack = CallStack.new(target_container.stack, state, engine)
+
+      embedded_engine = Engine.new(state, engine.story, emedded_call_stack)
+      embedded_engine.step
+
+      evaluation_stack.push(embedded_engine.current_text)
+    end
     def run_divert?(divert)
       run_divert = true
       if divert.is_conditional?
