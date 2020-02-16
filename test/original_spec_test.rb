@@ -93,4 +93,13 @@ class OriginalSpecTest < Minitest::Test
 
     assert_equal result, story.engine.current_text + "\n"
   end
+
+  def test_call_stack_evaluation
+    json = load_json_export("test/fixtures/original-specs/test-call-stack-evaluation.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_nil story.engine.step
+
+    assert_equal "8\n", story.engine.current_text + "\n"
+  end
 end

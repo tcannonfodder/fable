@@ -1,0 +1,1 @@
+﻿{"inkVersion":19,"root":[["ev",{"f()":"six"},{"f()":"two"},"+","out","/ev","\n","end",["done",{"#f":5,"#n":"g-0"}],null],"done",{"six":["ev",{"f()":"four"},{"f()":"two"},"+","/ev","~ret","\n",{"#f":1}],"four":["ev",{"f()":"two"},{"f()":"two"},"+","/ev","~ret","\n",{"#f":1}],"two":["ev",2,"/ev","~ret",{"#f":1}],"#f":1}],"listDefs":{}}
