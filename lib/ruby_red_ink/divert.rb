@@ -35,6 +35,10 @@ module RubyRedInk
     def initialize(original_object)
       self.original_object = original_object
     end
+
+    def pushes_to_stack?
+      raise NotImplementedError
+    end
   end
 
   class StandardDivert < Divert
@@ -45,11 +49,19 @@ module RubyRedInk
     def is_conditional?
       original_object["c"] == true
     end
+
+    def pushes_to_stack?
+      false
+    end
   end
 
   class VariableTargetDivert < Divert
     def target
       original_object["->"]
+    end
+
+    def pushes_to_stack?
+      false
     end
   end
 
@@ -57,11 +69,19 @@ module RubyRedInk
     def target
       original_object["f()"]
     end
+
+    def pushes_to_stack?
+      true
+    end
   end
 
   class TunnelDivert < Divert
     def target
       original_object["->t->"]
+    end
+
+    def pushes_to_stack?
+      true
     end
   end
 
@@ -72,6 +92,10 @@ module RubyRedInk
 
     def number_of_arguments
       original_object["exArgs"]
+    end
+
+    def pushes_to_stack?
+      false
     end
   end
 end
