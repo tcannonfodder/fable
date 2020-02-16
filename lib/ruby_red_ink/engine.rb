@@ -89,7 +89,7 @@ module RubyRedInk
       return nil if !story.global_declaration
       global_declaration = story.global_declaration
       self.output_stream = StringIO.new
-      self.call_stacks = [CallStack.new(global_declaration.stack, state, self, current_call_stack.debug_padding + 1)]
+      self.call_stacks = [CallStack.new(global_declaration.stack, state, self, (current_call_stack.debug_padding + 1 rescue 0))]
       self.current_call_stack = call_stacks.first
 
       step_value = step
