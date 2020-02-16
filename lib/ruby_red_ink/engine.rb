@@ -67,7 +67,7 @@ module RubyRedInk
 
     def current_text
       output_stream.rewind
-      output_stream.read.gsub(/\n{2,}/,"\n")
+      output_stream.read.gsub(/\n{2,}/,"\n").strip
     end
 
     def current_pointer=(value)
