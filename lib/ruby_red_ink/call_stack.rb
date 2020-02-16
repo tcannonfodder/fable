@@ -41,15 +41,7 @@ module RubyRedInk
       when FunctionCallDivert
         return function_push(current_stack_element, current_stack_path)
       when StandardDivert
-        run_divert = true
-        if current_stack_element.is_conditional?
-          puts "DIVERT CHECK:"
-          boolean_value = evaluation_stack.pop
-          puts "DIVERT CHECK: #{boolean_value}"
-          run_divert = false if boolean_value == 0
-        end
-
-        if run_divert
+        if run_divert?(current_stack_element)
           puts "RUNNING DIVERT"
           target_element = engine.navigate_from(container_stack.container, current_stack_element.target)
 
