@@ -80,7 +80,7 @@ class OriginalSpecTest < Minitest::Test
     assert_nil story.engine.step
 
     result = <<~STORY
-    Once: one two
+    Once: one two  
     Stopping: one two two two
     Default: one two two two
     Cycle: one two one two
