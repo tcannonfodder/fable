@@ -18,7 +18,10 @@ module RubyRedInk
     end
 
     def step
-      return nil if current_call_stack.nil?
+      if current_call_stack.nil?
+        puts "🙅‍♂️🙅‍♂️🙅‍♂️🙅‍♂️🙅‍♂️ END"
+        return nil
+      end
 
       stack_output = current_call_stack.step
       value_from_stack = stack_output[:element]
@@ -29,7 +32,7 @@ module RubyRedInk
         state.randomizer_seed = stack_output[:element]
         return step
       when :new_callstack
-        new_callstack = CallStack.new(value_from_stack, state, self)
+        new_callstack = CallStack.new(value_from_stack, state, self, current_call_stack.debug_padding + 1)
         call_stacks << new_callstack
         self.current_call_stack = new_callstack
         return step
@@ -40,7 +43,7 @@ module RubyRedInk
           target_container = Path.navigate(story.root, current_call_stack.container_stack.container, tunnel_divert.target)
         end
         puts "-----"
-        new_callstack = CallStack.new(target_container.stack, state, self)
+        new_callstack = CallStack.new(target_container.stack, state, self, current_call_stack.debug_padding + 1)
         call_stacks << new_callstack
         self.current_call_stack = new_callstack
         return step
@@ -82,7 +85,7 @@ module RubyRedInk
       return nil if !story.global_declaration
       global_declaration = story.global_declaration
       self.output_stream = StringIO.new
-      self.call_stacks = [CallStack.new(global_declaration.stack, state, self)]
+      self.call_stacks = [CallStack.new(global_declaration.stack, state, self, current_call_stack.debug_padding + 1)]
       self.current_call_stack = call_stacks.first
 
       step_value = step

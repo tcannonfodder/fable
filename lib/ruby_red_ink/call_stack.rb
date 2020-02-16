@@ -1,11 +1,12 @@
 module RubyRedInk
   class CallStack
-    attr_accessor :current_stack_index, :container_stack, :evaluation_stack, :state, :engine
+    attr_accessor :current_stack_index, :container_stack, :evaluation_stack, :state, :engine, :debug_padding
 
-    def initialize(container_stack, state, engine)
+    def initialize(container_stack, state, engine, debug_padding = 0)
+      @debug_padding = debug_padding
       @current_stack_index = 0
       @container_stack = container_stack
-      @evaluation_stack = EvaluationStack.new
+      @evaluation_stack = EvaluationStack.new(@debug_padding)
       @state = state
       @engine = engine
 
@@ -18,8 +19,13 @@ module RubyRedInk
       state.visits[container_stack.container.path_string]
     end
 
+    def print_padding
+      return "" if @debug_padding <= 0
+      "#{'  ' * @debug_padding}-->"
+    end
+
     def step
-      puts "EVAL STACK ON STEP: #{evaluation_stack.stack.inspect}"
+      puts "#{print_padding}EVAL STACK ON STEP: #{evaluation_stack.stack.inspect}"
       if container_stack.container.record_visits? && container_stack.container.count_start_only?
         if current_stack_index == 0
           state.record_visit(container_stack.container.path_string)
@@ -42,7 +48,7 @@ module RubyRedInk
         return function_push(current_stack_element, current_stack_path)
       when StandardDivert
         if run_divert?(current_stack_element)
-          puts "RUNNING DIVERT"
+          puts "#{print_padding}RUNNING DIVERT"
           target_element = engine.navigate_from(container_stack.container, current_stack_element.target)
 
           if target_element.is_a?(Container)
@@ -64,10 +70,12 @@ module RubyRedInk
         return tunnel_or_function_pop(current_stack_element, current_stack_path)
       end
 
+      puts ("#{print_padding}#{{path: current_stack_path, element: current_stack_element}}")
+
       output_stream = StringIO.new
 
       if ControlCommands::COMMANDS.has_key?(current_stack_element)
-        puts "COMMAND: #{current_stack_element}"
+        # puts "#{print_padding}COMMAND: #{current_stack_element}"
         case current_stack_element
         when :NOOP
           return noop(current_stack_element, current_stack_path)
@@ -89,7 +97,8 @@ module RubyRedInk
 
           while !reached_end
             next_item = container_stack.elements[self.current_stack_index]
-            puts "EVAL MODE COMMAND: #{next_item}"
+            puts ("#{print_padding}#{{eval_mode: "🐧", path: container_stack.path_string_for(next_item), element: next_item}}")
+            puts "#{print_padding}EVAL MODE COMMAND: #{next_item}"
             case next_item
             when :SEED_RANDOM
               state.randomizer_seed = evaluation_stack.pop
@@ -162,7 +171,7 @@ module RubyRedInk
             when :EQUALS
               value_1 = evaluation_stack.pop
               value_2 = evaluation_stack.pop
-              puts "==: #{[value_1, value_2].inspect}"
+              puts "#{print_padding}==: #{[value_1, value_2].inspect}"
               result = (value_2 == value_1) ? 1 : 0
 
               evaluation_stack.push(result)
@@ -240,9 +249,9 @@ module RubyRedInk
             when FunctionCallDivert
               run_embedded_engine(next_item.target)
             when StandardDivert
-              puts "CHECKING DIVERT: #{next_item.target}"
+              puts "#{print_padding}CHECKING DIVERT: #{next_item.target}"
               if run_divert?(next_item)
-                puts "RUNNING EVAL DIVERT: #{next_item.target}"
+                puts "#{print_padding}RUNNING EVAL DIVERT: #{next_item.target}"
                 target_element = engine.navigate_from(container_stack.container, next_item.target)
                 if target_element.is_a?(Container)
                   puts "RUNNING CONTAINER"
@@ -257,7 +266,7 @@ module RubyRedInk
             else
               evaluation_stack.push(next_item)
             end
-
+            puts "#{print_padding}⏱"
             self.current_stack_index += 1
           end
 
@@ -336,7 +345,7 @@ module RubyRedInk
     def run_embedded_engine(target)
       target_container = engine.navigate_from(container_stack.container, target)
 
-      emedded_call_stack = CallStack.new(target_container.stack, state, engine)
+      emedded_call_stack = CallStack.new(target_container.stack, state, engine, @debug_padding+1)
 
       embedded_engine = Engine.new(state, engine.story, emedded_call_stack)
       embedded_engine.step
@@ -345,7 +354,6 @@ module RubyRedInk
     end
 
     def next_sequence_shuffle_index
-      puts '-'
       number_of_elements = evaluation_stack.pop
 
       sequence_container = container_stack
@@ -380,14 +388,14 @@ module RubyRedInk
       (0..iteration_index).to_a.each do |i|
         chosen = randomizer.rand(2147483647) % unpicked_indicies.size
         chosen_index = unpicked_indicies[chosen]
-        puts "\t#{{sequence_path: sequence_path, seed: seed, unpicked_indicies: unpicked_indicies, chosen: chosen, chosen_index: chosen_index, iteration_index: iteration_index, i: i}}"
+        puts "#{print_padding}\t#{{sequence_path: sequence_path, seed: seed, unpicked_indicies: unpicked_indicies, chosen: chosen, chosen_index: chosen_index, iteration_index: iteration_index, i: i}}"
         # debugger if sequence_path == "f_shuffle.0"
         unpicked_indicies.delete(chosen)
 
         if i == iteration_index
           return chosen_index
         end
-        puts "\t🐧"
+        puts "#{print_padding}\t🐧"
       end
 
       test_sequence = 4.times.map{randomizer.rand(number_of_elements)}
@@ -413,9 +421,9 @@ module RubyRedInk
     def run_divert?(divert)
       run_divert = true
       if divert.is_conditional?
-        # puts "DIVERT CHECK:"
+        puts "#{print_padding}DIVERT CHECK:"
         boolean_value = evaluation_stack.pop
-        # puts "DIVERT CHECK: #{boolean_value}"
+        puts "#{print_padding}DIVERT CHECK: #{boolean_value}"
         run_divert = false if boolean_value == 0
       end
 
@@ -428,11 +436,17 @@ module RubyRedInk
 
     attr_accessor :stack, :string_evaluation_mode_stack, :mode
 
-    def initialize
-      puts "===NEW EVAL STACK==="
+    def initialize(debug_padding = 0)
+      @debug_padding = debug_padding + 1
+      puts "#{print_padding}===NEW EVAL STACK==="
       self.stack = []
       self.string_evaluation_mode_stack = []
       self.mode = :evaluation_mode
+    end
+
+    def print_padding
+      return "" if @debug_padding <= 0
+      "#{'  ' * @debug_padding}==>"
     end
 
     def begin_string_evaluation_mode!
@@ -452,34 +466,34 @@ module RubyRedInk
     def push(value)
       # debugger if value.is_a?(StandardDivert)
       if string_evaluation_mode?
-        puts "PUSH STR BEFORE -> #{value}: #{self.string_evaluation_mode_stack.inspect}"
+        puts "#{print_padding}PUSH STR BEFORE -> #{value}: #{self.string_evaluation_mode_stack.inspect}"
         self.string_evaluation_mode_stack.unshift(value)
-        puts "PUSH STR AFTER: #{self.string_evaluation_mode_stack.inspect}"
+        puts "#{print_padding}PUSH STR AFTER: #{self.string_evaluation_mode_stack.inspect}"
       else
-        puts "PUSH BEFORE -> #{value}: #{self.stack.inspect}"
+        puts "#{print_padding}PUSH BEFORE -> #{value}: #{self.stack.inspect}"
         self.stack.unshift(value)
-        puts "PUSH AFTER: #{self.stack.inspect}"
+        puts "#{print_padding}PUSH AFTER: #{self.stack.inspect}"
       end
     end
 
     def pop
       if string_evaluation_mode?
-        puts "POP STR BEFORE: #{self.string_evaluation_mode_stack.inspect}"
+        puts "#{print_padding}POP STR BEFORE: #{self.string_evaluation_mode_stack.inspect}"
         x = self.string_evaluation_mode_stack.shift
-        puts "POP STR AFTER: #{self.string_evaluation_mode_stack.inspect}"
+        puts "#{print_padding}POP STR AFTER: #{self.string_evaluation_mode_stack.inspect}"
         x
       else
-        puts "POP BEFORE: #{self.stack.inspect}"
+        puts "#{print_padding}POP BEFORE: #{self.stack.inspect}"
         x = self.stack.shift
-        puts "POP AFTER: #{self.stack.inspect}"
+        puts "#{print_padding}POP AFTER: #{self.stack.inspect}"
         x
       end
     end
 
     def duplicate_topmost
-      puts "DUP BEFORE: #{self.stack.inspect}"
+      puts "#{print_padding}DUP BEFORE: #{self.stack.inspect}"
       x = push(topmost.dup)
-      puts "DUP AFTER: #{self.stack.inspect}"
+      puts "#{print_padding}DUP AFTER: #{self.stack.inspect}"
       x
     end
 
