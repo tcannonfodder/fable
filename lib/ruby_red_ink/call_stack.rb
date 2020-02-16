@@ -324,6 +324,18 @@ module RubyRedInk
         path: path
       }
     end
+
+    def run_divert?(divert)
+      run_divert = true
+      if divert.is_conditional?
+        # puts "DIVERT CHECK:"
+        boolean_value = evaluation_stack.pop
+        # puts "DIVERT CHECK: #{boolean_value}"
+        run_divert = false if boolean_value == 0
+      end
+
+      run_divert
+    end
   end
 
   class EvaluationStack
