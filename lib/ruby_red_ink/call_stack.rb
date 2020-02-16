@@ -107,7 +107,7 @@ module RubyRedInk
             when :END_STRING_EVALUATION_MODE
               evaluation_stack.end_string_evaluation_mode!
             when :NOOP
-              next
+              1 #do nothing
             when :PUSH_CHOICE_COUNT
               raise NotImplementedError, "not tracking choice counts yet"
             when :PUSH_CHOICE_COUNT
