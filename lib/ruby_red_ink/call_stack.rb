@@ -115,7 +115,7 @@ module RubyRedInk
             when :VISIT
               evaluation_stack.push(visits_for_current_container)
             when :SEQ
-              raise NotImplementedError, "sequence count not implemented yet"
+              evaluation_stack.push(next_sequence_shuffle_index)
             when :CLONE_THREAD
               raise NotImplementedError, "Thread Cloning not done yet"
             when :DONE
