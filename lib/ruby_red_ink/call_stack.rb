@@ -365,7 +365,11 @@ module RubyRedInk
       embedded_engine = Engine.new(state, engine.story, emedded_call_stack)
       embedded_engine.step
 
-      evaluation_stack.push(embedded_engine.current_text)
+      if embedded_engine.current_text.empty? && !emedded_call_stack.evaluation_stack.stack.empty?
+        evaluation_stack.push(emedded_call_stack.evaluation_stack.pop)
+      else
+        evaluation_stack.push(embedded_engine.current_text)
+      end
     end
 
     def next_sequence_shuffle_index
