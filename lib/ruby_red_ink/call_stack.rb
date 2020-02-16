@@ -270,7 +270,6 @@ module RubyRedInk
                       evaluation_stack.push(target_element)
                     end
                   else
-                    debugger
                     new_container_stack = engine.closest_container_for(container_stack.container, next_item.target).stack
                     new_stack_index = next_item.target.split(".").last.to_i
                     switch_to_container_stack(new_container_stack, new_stack_index)
