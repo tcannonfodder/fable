@@ -254,12 +254,28 @@ module RubyRedInk
                 puts "#{print_padding}RUNNING EVAL DIVERT: #{next_item.target}"
                 target_element = engine.navigate_from(container_stack.container, next_item.target)
                 if target_element.is_a?(Container)
-                  puts "RUNNING CONTAINER"
-                  run_embedded_engine(next_item.target)
+                  if next_item.pushes_to_stack?
+                    puts "#{print_padding}RUNNING CONTAINER, PUSHING RESULT TO STACK"
+                    run_embedded_engine(next_item.target)
+                  else
+                    puts "NEW SWITCH EVERYBODY"
+                    switch_to_container_stack(target_element.stack, next_item.target.split(".").last.to_i)
+                    break
+                  end
                 else
-                  puts "ELEMENT: #{target_element}"
-                  if target_element != :NOOP
-                    evaluation_stack.push(target_element)
+                  # debugger
+                  if next_item.pushes_to_stack?
+                    puts "#{print_padding}ELEMENT: #{target_element}"
+                    if target_element != :NOOP
+                      evaluation_stack.push(target_element)
+                    end
+                  else
+                    debugger
+                    new_container_stack = engine.closest_container_for(container_stack.container, next_item.target).stack
+                    new_stack_index = next_item.target.split(".").last.to_i
+                    switch_to_container_stack(new_container_stack, new_stack_index)
+                    return noop(new_container_stack, new_stack_index)
+                    break
                   end
                 end
               end
@@ -428,6 +444,13 @@ module RubyRedInk
       end
 
       run_divert
+    end
+
+    def switch_to_container_stack(new_container_stack, new_stack_index)
+      puts "#{print_padding}SWITCHING TO NEW STACK INLINE"
+      puts "#{print_padding}#{{stack: new_container_stack.container.path_string, index: new_stack_index}}"
+      @container_stack = new_container_stack
+      @current_stack_index = new_stack_index
     end
   end
 
