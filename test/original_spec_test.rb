@@ -20,7 +20,7 @@ class OriginalSpecTest < Minitest::Test
     8
     STORY
 
-    assert_equal result, story.engine.current_text
+    assert_equal result, story.engine.current_text + "\n"
   end
 
   def test_basic_string_literals
@@ -34,7 +34,7 @@ class OriginalSpecTest < Minitest::Test
     Hello world 2.
     STORY
 
-    assert_equal result, story.engine.current_text
+    assert_equal result, story.engine.current_text + "\n"
   end
 
   def test_basic_tunnel
@@ -42,7 +42,7 @@ class OriginalSpecTest < Minitest::Test
     story = RubyRedInk::Story.new(json)
 
     assert_nil story.engine.step
-    assert_equal "Hello world\n", story.engine.current_text
+    assert_equal "Hello world\n", story.engine.current_text + "\n"
   end
 
   def test_blanks_in_inline_sequences
@@ -67,10 +67,10 @@ class OriginalSpecTest < Minitest::Test
     ---
     1. 
     2. 
-    3. 
+    3.
     STORY
 
-    assert_equal result, story.engine.current_text
+    assert_equal result, story.engine.current_text + "\n"
   end
 
   def test_all_sequence_types
@@ -89,6 +89,6 @@ class OriginalSpecTest < Minitest::Test
     Shuffle once: two one
     STORY
 
-    assert_equal result, story.engine.current_text
+    assert_equal result, story.engine.current_text + "\n"
   end
 end
