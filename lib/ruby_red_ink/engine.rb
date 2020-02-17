@@ -36,6 +36,15 @@ module RubyRedInk
         call_stacks << new_callstack
         self.current_call_stack = new_callstack
         return step
+      when :clone_thread
+        new_callstack = CallStack.new(value_from_stack, state, self, current_call_stack.debug_padding + 1)
+        new_callstack.current_stack_index = current_call_stack.current_stack_index
+        # Increment this call stack's current_stack_index so that it will resume *after*
+        # the thread point upon return
+        current_call_stack.current_stack_index += 1
+        call_stacks << new_callstack
+        self.current_call_stack = new_callstack
+        return step
       when :tunnel, :function, :standard_divert
         tunnel_divert = value_from_stack
         target_container = named_container_pool[tunnel_divert.target]

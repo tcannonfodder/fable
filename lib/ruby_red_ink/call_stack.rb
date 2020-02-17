@@ -88,6 +88,8 @@ module RubyRedInk
           return tunnel_or_function_pop(current_stack_element, current_stack_path)
         when :STORY_END
           return story_end(current_stack_element, current_stack_path)
+        when :CLONE_THREAD
+          return clone_thread(current_stack_path)
         end
 
         if current_stack_element == :BEGIN_LOGICAL_EVALUATION_MODE
@@ -313,6 +315,14 @@ module RubyRedInk
       {
         action: :new_callstack,
         element: stack,
+        path: path
+      }
+    end
+
+    def clone_thread(path)
+      {
+        action: :clone_thread,
+        element: self.container_stack,
         path: path
       }
     end
