@@ -103,6 +103,9 @@ module RubyRedInk
 
           while !reached_end
             next_item = container_stack.elements[self.current_stack_index]
+            if next_item.nil?
+              return noop(next_item, container_stack.path_string_for(next_item))
+            end
             puts ("#{print_padding}#{{eval_mode: "🐧", path: container_stack.path_string_for(next_item), element: next_item}}")
             puts "#{print_padding}EVAL MODE COMMAND: #{next_item}"
             case next_item
