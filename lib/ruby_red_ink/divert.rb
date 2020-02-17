@@ -83,6 +83,10 @@ module RubyRedInk
     def pushes_to_stack?
       true
     end
+
+    def is_conditional?
+      original_object["c"] == true
+    end
   end
 
   class ExternalFunctionDivert < Divert
