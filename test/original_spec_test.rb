@@ -143,4 +143,22 @@ class OriginalSpecTest < Minitest::Test
     assert_nil story.engine.step
     assert_equal "Text", story.engine.current_text
   end
+
+  def test_call_complex_tunnels
+    json = load_json_export("test/fixtures/original-specs/complex-tunnels.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_nil story.engine.step
+
+    puts story.engine.current_text
+
+    result = <<~STORY
+    one ()
+    one and a half ()
+    two ()
+    three (3)
+    STORY
+
+    assert_equal result, story.engine.current_text + "\n"
+  end
 end
