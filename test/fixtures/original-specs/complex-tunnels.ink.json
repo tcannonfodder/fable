@@ -1,1 +1,103 @@
-﻿{"inkVersion":19,"root":[["ev",1,"/ev",{"->t->":"one"},"ev",2,"/ev",{"->t->":"two"},"^three (3)","\n",["done",{"#f":5,"#n":"g-0"}],null],"done",{"one":[{"temp=":"num"},"^one (","ev",{"VAR?":"num"},"out","/ev","^)","\n","ev",1.5,"/ev",{"->t->":"oneAndAHalf"},"ev","void","/ev","->->",{"#f":1}],"oneAndAHalf":[{"temp=":"num"},"^one and a half (","ev",{"VAR?":"num"},"out","/ev","^)","\n","ev","void","/ev","->->",{"#f":1}],"two":[{"temp=":"num"},"^two (","ev",{"VAR?":"num"},"out","/ev","^)","\n","ev","void","/ev","->->",{"#f":1}],"#f":1}],"listDefs":{}}
+﻿{
+  "inkVersion": 19,
+  "root": [
+    [
+      "ev",
+      1,
+      "/ev",
+      {
+        "->t->": "one"
+      },
+      "ev",
+      2,
+      "/ev",
+      {
+        "->t->": "two"
+      },
+      "^three (3)",
+      "\n",
+      [
+        "done",
+        {
+          "#f": 5,
+          "#n": "g-0"
+        }
+      ],
+      null
+    ],
+    "done",
+    {
+      "one": [
+        {
+          "temp=": "num"
+        },
+        "^one (",
+        "ev",
+        {
+          "VAR?": "num"
+        },
+        "out",
+        "/ev",
+        "^)",
+        "\n",
+        "ev",
+        1.5,
+        "/ev",
+        {
+          "->t->": "oneAndAHalf"
+        },
+        "ev",
+        "void",
+        "/ev",
+        "->->",
+        {
+          "#f": 1
+        }
+      ],
+      "oneAndAHalf": [
+        {
+          "temp=": "num"
+        },
+        "^one and a half (",
+        "ev",
+        {
+          "VAR?": "num"
+        },
+        "out",
+        "/ev",
+        "^)",
+        "\n",
+        "ev",
+        "void",
+        "/ev",
+        "->->",
+        {
+          "#f": 1
+        }
+      ],
+      "two": [
+        {
+          "temp=": "num"
+        },
+        "^two (",
+        "ev",
+        {
+          "VAR?": "num"
+        },
+        "out",
+        "/ev",
+        "^)",
+        "\n",
+        "ev",
+        "void",
+        "/ev",
+        "->->",
+        {
+          "#f": 1
+        }
+      ],
+      "#f": 1
+    }
+  ],
+  "listDefs": {}
+}
