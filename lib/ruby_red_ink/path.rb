@@ -63,7 +63,7 @@ module RubyRedInk
         current_pointer = current_container
         current_container = current_pointer.parent
       else
-        current_pointer = current_pointer.all_containers[label]
+        current_pointer = current_pointer.all_elements[label]
       end
 
       travel(rest_of_tree, root, current_container, current_pointer)
@@ -96,7 +96,7 @@ module RubyRedInk
         current_pointer = current_container
         current_container = current_pointer.parent
       else
-        current_pointer = current_pointer.all_containers[label]
+        current_pointer = current_pointer.all_elements[label]
       end
 
       closest_container_travel(rest_of_tree, root, current_container, current_pointer)
