@@ -127,7 +127,7 @@ module RubyRedInk
             when :NOOP
               1 #do nothing
             when :PUSH_CHOICE_COUNT
-              raise NotImplementedError, "not tracking choice counts yet"
+              evaluation_stack.push(state.current_choices.count)
             when :PUSH_CHOICE_COUNT
               raise NotImplementedError, "turns not implemented yet"
             when :VISIT
