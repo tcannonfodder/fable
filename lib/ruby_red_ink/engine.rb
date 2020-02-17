@@ -103,6 +103,21 @@ module RubyRedInk
       state.current_choices
     end
 
+    def pick_choice(choice_index)
+      picked = current_choices[choice_index]
+      raise ArgumentError, "not a valid choice!" if picked.nil?
+      rebuild_thread!(picked.thread_at_generation)
+      current_choices = []
+      picked
+    end
+
+    def rebuild_thread!(thread_attributes)
+      new_callstack = CallStack.new(thread_attributes[:container_stack], state, self, 0)
+      new_callstack.rebuild_from_attributes(thread_attributes)
+      call_stacks << new_callstack
+      self.current_call_stack = new_callstack
+    end
+
     def process_global_declaration
       return nil if !story.global_declaration
       global_declaration = story.global_declaration
