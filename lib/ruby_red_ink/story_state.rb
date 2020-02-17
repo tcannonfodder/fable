@@ -30,6 +30,10 @@ module RubyRedInk
       state["temporary_variables"] ||= {}
     end
 
+    def current_choices
+      state["current_choices"] ||= []
+    end
+
     def visits
       state["visits"] ||= {}
     end
