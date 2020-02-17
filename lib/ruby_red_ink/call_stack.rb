@@ -44,6 +44,11 @@ module RubyRedInk
           element: current_stack_element,
           path: current_stack_path
         }
+      when GlobalVariableTarget
+        state.globals[current_stack_element.name] = evaluation_stack.pop
+      when TemporaryVariableTarget
+        state.temporary_variables[current_stack_element.name] = evaluation_stack.pop
+        return noop(current_stack_element, current_stack_path)
       when FunctionCallDivert
         return function_push(current_stack_element, current_stack_path)
       when StandardDivert
@@ -241,6 +246,8 @@ module RubyRedInk
               evaluation_stack.push(result)
             when GlobalVariableTarget
               state.globals[next_item.name] = evaluation_stack.pop
+            when TemporaryVariableTarget
+              state.temporary_variables[next_item.name] = evaluation_stack.pop
             when VariableReference
               evaluation_stack.push(state.get_variable_value(next_item.name))
             when FunctionCallDivert
