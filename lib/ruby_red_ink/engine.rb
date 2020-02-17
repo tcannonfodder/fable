@@ -108,6 +108,16 @@ module RubyRedInk
       raise ArgumentError, "not a valid choice!" if picked.nil?
       rebuild_thread!(picked.thread_at_generation)
       current_choices = []
+
+      target_container = named_container_pool[picked.path_when_chosen]
+      if target_container.nil?
+        target_container = Path.navigate(story.root, current_call_stack.container_stack.container, picked.path_when_chosen)
+      end
+      puts "-----"
+      new_callstack = CallStack.new(target_container.stack, state, self, current_call_stack.debug_padding + 1)
+      call_stacks << new_callstack
+      self.current_call_stack = new_callstack
+
       picked
     end
 
