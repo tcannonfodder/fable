@@ -153,9 +153,9 @@ class OriginalSpecTest < Minitest::Test
     puts story.engine.current_text
 
     result = <<~STORY
-    one ()
-    one and a half ()
-    two ()
+    one (1)
+    one and a half (1.5)
+    two (2)
     three (3)
     STORY
 
