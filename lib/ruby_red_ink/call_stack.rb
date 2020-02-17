@@ -351,8 +351,15 @@ module RubyRedInk
             puts "#{print_padding}RUNNING CONTAINER, PUSHING RESULT TO STACK"
             run_embedded_engine(divert.target)
           else
-            puts "NEW SWITCH EVERYBODY"
-            switch_to_container_stack(target_element.stack, divert.target.split(".").last.to_i)
+            if new_container_stack_empty?(target_element.stack)
+              puts "#{print_padding}EMPTY STACK, ACTING AS A POINTER"
+              new_container_stack = target_element.parent.stack
+              new_stack_index = target_element.parent.elements_array.index(target_element)
+              switch_to_container_stack(new_container_stack, new_stack_index + 1)
+            else
+              puts "#{print_padding}NEW SWITCH EVERYBODY"
+              switch_to_container_stack(target_element.stack, divert.target.split(".").last.to_i)
+            end
           end
         else
           # debugger
@@ -363,9 +370,15 @@ module RubyRedInk
             end
           else
             new_container_stack = engine.closest_container_for(container_stack.container, divert.target).stack
-            new_stack_index = divert.target.split(".").last.to_i
-            switch_to_container_stack(new_container_stack, new_stack_index)
-            return noop(new_container_stack, new_stack_index)
+            if new_container_stack_empty?(new_container_stack)
+              puts "#{print_padding}EMPTY STACK, ACTING AS A POINTER"
+              new_stack_index = target_element.parent.elements_array.index(target_element)
+              switch_to_container_stack(new_container_stack, new_stack_index + 1)
+            else
+              new_stack_index = divert.target.split(".").last.to_i
+              switch_to_container_stack(new_container_stack, new_stack_index)
+              return noop(new_container_stack, new_stack_index)
+            end
           end
         end
       end
