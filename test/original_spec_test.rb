@@ -111,4 +111,21 @@ class OriginalSpecTest < Minitest::Test
 
     assert_equal "2\n", story.engine.current_text + "\n"
   end
+
+  def test_choice_diverts_to_done
+    json = load_json_export("test/fixtures/original-specs/choice-diverts-to-done.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_nil story.engine.step
+    assert_equal "", story.engine.current_text
+
+    assert_equal 1, story.engine.current_choices.size
+
+    picked = story.engine.pick_choice(0)
+
+    assert_equal "choice ", "#{picked.start_content}#{picked.choice_only_content}"
+
+    assert_nil story.engine.step
+    assert_equal "", story.engine.current_text
+  end
 end
