@@ -15,6 +15,20 @@ module RubyRedInk
       end
     end
 
+    def clone_attributes
+      {
+        container_stack: container_stack,
+        current_stack_index: current_stack_index,
+        evaluation_stack_attributes: evaluation_stack.clone_attributes
+      }
+    end
+
+    def rebuild_from_attributes(attributes)
+      self.container_stack = attributes[:container_stack]
+      self.current_stack_index = attributes[:current_stack_index]
+      self.evaluation_stack.rebuild_from_attributes(attributes[:evaluation_stack_attributes])
+    end
+
     def visits_for_current_container
       state.visits[container_stack.container.path_string]
     end
@@ -528,6 +542,20 @@ module RubyRedInk
       self.stack = []
       self.string_evaluation_mode_stack = []
       self.mode = :evaluation_mode
+    end
+
+    def clone_attributes
+      {
+        stack: stack,
+        string_evaluation_mode_stack: string_evaluation_mode_stack,
+        mode: mode
+      }
+    end
+
+    def rebuild_from_attributes(attributes)
+      self.stack = attributes[:stack]
+      self.string_evaluation_mode_stack = attributes[:string_evaluation_mode_stack]
+      self.mode = attributes[:mode]
     end
 
     def print_padding
