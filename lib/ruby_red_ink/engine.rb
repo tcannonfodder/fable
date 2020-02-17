@@ -53,6 +53,7 @@ module RubyRedInk
         end
         puts "-----"
         new_callstack = CallStack.new(target_container.stack, state, self, current_call_stack.debug_padding + 1)
+        new_callstack.evaluation_stack.rebuild_from_attributes(current_call_stack.evaluation_stack.clone_attributes)
         call_stacks << new_callstack
         self.current_call_stack = new_callstack
         return step
