@@ -8,6 +8,7 @@ module RubyRedInk
     def self.parse(value)
       return parse_divert(value) if is_divert?(value)
       return parse_variable_target(value) if is_variable_target?(value)
+      return parse_choice_point(value) if is_choice_point?(value)
       return VOID if is_void?(value)
       return parse_string(value) if is_string?(value)
       return value if value.is_a?(Numeric)
@@ -43,6 +44,14 @@ module RubyRedInk
 
     def self.is_void?(value)
       value == "void"
+    end
+
+    def self.is_choice_point?(value)
+      value.is_a?(Hash) && value.has_key?("*")
+    end
+
+    def self.parse_choice_point(value)
+      ChoicePoint::Choice.new(value)
     end
   end
 end
