@@ -38,6 +38,8 @@ module RubyRedInk
 
       # Process diverts first
       case current_stack_element
+      when ChoicePoint::Choice
+        return new_choice_point(current_stack_element, current_stack_path)
       when TunnelDivert
         return {
           action: :tunnel,
@@ -352,6 +354,14 @@ module RubyRedInk
     def story_end(stack_element, path)
       {
         action: :story_end,
+        element: stack_element,
+        path: path
+      }
+    end
+
+    def new_choice_point(stack_element, path)
+      {
+        action: :new_choice_point,
         element: stack_element,
         path: path
       }

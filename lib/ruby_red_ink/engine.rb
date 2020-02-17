@@ -70,6 +70,9 @@ module RubyRedInk
       when :output
         output_stream << value_from_stack
         return step
+      when :new_choice_point
+        current_choices << value_from_stack
+        return step
       when :story_end
         return nil
       end
@@ -94,6 +97,10 @@ module RubyRedInk
 
     def current_pointer
       state.current_pointer
+    end
+
+    def current_choices
+      state.current_choices
     end
 
     def process_global_declaration
