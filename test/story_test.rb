@@ -48,4 +48,19 @@ class StoryTest < Minitest::Test
     assert_equal :DONE, engine.navigate_down_tree(nil, parse_path("1"))
     assert_equal :DONE, engine.navigate_down_tree(nil, parse_path("0.g-0.0"))
   end
+
+  def test_custom_divert_target
+    json = load_json_export("test/fixtures/divert-targets.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_nil story.engine.step
+
+    result = <<~STORY
+    Another day
+    You sleep perchance to dream etc. etc.
+    You didn't sleep
+    STORY
+
+    assert_equal result, story.engine.current_text + "\n"
+  end
 end
