@@ -59,6 +59,18 @@ module RubyRedInk
     def name
       original_object["^->"]
     end
+
+    def target
+      name
+    end
+
+    def is_conditional?
+      original_object["c"] == true
+    end
+
+    def pushes_to_stack?
+      false
+    end
   end
 
   class VariableReference < VariableTarget
