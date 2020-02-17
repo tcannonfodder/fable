@@ -469,6 +469,10 @@ module RubyRedInk
       @container_stack = new_container_stack
       @current_stack_index = new_stack_index
     end
+
+    def new_container_stack_empty?(new_container_stack)
+      new_container_stack.elements.empty?
+    end
   end
 
   class EvaluationStack
