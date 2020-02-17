@@ -53,6 +53,16 @@ module RubyRedInk
       # Process diverts first
       case current_stack_element
       when ChoicePoint::Choice
+        if current_stack_element.has_choice_only_content?
+          current_stack_element.choice_only_content = evaluation_stack.pop
+        end
+
+        if current_stack_element.has_start_content?
+          current_stack_element.start_content = evaluation_stack.pop
+        end
+
+        current_stack_element.thread_at_generation = clone_attributes
+
         return new_choice_point(current_stack_element, current_stack_path)
       when TunnelDivert
         return {
