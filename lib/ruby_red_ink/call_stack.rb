@@ -47,19 +47,14 @@ module RubyRedInk
       when FunctionCallDivert
         return function_push(current_stack_element, current_stack_path)
       when StandardDivert
-        if run_divert?(current_stack_element)
-          puts "#{print_padding}RUNNING DIVERT"
-          target_element = engine.navigate_from(container_stack.container, current_stack_element.target)
-
-          if target_element.is_a?(Container)
-            return new_callstack(target_element.stack, current_stack_element.target)
-          else
-            current_stack_path = current_stack_element.target
-            current_stack_element = target_element
-          end
-        else
-          return noop(current_stack_element, current_stack_path)
-        end
+        puts "#{print_padding}RUNNING DIVERT Outside Loop"
+        process_standard_divert(current_stack_element)
+        return noop(current_stack_element, current_stack_path)
+      when VariableTargetDivert
+        puts "#{print_padding}RUNNING VARIABLE TARGET DIVERT"
+        target_divert = state.get_variable_value(current_stack_element.target)
+        process_standard_divert(target_divert)
+        return noop(current_stack_element, current_stack_path)
       end
 
       if current_stack_element.is_a?(Container)
@@ -251,35 +246,7 @@ module RubyRedInk
             when FunctionCallDivert
               run_embedded_engine(next_item.target)
             when StandardDivert
-              puts "#{print_padding}CHECKING DIVERT: #{next_item.target}"
-              if run_divert?(next_item)
-                puts "#{print_padding}RUNNING EVAL DIVERT: #{next_item.target}"
-                target_element = engine.navigate_from(container_stack.container, next_item.target)
-                if target_element.is_a?(Container)
-                  if next_item.pushes_to_stack?
-                    puts "#{print_padding}RUNNING CONTAINER, PUSHING RESULT TO STACK"
-                    run_embedded_engine(next_item.target)
-                  else
-                    puts "NEW SWITCH EVERYBODY"
-                    switch_to_container_stack(target_element.stack, next_item.target.split(".").last.to_i)
-                    break
-                  end
-                else
-                  # debugger
-                  if next_item.pushes_to_stack?
-                    puts "#{print_padding}ELEMENT: #{target_element}"
-                    if target_element != :NOOP
-                      evaluation_stack.push(target_element)
-                    end
-                  else
-                    new_container_stack = engine.closest_container_for(container_stack.container, next_item.target).stack
-                    new_stack_index = next_item.target.split(".").last.to_i
-                    switch_to_container_stack(new_container_stack, new_stack_index)
-                    return noop(new_container_stack, new_stack_index)
-                    break
-                  end
-                end
-              end
+              process_standard_divert(next_item)
             else
               evaluation_stack.push(next_item)
             end
@@ -365,6 +332,36 @@ module RubyRedInk
         element: stack_element,
         path: path
       }
+    end
+
+    def process_standard_divert(divert)
+      puts "#{print_padding}CHECKING DIVERT: #{divert.target}"
+      if run_divert?(divert)
+        puts "#{print_padding}RUNNING EVAL DIVERT: #{divert.target}"
+        target_element = engine.navigate_from(container_stack.container, divert.target)
+        if target_element.is_a?(Container)
+          if divert.pushes_to_stack?
+            puts "#{print_padding}RUNNING CONTAINER, PUSHING RESULT TO STACK"
+            run_embedded_engine(divert.target)
+          else
+            puts "NEW SWITCH EVERYBODY"
+            switch_to_container_stack(target_element.stack, divert.target.split(".").last.to_i)
+          end
+        else
+          # debugger
+          if divert.pushes_to_stack?
+            puts "#{print_padding}ELEMENT: #{target_element}"
+            if target_element != :NOOP
+              evaluation_stack.push(target_element)
+            end
+          else
+            new_container_stack = engine.closest_container_for(container_stack.container, divert.target).stack
+            new_stack_index = divert.target.split(".").last.to_i
+            switch_to_container_stack(new_container_stack, new_stack_index)
+            return noop(new_container_stack, new_stack_index)
+          end
+        end
+      end
     end
 
     def run_embedded_engine(target)
