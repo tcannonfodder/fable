@@ -135,7 +135,7 @@ module RubyRedInk
             when :SEQ
               evaluation_stack.push(next_sequence_shuffle_index)
             when :CLONE_THREAD
-              raise NotImplementedError, "Thread Cloning not done yet"
+              raise NotImplementedError, "EV MODE Thread Cloning not done yet"
             when :DONE
               raise NotImplementedError, "EV MODE DONE not imeplemented yet"
             when :STORY_END
