@@ -104,11 +104,15 @@ module RubyRedInk
       state.current_choices
     end
 
+    def current_choices=(value)
+      state.current_choices = value
+    end
+
     def pick_choice(choice_index)
       picked = current_choices[choice_index]
       raise ArgumentError, "not a valid choice!" if picked.nil?
       rebuild_thread!(picked.thread_at_generation)
-      current_choices = []
+      self.current_choices = []
       self.output_stream = StringIO.new
 
       target_container = named_container_pool[picked.path_when_chosen]

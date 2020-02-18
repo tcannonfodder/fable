@@ -34,6 +34,10 @@ module RubyRedInk
       state["current_choices"] ||= []
     end
 
+    def current_choices=(value)
+      state["current_choices"] = value
+    end
+
     def visits
       state["visits"] ||= {}
     end
