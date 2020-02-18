@@ -61,9 +61,12 @@ module RubyRedInk
           current_stack_element.start_content = evaluation_stack.pop
         end
 
-        current_stack_element.thread_at_generation = clone_attributes
-
-        return new_choice_point(current_stack_element, current_stack_path)
+        if add_choice?(current_stack_element)
+          current_stack_element.thread_at_generation = clone_attributes
+          return new_choice_point(current_stack_element, current_stack_path)
+        else
+          return noop(current_stack_element, current_stack_path)
+        end
       when TunnelDivert
         return {
           action: :tunnel,
@@ -539,6 +542,17 @@ module RubyRedInk
       end
 
       run_divert
+    end
+
+    def add_choice?(choice)
+      run_choice = true
+
+      if choice.has_condition?
+        puts "#{print_padding}CHOICE CHECK:"
+        boolean_value = evaluation_stack.pop
+        puts "#{print_padding}CHOICE CHECK: #{boolean_value}"
+        run_choice = false if boolean_value == 0
+      end
     end
 
     def switch_to_container_stack(new_container_stack, new_stack_index)
