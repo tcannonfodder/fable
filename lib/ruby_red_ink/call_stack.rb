@@ -110,7 +110,9 @@ module RubyRedInk
           return noop(current_stack_element, current_stack_path)
         when :GLUE
           return glue(current_stack_element, current_stack_path)
-        when :DONE, :TUNNEL_POP, :FUNCTION_POP
+        when :DONE
+          return thread_done(current_stack_element, current_stack_path)
+        when :TUNNEL_POP, :FUNCTION_POP
           return tunnel_or_function_pop(current_stack_element, current_stack_path)
         when :STORY_END
           return story_end(current_stack_element, current_stack_path)
@@ -383,6 +385,14 @@ module RubyRedInk
     def story_end(stack_element, path)
       {
         action: :story_end,
+        element: stack_element,
+        path: path
+      }
+    end
+
+    def thread_done(stack_element, path)
+      {
+        action: :thread_done,
         element: stack_element,
         path: path
       }

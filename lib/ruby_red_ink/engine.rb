@@ -74,7 +74,7 @@ module RubyRedInk
       when :new_choice_point
         current_choices << value_from_stack
         return step
-      when :story_end
+      when :story_end, :done
         return nil
       end
     end
