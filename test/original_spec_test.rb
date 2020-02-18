@@ -183,5 +183,34 @@ class OriginalSpecTest < Minitest::Test
 
     assert_nil story.engine.step
     assert_equal "result", story.engine.current_text
+    assert_equal 0, story.engine.current_choices.size
+  end
+
+  def test_conditional_choice_in_weave_2
+    json = load_json_export("test/fixtures/original-specs/conditional-choice-in-weave-2.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_nil story.engine.step
+
+    puts story.engine.current_text
+
+    result = <<~STORY
+    first gather
+    STORY
+
+    assert_equal result, story.engine.current_text + "\n"
+
+    assert_equal 2, story.engine.current_choices.size
+
+    picked = story.engine.pick_choice(0)
+
+    result = <<~STORY
+    the main gather
+    bottom gather
+    STORY
+
+    assert_nil story.engine.step
+    assert_equal result, story.engine.current_text + "\n"
+    assert_equal 0, story.engine.current_choices.size
   end
 end
