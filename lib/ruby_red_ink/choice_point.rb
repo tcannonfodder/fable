@@ -19,7 +19,7 @@ module RubyRedInk
 
       def process_bit_flags
         flag = original_object["flg"]
-        self.has_start_content = (flag & 0x1) > 0
+        self.has_condition = (flag & 0x1) > 0
         self.has_start_content = (flag & 0x2) > 0
         self.has_choice_only_content = (flag & 0x4) > 0
         self.is_invisible_default = (flag & 0x8) > 0
