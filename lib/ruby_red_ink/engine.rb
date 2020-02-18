@@ -109,6 +109,7 @@ module RubyRedInk
       raise ArgumentError, "not a valid choice!" if picked.nil?
       rebuild_thread!(picked.thread_at_generation)
       current_choices = []
+      self.output_stream = StringIO.new
 
       target_container = named_container_pool[picked.path_when_chosen]
       if target_container.nil?
