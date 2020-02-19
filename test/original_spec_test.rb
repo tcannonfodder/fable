@@ -236,4 +236,34 @@ class OriginalSpecTest < Minitest::Test
     assert_equal "four", story.engine.current_choices[3].start_content
     assert_equal "four", story.engine.current_choices[3].start_content
   end
+
+  def test_conditionals
+    json = load_json_export("test/fixtures/original-specs/test-conditionals.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    true
+    true
+    true
+    true
+    true
+    great
+    right?
+    STORY
+
+    assert_nil story.engine.step
+    assert_equal result, story.engine.current_text + "\n"
+
+    assert_equal 0, story.engine.current_choices.size
+  end
+
+  def test_const
+    json = load_json_export("test/fixtures/original-specs/test-const.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_nil story.engine.step
+    assert_equal "5", story.engine.current_text
+
+    assert_equal 0, story.engine.current_choices.size
+  end
 end
