@@ -121,6 +121,9 @@ module RubyRedInk
           return story_end(current_stack_element, current_stack_path)
         when :CLONE_THREAD
           return clone_thread(current_stack_path)
+        when :DUPLICATE_TOPMOST
+          evaluation_stack.duplicate_topmost
+          return noop(current_stack_element, current_stack_path)
         end
 
         if current_stack_element == :BEGIN_LOGICAL_EVALUATION_MODE
