@@ -63,6 +63,7 @@ module RubyRedInk
           end
 
           current_stack_element.thread_at_generation = clone_attributes
+          puts "#{print_padding}ADDING CHOICE #{current_stack_path}, #{current_stack_element.path_when_chosen}"
           return new_choice_point(current_stack_element, current_stack_path)
         else
           return tunnel_or_function_pop(current_stack_element, current_stack_path)
