@@ -256,14 +256,13 @@ module RubyRedInk
               value_1 = evaluation_stack.pop
               value_2 = evaluation_stack.pop
 
-              result = (value_2 && value_1) ? 1 : 0
-
+              result = ((value_2 > 0) && (value_1 > 0)) ? 1 : 0
               evaluation_stack.push(result)
             when :OR
               value_1 = evaluation_stack.pop
               value_2 = evaluation_stack.pop
 
-              result = (value_2 || value_2) ? 1 : 0
+              result = ((value_2 > 0) || (value_2 > 0)) ? 1 : 0
 
               evaluation_stack.push(result)
             when :MIN
