@@ -34,7 +34,7 @@ module RubyRedInk
       when :new_callstack
         new_callstack = CallStack.new(value_from_stack, state, self, current_call_stack.debug_padding + 1)
         call_stacks << new_callstack
-        # new_callstack.evaluation_stack.rebuild_from_attributes(current_call_stack.evaluation_stack.clone_attributes)
+        new_callstack.evaluation_stack.rebuild_from_attributes(current_call_stack.evaluation_stack.clone_attributes)
         self.current_call_stack = new_callstack
         return step
       when :clone_thread
