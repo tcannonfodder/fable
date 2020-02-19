@@ -17,8 +17,8 @@ module RubyRedInk
 
     def clone_attributes
       {
-        container_stack: container_stack,
-        current_stack_index: current_stack_index,
+        container_stack: container_stack.dup,
+        current_stack_index: current_stack_index.dup,
         evaluation_stack_attributes: evaluation_stack.clone_attributes
       }
     end
@@ -580,9 +580,9 @@ module RubyRedInk
 
     def clone_attributes
       {
-        stack: stack,
-        string_evaluation_mode_stack: string_evaluation_mode_stack,
-        mode: mode
+        stack: stack.dup,
+        string_evaluation_mode_stack: string_evaluation_mode_stack.dup,
+        mode: mode.dup
       }
     end
 
