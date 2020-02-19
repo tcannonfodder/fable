@@ -65,7 +65,7 @@ module RubyRedInk
           current_stack_element.thread_at_generation = clone_attributes
           return new_choice_point(current_stack_element, current_stack_path)
         else
-          return noop(current_stack_element, current_stack_path)
+          return tunnel_or_function_pop(current_stack_element, current_stack_path)
         end
       when TunnelDivert
         return {
