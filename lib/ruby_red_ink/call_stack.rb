@@ -427,7 +427,6 @@ module RubyRedInk
             end
           end
         else
-          # debugger
           if divert.pushes_to_stack?
             puts "#{print_padding}ELEMENT: #{target_element}"
             if target_element != :NOOP
