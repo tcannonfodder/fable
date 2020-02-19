@@ -550,9 +550,11 @@ module RubyRedInk
       if choice.has_condition?
         puts "#{print_padding}CHOICE CHECK:"
         boolean_value = evaluation_stack.pop
-        puts "#{print_padding}CHOICE CHECK: #{boolean_value}"
         run_choice = false if boolean_value == 0
+        puts "#{print_padding}CHOICE CHECK: #{boolean_value} #{run_choice}"
       end
+
+      run_choice
     end
 
     def switch_to_container_stack(new_container_stack, new_stack_index)
