@@ -225,16 +225,16 @@ class OriginalSpecTest < Minitest::Test
     assert_equal 4, story.engine.current_choices.size
 
     assert_equal "one", story.engine.current_choices[0].start_content
-    assert_equal "one", story.engine.current_choices[0].start_content
+    assert_nil story.engine.current_choices[0].choice_only_content
 
     assert_equal "two", story.engine.current_choices[1].start_content
-    assert_equal "two", story.engine.current_choices[1].start_content
+    assert_nil story.engine.current_choices[1].choice_only_content
 
     assert_equal "three", story.engine.current_choices[2].start_content
-    assert_equal "three", story.engine.current_choices[2].start_content
+    assert_nil story.engine.current_choices[2].choice_only_content
 
     assert_equal "four", story.engine.current_choices[3].start_content
-    assert_equal "four", story.engine.current_choices[3].start_content
+    assert_nil story.engine.current_choices[3].choice_only_content
   end
 
   def test_conditionals
@@ -265,5 +265,40 @@ class OriginalSpecTest < Minitest::Test
     assert_equal "5", story.engine.current_text
 
     assert_equal 0, story.engine.current_choices.size
+  end
+
+  def test_default_choice
+    json = load_json_export("test/fixtures/original-specs/test-default-choice.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_nil story.engine.step
+
+    assert  story.engine.current_text.empty?
+
+    assert_equal 2, story.engine.current_choices.size
+
+    assert_nil story.engine.current_choices[0].start_content
+    assert_equal "Choice 1", story.engine.current_choices[0].choice_only_content
+
+    assert_nil story.engine.current_choices[1].start_content
+    assert_equal "Choice 2", story.engine.current_choices[1].choice_only_content
+
+    puts "***************************"
+
+    picked = story.engine.pick_choice(0)
+
+    assert_nil story.engine.step
+
+    assert_equal "After choice", story.engine.current_text
+
+    assert_equal 1, story.engine.current_choices.size
+
+    assert_equal "Choice 2", story.engine.current_choices[0].start_content
+    assert_nil story.engine.current_choices[0].choice_only_content
+
+    picked = story.engine.pick_choice(0)
+
+    assert_nil story.engine.step
+    assert_equal "After choice\nThis is default.", story.engine.current_text
   end
 end
