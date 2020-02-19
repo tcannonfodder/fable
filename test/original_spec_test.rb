@@ -224,9 +224,16 @@ class OriginalSpecTest < Minitest::Test
 
     assert_equal 4, story.engine.current_choices.size
 
-    assert_equal "one", story.engine.current_choices[0]
-    assert_equal "two", story.engine.current_choices[1]
-    assert_equal "three", story.engine.current_choices[2]
-    assert_equal "four", story.engine.current_choices[3]
+    assert_equal "one", story.engine.current_choices[0].start_content
+    assert_equal "one", story.engine.current_choices[0].start_content
+
+    assert_equal "two", story.engine.current_choices[1].start_content
+    assert_equal "two", story.engine.current_choices[1].start_content
+
+    assert_equal "three", story.engine.current_choices[2].start_content
+    assert_equal "three", story.engine.current_choices[2].start_content
+
+    assert_equal "four", story.engine.current_choices[3].start_content
+    assert_equal "four", story.engine.current_choices[3].start_content
   end
 end
