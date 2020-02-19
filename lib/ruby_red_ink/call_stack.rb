@@ -547,6 +547,16 @@ module RubyRedInk
     def add_choice?(choice)
       run_choice = true
 
+      if choice.is_invisible_default?
+        puts "#{print_padding}INVISIBLE DEFAULT"
+        return false
+      end
+
+      if choice.once_only? && visits_for_current_container > 1
+        puts "#{print_padding}ONCE ONLY, ALREADY VISITED"
+        return false
+      end
+
       if choice.has_condition?
         puts "#{print_padding}CHOICE CHECK:"
         boolean_value = evaluation_stack.pop
