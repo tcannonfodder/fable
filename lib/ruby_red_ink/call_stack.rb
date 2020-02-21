@@ -449,6 +449,8 @@ module RubyRedInk
             end
           end
         end
+      else
+        puts "#{print_padding}NOT RUNNING DIVERT; ADVANCE"
       end
     end
 
