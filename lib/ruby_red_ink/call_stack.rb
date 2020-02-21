@@ -37,7 +37,8 @@ module RubyRedInk
     end
 
     def visits_for_current_container
-      state.visits[container_stack.container.path_string]
+      puts "#{print_padding}👀CHECK VISITS FOR #{container_stack.container.path_string}"
+      state.visits[container_stack.container.path_string].to_i
     end
 
     def print_padding
