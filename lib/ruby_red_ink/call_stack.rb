@@ -542,6 +542,10 @@ module RubyRedInk
         puts "#{print_padding}DIVERT CHECK:"
         boolean_value = evaluation_stack.pop
         puts "#{print_padding}DIVERT CHECK: #{boolean_value}"
+        if boolean_value.nil?
+          puts "#{print_padding} IS NULL"
+          raise Error, "conditional check hit a nil value"
+        end
         run_divert = false if boolean_value == 0
       end
 
