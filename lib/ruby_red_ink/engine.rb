@@ -74,6 +74,7 @@ module RubyRedInk
         output_stream << value_from_stack
         return step
       when :new_choice_point
+        puts "🎯ADD CHOICE (#{value_from_stack.path_when_chosen}) #{value_from_stack}"
         current_choices << value_from_stack
         return step
       when :story_end, :done
@@ -121,7 +122,7 @@ module RubyRedInk
       if target_container.nil?
         target_container = Path.navigate(story.root, current_call_stack.container_stack.container, picked.path_when_chosen)
       end
-      puts "-----"
+      puts "✅" * 25
       new_callstack = CallStack.new(target_container.stack, state, self, current_call_stack.debug_padding + 1)
       call_stacks << new_callstack
       self.current_call_stack = new_callstack

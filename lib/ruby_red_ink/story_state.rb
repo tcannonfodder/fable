@@ -47,12 +47,12 @@ module RubyRedInk
     end
 
     def record_visit(container_path)
-      # puts "=== RECORD VISIT: #{container_path} ===="
       if visits.has_key?(container_path)
         visits[container_path] += 1
       else
         visits[container_path] ||= 0
       end
+      puts "📈=== RECORD VISIT: #{container_path} : #{visits[container_path] }  ===="
     end
   end
 end
