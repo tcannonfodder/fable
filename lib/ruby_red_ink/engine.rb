@@ -70,6 +70,7 @@ module RubyRedInk
       when :noop, :pop
         return step
       when :output
+        puts "📌ENGINE OUTPUT: #{value_from_stack}"
         output_stream << value_from_stack
         return step
       when :new_choice_point

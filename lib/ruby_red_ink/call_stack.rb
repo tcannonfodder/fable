@@ -39,7 +39,7 @@ module RubyRedInk
     end
 
     def step
-      puts "#{print_padding}EVAL STACK ON STEP: #{evaluation_stack.stack.inspect}"
+      puts "#{print_padding}EVAL STACK ON STEP: #{evaluation_stack.stack.inspect} . STRING EVAL STACK #{evaluation_stack.string_evaluation_mode_stack.inspect}"
       if container_stack.container.record_visits? && container_stack.container.count_start_only?
         if current_stack_index == 0
           state.record_visit(container_stack.container.path_string)
@@ -139,7 +139,7 @@ module RubyRedInk
             if next_item.nil?
               return noop(next_item, container_stack.path_string_for(next_item))
             end
-            puts ("#{print_padding}#{{eval_mode: "🐧", path: container_stack.path_string_for(next_item), element: next_item}}")
+            puts ("#{print_padding}#{{eval_mode: "🐧", string_mode: "#{'🐦' if evaluation_stack.mode == :string_evaluation_mode}", path: container_stack.path_string_for(next_item), element: next_item}}")
             puts "#{print_padding}EVAL MODE COMMAND: #{next_item}"
             case next_item
             when :SEED_RANDOM
@@ -450,7 +450,8 @@ module RubyRedInk
           end
         end
       else
-        puts "#{print_padding}NOT RUNNING DIVERT; ADVANCE"
+        puts "#{print_padding}NOT RUNNING DIVERT"
+        return :divert_not_taken
       end
     end
 
@@ -460,6 +461,7 @@ module RubyRedInk
       emedded_call_stack = CallStack.new(target_container.stack, state, engine, @debug_padding+1)
 
       embedded_engine = Engine.new(state, engine.story, emedded_call_stack)
+      puts "#{print_padding}RUN EMBEDDED ENGINE⏳"
       embedded_engine.step
 
       if embedded_engine.current_text.empty? && !emedded_call_stack.evaluation_stack.stack.empty?
