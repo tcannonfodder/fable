@@ -10,9 +10,7 @@ module RubyRedInk
       @state = state
       @engine = engine
 
-      if container_stack.container.record_visits? && !container_stack.container.count_start_only?
-        state.record_visit(container_stack.container.path_string)
-      end
+      try_recording_visit
     end
 
     def clone_attributes
@@ -29,6 +27,15 @@ module RubyRedInk
       self.evaluation_stack.rebuild_from_attributes(attributes[:evaluation_stack_attributes])
     end
 
+    def try_recording_visit
+      puts "#{print_padding}🤷‍♂️TRY RECORDING VISITS FOR #{container_stack.container.path_string}"
+      if container_stack.container.record_visits?
+        if !container_stack.container.count_start_only? || current_stack_index == 0
+          state.record_visit(container_stack.container.path_string)
+        end
+      end
+    end
+
     def visits_for_current_container
       state.visits[container_stack.container.path_string]
     end
@@ -40,11 +47,7 @@ module RubyRedInk
 
     def step
       puts "#{print_padding}EVAL STACK ON STEP: #{evaluation_stack.stack.inspect} . STRING EVAL STACK #{evaluation_stack.string_evaluation_mode_stack.inspect}"
-      if container_stack.container.record_visits? && container_stack.container.count_start_only?
-        if current_stack_index == 0
-          state.record_visit(container_stack.container.path_string)
-        end
-      end
+      try_recording_visit
 
       current_stack_element = container_stack.elements[current_stack_index]
       current_stack_path = container_stack.path_string_for_key(current_stack_index)
