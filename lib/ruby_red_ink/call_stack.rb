@@ -292,12 +292,18 @@ module RubyRedInk
             when FunctionCallDivert
               run_embedded_engine(next_item.target)
             when StandardDivert
-              process_standard_divert(next_item)
+              result = process_standard_divert(next_item)
+              if result == :divert_not_taken
+                self.current_stack_index += 1
+              end
               next
             when VariableTargetDivert
               puts "#{print_padding}RUNNING EVAL MODE VARIABLE TARGET DIVERT"
               target_divert = state.get_variable_value(next_item.target)
-              process_standard_divert(target_divert)
+              result = process_standard_divert(target_divert)
+              if result == :divert_not_taken
+                self.current_stack_index += 1
+              end
               next
             else
               evaluation_stack.push(next_item)
