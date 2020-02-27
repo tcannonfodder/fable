@@ -32,6 +32,10 @@ module RubyRedInk
       return current_text
     end
 
+    def continue_maximially(&block)
+      raise NotImplementedError
+    end
+
     def current_choices
       raise NotImplementedError
     end
@@ -112,6 +116,20 @@ module RubyRedInk
       end
 
       global_variables.snapshot_default_globals!
+    end
+
+    def content_at_path(path)
+      main_content_container.content_at_path(path)
+    end
+
+    def knot_container_with_name(name)
+      main_content_container.named_content[name]
+    end
+
+    def pointer_at_path(path)
+      return Pointer.null_pointer if path.empty?
+
+      
     end
 
     protected
