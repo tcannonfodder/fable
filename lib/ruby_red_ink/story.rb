@@ -129,7 +129,52 @@ module RubyRedInk
     def pointer_at_path(path)
       return Pointer.null_pointer if path.empty?
 
-      
+      new_pointer = Pointer.new
+
+      path_length_to_use = path.length
+
+      if path.components.last.is_index?
+        path_length_to_use = path.length - 1
+        result = main_content_container.content_at_path(path, partial_path_length: path_length_to_use)
+        new_pointer.container = result.container
+        new_pointer.index - path.components.last.index
+      else
+        result = main_content_container.content_at_path(path)
+        new_pointer.container = result.container
+        new_pointer.index = -1
+      end
+
+      if result.object.nil? || (result.object == main_content_container && path_length_to_use > 0)
+        raise StoryError, "Failed to find content at path '#{path.components_string}', and no approximation was possible."
+      elsif result.approximate?
+        add_warning!("Failed to find content at path '#{path.components_string}', so it was approximated to '#{result.object.path.components_string}'")
+      end
+
+      return new_pointer
+    end
+
+    # Maximum Snapshot stack:
+    # - @state_snapshot_during_save -- not retained, but returned to game code
+    # - @state_snapshot_at_last_newline (has older patch)
+    # - @state (current, being patched)
+    def state_snapshot!
+      @state_snapshot_at_last_newline = self.state
+      self.state = state.copy_and_start_patching!
+    end
+
+    def restore_state_snapshot!
+      # Patched state had temporarily hijacked our variables_state and
+      # set its own callstack on it, so we need to restore that
+      # If we're in the middle of saving, we may also need to give the
+      # variables_state the old patch
+
+      @state_snapshot_at_last_newline.restore_after_patch!
+      self.state = @state_snapshot_at_last_newline
+      @state_snapshot_at_last_newline = nil
+    end
+
+    def discard_snapshot!
+      @state_snapshot_at_last_newline = nil
     end
 
     protected
