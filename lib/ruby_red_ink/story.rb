@@ -317,6 +317,97 @@ module RubyRedInk
       return false
     end
 
+    def step!
+      should_add_to_stream = true
+
+      # Get current content
+      pointer = state.current_pointer
+      return if pointer.null_pointer?
+
+
+      # Step directly into the first element of content in a container (if necessary)
+      container_to_enter = pointer.resolve!
+      while !container_to_enter.nil?
+        # Mark container as being entered
+        visit_container!(container_to_enter, at_start: true)
+
+        # no content? the most we can do is step past it
+        break if container_to_enter.content.empty?
+
+        pointer = Pointer.start_of(container_to_enter)
+        container_to_enter = pointer.resolve!
+      end
+
+      state.current_pointer = pointer
+
+      profiler.step!(state.call_stack) if profile?
+
+      # is the current content object:
+      # - normal content
+      # - or a logic/flow statement? If so, do it
+      # Stop flow if we hit a stack pop when we're unable to pop
+      # (e.g: return/done statement in knot that was diverted to
+      # rather than called as a function)
+      current_content_object = pointer.resolve!
+
+      is_logic_or_flow_content = perform_logic_and_flow_control!(current_content_object)
+
+      # Has flow been forced to end by flow control above?
+      return if state.current_pointer.null_pointer?
+
+      if is_logic_or_flow_content
+        should_add_to_stream = false
+      end
+
+      # content to add to the evaluation stack or output stream
+      if should_add_to_stream
+        # If we're pushing a variable pointer onto the evaluation stack,
+        # ensure that it's specific to our current (and possibly temporary)
+        # context index. And make a copy of the pointer so that we're not
+        # editing the original runtime object
+        if current_content_object.is_a?(VariablePointerValue)
+          variable_pointer = current_content_object
+          if variable_pointer.context_index == -1
+            # create a new object so we're not overwriting the story's own data
+            context_index = state.call_stack.context_for_variable_named(variable_pointer.variable_name)
+            current_content_object = VariablePointerValue.new(variable_pointer.variable_name, context_index)
+          end
+        end
+
+        # expression evaluation content
+        if state.in_expression_evaluation?
+          state.push_evaluation_stack(current_content_object)
+        else
+          # output stream content
+          state.push_to_output_stream(current_content_object)
+        end
+      end
+
+      # Increment the content pointer, following diverts if necessary
+      next_content!
+
+      # Starting a thread should be done after the increment to the
+      # content pointer, so that when returning from the thread, it
+      # returns to the content after this instruction
+      if ControlCommands.get_control_command(value) == :CLONE_THREAD
+        state.call_stack.push_thread!
+      end
+    end
+
+    def visit_container!(contianer, options)
+      at_start = options[:at_start]
+
+      if !container.counting_start_only? || at_start
+        if container.count_vists?
+          state.increment_visit_count_for_container!(container)
+        end
+
+        if container.count_turn_index?
+          state.record_turn_index_visit_to_container!(container)
+        end
+      end
+    end
+
     def calculate_newline_output_state_change(previous_text, current_text, previous_tag_count, current_tag_count)
       newline_still_exists = (current_text.size >= previous_text.size) && (current_text[previous_text.size - 1] == "\n")
 
