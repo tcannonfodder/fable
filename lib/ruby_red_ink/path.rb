@@ -1,112 +1,175 @@
 module RubyRedInk
-  module Path
-    PARENT = :PARENT
-    RELATIVE_PATH = :RELATIVE_PATH
-    ROOT_PATH = :ROOT_PATH
+  class Path
+    PARENT_ID = "^".freeze
 
-    def self.append_path_string(parent_string, identifier)
-      if parent_string == ""
-        identifier.to_s
+    attr_accessor :components, :relative
+
+    def relative?
+      relative == true
+    end
+
+    def head
+      components.first
+    end
+
+    def tail
+      if components.size >= 2
+        self.class.new(components[1..])
       else
-        "#{parent_string}.#{identifier}"
+        Path.self
       end
     end
 
-    def self.parse(path_string)
-      path_tree = {}
-      if path_string.start_with?(".")
-        start = RELATIVE_PATH
+    def length
+      components.size
+    end
+
+    def contains_named_component?
+      components.any?{|x| !x.is_index? }
+    end
+
+    def self.self
+      path = self.new
+      path.relative = true
+      path
+    end
+
+    def initialize
+      components = []
+    end
+
+    def initialize(components, relative= false)
+      if components.is_a?(String)
+        self.components = parse_components_string(components)
       else
-        start = ROOT_PATH
+        self.components = components
       end
+      self.relative = relative
+    end
 
-      path_tree[start] = {}
+    def path_by_appending_path(path_to_append)
+      new_path = Path.new
 
-      elements = path_string.split(".")
+      upward_moves = 0
 
-      current_pointer = path_tree[start]
-      elements.each do |element|
-        next if element == ""
-        new_path = {}
-        if element == "^"
-          current_pointer[PARENT] = new_path
-        elsif element.start_with?(/\d/)
-          current_pointer[Integer(element)] = new_path
+      path_to_append.components.each do |component|
+        if component.is_parent?
+          upward_moves += 1
         else
-          current_pointer[element] = new_path
-        end
-
-        current_pointer = new_path
-      end
-
-      path_tree
-    end
-
-    def self.jump_up_level(path_string)
-      elements = path_string.split('.')
-      elements.pop
-      elements.join('.')
-    end
-
-    def self.travel(path_tree, root, current_container, current_pointer)
-      label, rest_of_tree = path_tree.first
-
-      if rest_of_tree.empty?
-        return current_pointer.all_elements[label]
-      end
-
-      if label == ROOT_PATH
-        current_pointer = root
-      elsif label == RELATIVE_PATH
-        current_pointer = current_container
-      elsif label == PARENT
-        current_pointer = current_container
-        current_container = current_pointer.parent
-      else
-        current_pointer = current_pointer.all_elements[label]
-      end
-
-      travel(rest_of_tree, root, current_container, current_pointer)
-    end
-
-    def self.navigate(root, current_container, path_string)
-      path_tree = parse(path_string)
-
-      current_pointer = nil
-      travel(path_tree, root, current_container, current_pointer)
-    end
-
-    def self.closest_container_travel(path_tree, root, current_container, current_pointer)
-      label, rest_of_tree = path_tree.first
-
-      if rest_of_tree.empty?
-        target = current_pointer.all_elements[label]
-        if target.is_a?(Container)
-          return target
-        else
-          return current_pointer
+          break
         end
       end
 
-      if label == ROOT_PATH
-        current_pointer = root
-      elsif label == RELATIVE_PATH
-        current_pointer = current_container
-      elsif label == PARENT
-        current_pointer = current_container
-        current_container = current_pointer.parent
-      else
-        current_pointer = current_pointer.all_elements[label]
+      components_to_add_at_this_level = (0..(components.size - upward_moves))
+
+      components_to_add_at_this_level.each do |i|
+        new_path.components << components[i]
       end
 
-      closest_container_travel(rest_of_tree, root, current_container, current_pointer)
+      components_to_add_after_upward_move = (upward_moves..path_to_append.components.size)
+
+      components_to_add_after_upward_move.each do |i|
+        new_path.components << path_to_append.components[i]
+      end
+
+      new_path
     end
 
-    def self.closest_container(root, current_container, path_string)
-      path_tree = parse(path_string)
+    def path_by_appending_component(component)
+      new_path = Path.new
 
-      current_pointer = nil
-      closest_container_travel(path_tree, root, current_container, current_pointer)
+      new_path.components += self.components
+      new_path.components << component
+      new_path
+    end
+
+    def components_string
+      string = components.map{|x| x.as_string}.join('.')
+      if relative?
+        string = ".#{string}"
+      end
+
+      string
+    end
+
+    def parse_components_string(components_string)
+      self.components = []
+      return if components_string.strip!.empty?
+
+      # Relative path when components staet with "."
+      # example: .^.^.hello.5 is equivalent to filesystem path
+      # ../../hello/5
+
+      if components_string.start_with?(".")
+        relative = true
+      else
+        relative = false
+      end
+
+      components_string.split('.').each do |section|
+        next if section.empty? #usually the first item in a relative path
+
+        if section.match?(/^\d+$/)
+          components << Component.new(index: Integer(section))
+        else
+          components << Component.new(name: section)
+        end
+      end
+    end
+
+    def ==(other_path)
+      return false if other_path.nil?
+      return false if other_path.components.size != components.size
+      return false if other_path.relative? != relative?
+      return other_path.components == components
+    end
+
+    class Component
+      attr_accessor :index, :name
+
+      def is_index?
+        index >= 0
+      end
+
+      def is_parent?
+        name == Path::PARENT_ID
+      end
+
+      def initialize(options)
+        if options[:index]
+          this.index = index_or_name
+          this.name = nil
+        elsif options[:name]
+          this.name = index_or_name
+          this.index = -1
+        end
+      end
+
+      def as_string
+        if is_index?
+          index.to_s
+        else
+          name
+        end
+      end
+
+      def ==(other_component)
+        return false if other_component.nil?
+
+        if self.is_index? == other_component.is_index
+          if is_index?
+            return self.index == other_component.index
+          else
+            return self.name == other_component.name
+          end
+        end
+
+        return false
+      end
+
+      def self.parent_component
+        self.new(Path::PARENT_ID})
+      end
     end
   end
 end
