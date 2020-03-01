@@ -408,6 +408,61 @@ module RubyRedInk
       end
     end
 
+    def visit_changed_containers_due_to_divert
+      previous_pointer = state.previous_pointer
+      pointer = state.current_pointer
+
+      # Unless we're pointing directly at a piece of content, we don't do
+      # counting here. Otherwise, the main stepping function will do the
+      # counting
+
+      return if pointer.null_pointer? || pointer.index == -1
+
+      # First, find the previously open set of containers
+      @previous_containers = []
+      if !previous_pointer.null_pointer?
+        previous_ancestor = previous_pointer.resolve! || previous_pointer.container
+        while !previous_ancestor.nil?
+          @previous_containers << previous_ancestor
+          previous_ancestor = previous_ancestor.parent
+        end
+      end
+
+      # If the new object is a container itself, it will be visted
+      # automatically at the next actual content step. However, we need to walk
+      # up the new ancestry to see if there are more new containers
+      current_child_of_container = pointer.resolve!
+
+      return if current_child_of_container.nil?
+
+      currnet_container_ancestor = current_child_of_container.parent
+
+      all_children_entered_at_start = true
+      while !currnet_container_ancestor.nil? && (!@previous_containers.include?(currnet_container_ancestor) || currnet_container_ancestor.counting_start_only?)
+        # check whether this ancestor container is being entered at the start
+        # by checking whether the child object is the first
+
+        entering_at_start = (
+          current_container_ancestor.content.size > 0 &&
+          current_child_of_container == currnet_container_ancestor.content[0] &&
+          all_children_entered_at_start
+        )
+
+        # Don't count it as entering at start if we're entering randomly
+        # somewhere within a Container B that happens to be nexted at index 0
+        # of Container A. It only counts if we're diverting directly to the
+        # first leaf node
+
+        all_children_entered_at_start = false if !entering_at_start
+
+        # Mark a visit to this container
+        visit_container!(current_container_ancestor, at_start: entering_at_start)
+
+        current_child_of_container = current_container_ancestor
+        current_container_ancestor = current_container_ancestor.parent
+      end
+    end
+
     def calculate_newline_output_state_change(previous_text, current_text, previous_tag_count, current_tag_count)
       newline_still_exists = (current_text.size >= previous_text.size) && (current_text[previous_text.size - 1] == "\n")
 
