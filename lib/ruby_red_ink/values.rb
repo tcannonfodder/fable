@@ -53,5 +53,16 @@ module RubyRedInk
     def self.parse_choice_point(value)
       ChoicePoint::Choice.new(value)
     end
+
+    def truthy?(value)
+      truthy = false
+
+      if value.is_a? DivertTargetValue
+        add_error!("Shouldn't use a divert target (to #{value.target_path}) as a conditional value. Did you intend a function call 'likeThis()' or a read count check 'likeThis'? (no arrows)")
+        return false
+      end
+
+      return value > 0
+    end
   end
 end

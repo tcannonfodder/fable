@@ -463,6 +463,60 @@ module RubyRedInk
       end
     end
 
+    def process_choice(choice_point)
+      show_choice = true
+
+      # don't create choice if it doesn't pass the conditional
+      if choice_point.has_condition?
+        condition_value = state.pop_evaluation_stack!
+        if !Value.truthy?(condition_value)
+          show_choice = false
+        end
+      end
+
+      start_text = ""
+      choice_only_text = ""
+
+      if choice_point.has_choice_only_content?
+        choice_only_text = state.pop_evaluation_stack!
+      end
+
+      if choice_point.has_start_content?
+        start_text = state.pop_evaluation_stack!
+      end
+
+      # Don't create the choice if the player has aready read this content
+      if choice_point.once_only?
+        if state.visit_count_for_container(choice_point.choice_target) > 0
+          show_choice = false
+        end
+      end
+
+
+      # We go through the whole process of creating the choice above so
+      # that we consume the content for it, since otherwise it'll be
+      # shown on the output stream
+      return nil if !show_choice
+
+      choice = Choice.new
+      choice.target_path = choice_point.path_when_chosen
+      choice.source_path = choice_point.path.as_string
+      choice.invisible_default = choice_point.is_invisible_default?
+
+      # We need to capture the state of the callstack at the point where
+      # the choice was generated, since after the generation of this choice
+      # we may go on to pop out from a tunnel (possible if the choice was
+      # wrapped in a conditional), or we may pop out from a thread, at which
+      # point that thread is discarded. Fork clones the thread, gives it a new
+      # ID, but without affecting the thread stack itself
+      choice.thread_at_generation = state.call_stack.fork_thread!
+
+      # set the final text for the choice
+      choice.text = "#{start_text} #{choice_only_text}".strip
+
+      return choice
+    end
+
     def calculate_newline_output_state_change(previous_text, current_text, previous_tag_count, current_tag_count)
       newline_still_exists = (current_text.size >= previous_text.size) && (current_text[previous_text.size - 1] == "\n")
 
