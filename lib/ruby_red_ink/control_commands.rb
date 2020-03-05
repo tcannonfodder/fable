@@ -1,7 +1,6 @@
 module RubyRedInk
   module ControlCommands
     COMMANDS = {
-      SEED_RANDOM: "srnd",
       GLUE: "<>",
       BEGIN_LOGICAL_EVALUATION_MODE: "ev",
       END_LOGICAL_EVALUATION_MODE: "/ev",
@@ -14,12 +13,19 @@ module RubyRedInk
       END_STRING_EVALUATION_MODE: "/str",
       NOOP: "nop",
       PUSH_CHOICE_COUNT: "choiceCnt",
-      TURNS: "turns",
-      VISIT: "visit",
-      SEQ: "seq",
-      CLONE_THREAD: "thread",
+      TURNS: "turn",
+      TURNS_SINCE: "turns",
+      READ_COUNT: "readc",
+      RANDOM: "rnd",
+      SEED_RANDOM: "srnd",
+      VISIT_INDEX: "visit",
+      SEQUENCE_SHUFFLE_INDEX: "seq",
+      START_THREAD: "thread",
       DONE: "done",
       STORY_END: "end",
+      LIST_FROM_INT: "listInt",
+      LIST_RANGE: "range",
+      LIST_RANDOM: "lrnd",
       # native functions
       ADDITION: "+",
       SUBTRACTION: "-",
