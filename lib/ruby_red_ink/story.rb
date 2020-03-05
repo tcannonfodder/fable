@@ -517,6 +517,231 @@ module RubyRedInk
       return choice
     end
 
+    def perform_logic_and_flow_control(element)
+      return false if element.nil?
+
+      # Divert
+      if element.is_a?(Divert)
+        if element.is_conditional?
+          return true if !Value.truthy?(state.pop_evaluation_stack!)
+        end
+
+        case element
+        when VariableTarget
+          variable_name = element.target
+          variable_value = state.variables_state.get_variable_with_name(variable_name)
+
+          if variable_value.nil?
+            add_error!("Tried to divert using a target from a variable that could not be found (#{variable_name})")
+          elsif !variable_value.is_a?(DivertTargetValue)
+            error_message = "Tried to divert to a target from a variable, but the variable (#{variable_name}) didn't contain a divert target, it "
+            if variable_value.to_i == 0
+              error_message += "was empty/null (the value 0)"
+            else
+              error_message == "was #{variable_value}"
+            end
+
+            add_error!(error_message)
+          end
+
+          state.diverted_pointer = pointer_at_path(element.target)
+        when ExternalFunctionDivert
+          call_external_function(element.target, element.number_of_arguments)
+          return true
+        else
+          state.diverted_pointer = element.target
+        end
+
+        if element.pushes_to_stack?
+          state.call_stack.push(
+            element.stack_push_type,
+            output_stream_length_when_pushed: state.output_stream.count
+          )
+        end
+
+        if state.diverted_pointer.nil? && !element.is_a?(ExternalFunctionDivert)
+          if element && element.debug_metadata.source_name
+            add_error!("Divert target doesn't exist: #{element.debug_metadata.source_name}")
+          else
+            add_error!("Divert resolution failed: #{current_divert}")
+          end
+        end
+
+        return true
+      end
+
+      if ControlCommands::COMMANDS.has_key?(element)
+        case element
+        when :BEGIN_LOGICAL_EVALUATION_MODE
+          assert!(!state.in_expression_evaluation?, "Already in expression evaluation?")
+          state.in_expression_evaluation = true
+        when :END_LOGICAL_EVALUATION_MODE
+          assert!(state.in_expression_evaluation?, "Not in expression evaluation mode")
+          state.in_expression_evaluation = false
+        when :MAIN_STORY_OUTPUT
+          # if the expression turned out to be empty, there may not be
+          # anything on the stack
+          if state.evaluation_stack.size > 0
+            output = state.pop_evaluation_stack!
+            if output != Values::VOID_VALUE
+              state.push_to_output_stream(output.to_s)
+            end
+          end
+        when :NOOP
+          break
+        when :DUPLICATE_TOPMOST
+          state.push_evaluation_stack(state.peek_evaluation_stack)
+        when :POP
+          state.pop_evaluation_stack!
+        when :TUNNEL_POP, :FUNCTION_POP
+          # Tunnel onwards is allowed to specify an optional override divert
+          # to go to immediately after returning: ->-> target
+          override_tunnel_return_target = nil
+
+          if element == :TUNNEL_POP
+            override_tunnel_return_target = state.pop_evaluation_stack!
+            if !override_tunnel_return_target.is_a?(DivertTargetValue)
+              assert!(override_tunnel_return_target == Values::VOID_VALUE, "Expected void if ->-> doesn't override target")
+            end
+          end
+
+          if state.try_exit_function_evaluation_from_game?
+            break
+          elsif state.call_stack.current_element != element || !state.call_stack.can_pop?
+            types = {
+              FUNCTION_POP: "function return statement (~return)"
+              TUNNEL_POP: "tunnel onwards statement (->->)"
+            }
+
+            expected[state.call_stack.current_element]
+
+            if !state.call_stack.can_pop?
+              expected = "end of flow (-> END or choice)"
+            end
+
+            add_error!("Found #{types[element]}, when expected #{expected}")
+          else
+            state.pop_callstack!
+
+            # does tunnel onwards override by diverting to a new ->-> target?
+            if !override_tunnel_return_target.nil?
+              state.diverted_pointer = pointer_at_path(override_tunnel_return_target.target_path)
+            end
+          end
+        when :BEGIN_STRING_EVALUATION_MODE
+          state.push_to_output_stream(element)
+          assert!(state.in_expression_evaluation?, "Expected to be in an expression when evaluating a string")
+          state.in_expression_evaluation = false
+        when :END_STRING_EVALUATION_MODE
+          content_stack_for_string = []
+          item_from_output_stream = nil
+          while item_from_output_stream != :BEGIN_STRING_EVALUATION_MODE
+            item_from_output_stream = state.pop_from_output_stream!
+            content_stack_for_string << item_from_output_stream
+          end
+
+          #return to expression evaluation (from content mode)
+          state.in_expression_evaluation = true
+          state.push_evaluation_stack(content_stack_for_string.reverse.join)
+        when :PUSH_CHOICE_COUNT
+          state.push_evaluation_stack(state.generated_choices.size)
+        when :TURNS
+          state.push_evaluation_stack(state.current_turn_index + 1)
+        when :TURNS_SINCE, :READ_COUNT
+          target = state.pop_evaluation_stack
+          if !target.is_a?(DivertTargetValue)
+            extra_note =""
+            if value.is_a?(Numeric)
+              extra_note = ". Did you accidentally pass a read count ('knot_name') instead of a target ('-> knot_name')?"
+            end
+            add_error("TURNS SINCE expected a divert target (knot, stitch, label name), but saw #{target}#{extra_note}")
+          end
+
+          container = content_at_path(target.target)
+
+          if !container.nil?
+            if element == :TURNS_SINCE
+              count = state.turns_since_for_container(container)
+            else
+              count = state.visit_count_for_container(container)
+            end
+          else
+            if element == :TURNS_SINCE
+              count = -1 #turn count, default to never/unknown
+            else
+              count = 0 #visit count, assume 0 to default to allowing entry
+            end
+
+            add_warning!("Failed to find container for #{element} lookup at #{target.target}")
+          end
+
+          state.push_evaluation_stack(count)
+        when :RANDOM
+          max_int = state.pop_evaluation_stack!
+          min_int = state.pop_evaluation_stack!
+
+          if !min_int.is_a?(Numeric)
+            add_error!("Invalid value for minimum parameter of RANDOM(min, max)")
+          end
+
+          if !max_int.is_a?(Numeric)
+            add_error!("Invalid value for maximum parameter of RANDOM(min, max)")
+          end
+
+          if min_int > max_int
+            add_error!("RANDOM was called with minimum as #{min_int} and maximum as #{max_int}. The maximum must be larger")
+          end
+
+          result_seed = state.story_seed + state.previous_random
+          random = new Random(result_seed)
+
+          next_random = random.rand(min_int, max_int)
+          state.push_evaluation_stack(next_random)
+          # next random number, rather than keeping the random object around
+          state.previous_random = next_random
+        when :SEED_RANDOM
+          seed = state.pop_evaluation_stack!
+          if seed.nil?
+            error!("Invalid value passed to SEED_RANDOM")
+          end
+
+          # Story seed affects both RANDOM & shuffle behavior
+          state.story_seed = seed
+          state.previous_random = 0
+
+          # SEED_RANDOM returns nothing
+          state.push_evaluation_stack(Value::VOID_VALUE)
+        when :VISIT_INDEX
+          count = state.visit_count_for_container(state.current_pointer.container) - 1
+          state.push_evaluation_stack(count)
+        when :SEQUENCE_SHUFFLE_INDEX
+          state.push_evaluation_stack(next_sequence_shuffle_index)
+        when :START_THREAD
+          break #handled in main step function
+        when :DONE
+          # we may exist in the context of the initial act of creating
+          # the thread, or in the context of evaluating the content
+          if state.call_stack.can_pop_thread?
+            state.call_stack.pop_thread!
+          else
+            # in normal flow, allow safe exit without warning
+            state.did_safe_exit = true
+            # stop flow in the current thread
+            state.current_pointer = Pointer.null_pointer
+          end
+        when :STORY_END
+          state.force_end!
+        when :LIST_FROM_INT
+          integer_value = state.pop_evaluation_stack!
+          list_name = state.pop_evaluation_stack!
+
+          if integer_value.nil?
+            raise StoryError, "Passed non-integet when creating a list element from a numerical value."
+          end
+        end
+      end
+    end
+
     def calculate_newline_output_state_change(previous_text, current_text, previous_tag_count, current_tag_count)
       newline_still_exists = (current_text.size >= previous_text.size) && (current_text[previous_text.size - 1] == "\n")
 
