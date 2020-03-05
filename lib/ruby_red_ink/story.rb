@@ -736,10 +736,89 @@ module RubyRedInk
           list_name = state.pop_evaluation_stack!
 
           if integer_value.nil?
-            raise StoryError, "Passed non-integet when creating a list element from a numerical value."
+            raise StoryError, "Passed non-integer when creating a list element from a numerical value."
+          end
+
+          if list_definitions[list_name]
+            state.push_evaluation_stack(list_definitions[list_name][integer_value])
+          else
+            raise StoryError, "Failed to find LIST called #{list_name}"
+          end
+        when :LIST_RANGE
+          max = state.pop_evaluation_stack!
+          min = state.pop_evaluation_stack!
+          target_list = state.pop_evaluation_stack!
+
+          if target_list.nil? || min.nil? || max.nil?
+            raise StoryError, "Expected list, minimum, and maximum for LIST_RANGE"
+          end
+
+          stack.push_evaluation_stack(target_list.sublist(min, max))
+        when :LIST_RANDOM
+          list = state.pop_evaluation_stack!
+
+          if list.nil?
+            raise StoryError, "Expected list for LIST_RANDOM"
+          end
+
+          # list was empty, return empty list
+          if list.size == 0
+            new_list = List.new
+          else
+            #non-empty source list
+            result_seed = state.story_seed + state.previous_random
+            random = new Random(result_seed)
+            list_item_index = random.rand(0, list.size)
+
+            random_item = list[list_item_index]
+
+            # Origin list is simply the origin of the one element
+            new_list = List.new(list.key.origin_name, self)
+            new_list[random_item.key, random_item.value]
+
+            state.previous_random = list_item_index
+          end
+
+          state.push_evaluation_stack(ListValue.new(new_list))
+        else
+          add_error!("unhandled Control Command #{element}")
+        end
+
+        return true
+      end
+
+      # variable handling
+      case element
+      when GlobalVariableTarget
+        global_variables[element.name] = state.pop_evaluation_stack!
+      when TemporaryVariableTarget
+        variables_state.assign(element.name, state.pop_evaluation_stack!)
+      when VariableReference
+        if !element.path_for_count.nil?
+          count = state.visit_count_for_container(element.container_for_count)
+          found_value = count
+        else
+          found_value = state.variables_state.get_variable_with_name(element.name)
+
+          if found_value.nil?
+            add_warning!("Variable not found: '#{element.name}'. Using default value of 0 (false). This can happen with temporary variables if the declaration hasn't yet been hit. Globals are always given a default value on load if a value doesn't exist in the save state.");
+            found_value = 0
           end
         end
+
+        state.push_evaluation_stack(found_value)
       end
+
+      if element.is_a?(NativeFunctionCall)
+        parameters = []
+        element.number_of_parameters.times{ parameters << state.pop_evaluation_stack! }
+
+        state.push_evaluation_stack(element.call!(parameters))
+        return true
+      end
+
+      # no control content, so much be ordinary content
+      return false
     end
 
     def calculate_newline_output_state_change(previous_text, current_text, previous_tag_count, current_tag_count)
