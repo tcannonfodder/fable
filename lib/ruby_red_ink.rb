@@ -1,5 +1,11 @@
 module RubyRedInk
   class Error < StandardError; end
+
+  def assert!(error_message, &block)
+    if !yield block
+      raise Error, error_message
+    end
+  end
 end
 
 require "ruby_red_ink/version"
