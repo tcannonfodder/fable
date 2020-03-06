@@ -8,6 +8,7 @@ module RubyRedInk
 
     attr_accessor :original_object, :state. :profiler,
       :list_definitions, :main_content_container,
+      :allow_external_function_fallbacks
 
     def initialize(original_object)
       self.original_object = original_object
@@ -819,6 +820,238 @@ module RubyRedInk
 
       # no control content, so much be ordinary content
       return false
+    end
+
+    # Change the current position of the story to the given path. From here you can
+    # call Continue() to evaluate the next line.
+    #
+    # The path string is a dot-separated path as used internally by the engine.
+    # These examples should work:
+    #
+    #    myKnot
+    #    myKnot.myStitch
+    #
+    # Note however that this won't necessarily work:
+    #
+    #    myKnot.myStitch.myLabelledChoice
+    #
+    # ...because of the way that content is nested within a weave structure.
+    #
+    # By default this will reset the callstack beforehand, which means that any
+    # tunnels, threads or functions you were in at the time of calling will be
+    # discarded. This is different from the behaviour of ChooseChoiceIndex, which
+    # will always keep the callstack, since the choices are known to come from the
+    # correct state, and known their source thread.
+    #
+    # You have the option of passing false to the resetCallstack parameter if you
+    # don't want this behaviour, and will leave any active threads, tunnels or
+    # function calls in-tact.
+    #
+    # This is potentially dangerous! If you're in the middle of a tunnel,
+    # it'll redirect only the inner-most tunnel, meaning that when you tunnel-return
+    # using '->->', it'll return to where you were before. This may be what you
+    # want though. However, if you're in the middle of a function, ChoosePathString
+    # will throw an exception.
+    def choose_path_string(path_string, reset_callstack=true, arguments = [])
+      if !on_choose_path_string.nil?
+        on_choose_path_string(path_string, arguments)
+      end
+
+      if reset_callstack
+        reset_callstack!
+      else
+        # choose_path_string is potentially dangerous since you can call it
+        # when the stack is pretty much in any state. Let's catch one of the
+        # worst offenders
+        if state.call_stack.current_element == :FUNCTION_POP
+          container = state.call_stack.current_element.current_pointer.container
+          function_detail = ""
+          if !container.nil?
+            function_detail = "(#{container.path.as_string})"
+          end
+
+          raise StoryError("Story was running a function #{function_detail} when you called choose_path_string(#{path_string}) - this is almost certainly not not what you want! Full stack trace:\n#{state.call_stack.call_stack_trace}")
+        end
+      end
+
+      state.pass_arguments_to_evaluation_stack(arguments)
+      choose_path(Path.new(path_string))
+    end
+
+    def choose_path(path, incrementing_turn_index=true)
+      state.set_chosen_path(path, incrementing_turn_index)
+
+      # take note of newly visited containers for read counts, etc.
+      visit_changed_containers_due_to_divert
+    end
+
+    # Chooses the Choice from the currentChoices list with the given
+    # index. Internally, this sets the current content path to that
+    # pointed to by the Choice, ready to continue story evaluation.
+    def choose_choice_index(choice_index)
+      choice_to_choose = current_choices[choice_index]
+      assert!(!choice_to_choose.nil?, "choice out of range")
+
+      # Replace callstack with the one from the thread at the choosing point,
+      # so that we can jump into the right place in the flow.
+      # This is important in case the flow was forked by a new thread, which
+      # can create multiple leading edges for the story, each of which has its
+      # own content
+      if !on_make_choice.nil?
+        on_make_choice(choice_to_choose)
+      end
+
+      state.call_stack.current_thread = choice_to_choose.thread_at_generation
+
+      choose_path(choice_to_choose.target_path)
+    end
+
+    def has_function?(function_name)
+      !knot_container_with_name(function_name).nil?
+    end
+
+    # Evaluates a function defined in ink
+    def evaluate_function(function_name, arguments = [])
+      if !on_evaluate_function.nil?
+        on_evaluate_function(function_name, arguments)
+      end
+
+      if function_name.to_s.strip.empty?
+        raise StoryError, "Function is null, empty, or whitespace"
+      end
+
+      function_container = knot_container_with_name(function_name)
+      if function_container.nil?
+        raise StoryError, "Function does not exist: #{function_name}"
+      end
+
+      # Snapshot the output stream
+      output_stream_before = state.output_stream.dup
+      state.reset_output!
+
+      # State will temporarily replace the callstack in order to evaluate
+      state.start_function_evaluation_from_game!(function_container, arguments)
+
+      # Evaluate the function, and collect the string output
+      string_output = StringIO.new
+      while can_continue
+        string_output << continue
+      end
+
+      string_output.rewind
+
+      text_output = string_output.read
+
+      # Restore the output stream in case this was called during the main
+      # Story Evaluation
+      state.reset_output!(output_stream_before)
+
+      # Finish evaluation, and see whether anything was produced
+      result = state.complete_function_evaluation_from_game!
+
+      if !on_complete_evaluate_function.nil?
+        on_complete_evaluate_function(function_name, arguments, text_output, result)
+      end
+
+      return {
+        result: result,
+        text_output: text_output
+      }
+    end
+
+    def call_external_function(function_name, number_of_arguments)
+      function = external_functions[function_name]
+      if function.nil?
+        if allow_external_function_fallbacks?
+          fallback_function_container = knot_container_with_name(function_name)
+          if fallback_function_container.nil?
+            raise StoryError, "Trying to call external function #{function_name} which has not been bound, and fallback ink function cannot be found"
+          end
+
+          # Divert directly into the fallback function and we're done
+          state.call_stack.push(:FUNCTION_POP, output_stream_length_when_pushed: state.output_stream.count)
+          state.diverted_pointer = Pointer.start_of(fallback_function_container)
+          return
+        end
+      else
+        raise StoryError, "Trying to call EXTERNAL function #{function_name}, which has not been defined (and ink fallbacks disabled)"
+      end
+
+      arguments = []
+      number_of_arguments.times{ arguments << state.pop_evaluation_stack! }
+
+      arguments.reverse!
+
+      # Run the function
+      result = function(**arguments)
+
+      if result.nil?
+        result = Value::VOID_VALUE
+      else
+        result = Value.parse(result)
+        if result.nil?
+          raise StoryError, "Could not create ink value from returned object of type #{result.class}"
+        end
+      end
+
+      state.push_evaluation_stack(result)
+    end
+
+    def bind_external_function(function_name, external_function)
+      if external_functions.has_key?(function_name)
+        raise StoryError, "Function #{function_name} has already been bound."
+      end
+
+      external_functions[function_name] = external_function
+    end
+
+    def unbind_external_function(function_name)
+      if !external_functions.has_key?(function_name)
+        raise StoryError, "Function #{function_name} has not been bound."
+      end
+
+      external_functions.delete(function_name)
+    end
+
+    # Check that all EXTERNAL ink functions have a valid function.
+    # Note that this will automatically be called on the first call to continue
+    def validate_external_bindings!
+      missing_externals = missing_external_bindings(main_content_container)
+
+      has_validated_externals = true
+
+      if missing_externals.empty?
+        return true
+      else
+        add_error!("ERROR: Missing function binding for the following: #{missing_externals.join(", ")}, #{allow_external_function_fallbacks? ? 'and no fallback ink functions found' : '(ink fallbacks disabled)'}")
+      end
+    end
+
+    def missing_external_bindings(container)
+      missing_externals = Set.new
+      container.content.each do |item|
+        if item.is_a?(Container)
+          missing_externals.merge(missing_external_bindings(item))
+          return missing_externals
+        end
+
+        if item.is_a?(ExternalFunctionDivert)
+          if allow_external_function_fallbacks?
+            fallback_found = main_content_container.named_content.has_key?(item.target)
+            if !fallback_found
+              missing_externals << item.target
+            end
+          else
+            missing_externals << item.target
+          end
+        end
+      end
+
+      container.named_content.each do |key, container|
+        missing_externals.merge(missing_external_bindings(container))
+      end
+
+      return missing_externals
     end
 
     def calculate_newline_output_state_change(previous_text, current_text, previous_tag_count, current_tag_count)
