@@ -1,6 +1,10 @@
 module RubyRedInk
   class Error < StandardError; end
 
+  class StoryException < Error
+    attr_accessor :use_end_line_number
+  end
+
   def assert!(error_message, &block)
     if !yield block
       raise Error, error_message
@@ -9,6 +13,7 @@ module RubyRedInk
 end
 
 require "ruby_red_ink/version"
+require "ruby_red_ink/story_exception"
 require 'ruby_red_ink/path'
 require 'ruby_red_ink/container'
 require 'ruby_red_ink/container_stack'
