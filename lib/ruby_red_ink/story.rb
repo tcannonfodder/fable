@@ -1078,6 +1078,269 @@ module RubyRedInk
       return :no_change
     end
 
+    def global_tags
+      tags_at_start_of_flow_container_with_path_string("")
+    end
+
+    def tags_for_content_at_path(path)
+      tags_at_start_of_flow_container_with_path_string(path)
+    end
+
+    def tags_at_start_of_flow_container_with_path_string(path_string)
+      path = Path.new(path_string)
+
+      flow_container = content_at_path(path).container
+
+      while true
+        first_content = flow_container.content.first
+        if first_content.is_a?(Container)
+          flow_container = first_content
+        else
+          break
+        end
+      end
+
+      return content.tags
+    end
+
+    # Useful when debugging a (very short) story, to visualise the state of the
+    # story. Add this call as a watch and open the extended text. A left-arrow mark
+    # will denote the current point of the story.
+    # It's only recommended that this is used on very short debug stories, since
+    # it can end up generate a large quantity of text otherwise.
+    def build_string_of_hierarchy
+      return main_content_container.build_string_of_hierarchy(0, state.current_pointer.resolve!)
+    end
+
+    def build_string_of_container(contianer)
+      container.build_string_of_hierarchy(0, state.current_pointer.resolve!)
+    end
+
+    def next_content!
+      # setting previousContentObject is critical for visit_changed_containers_due_to_divert
+      state.previous_pointer = state.current_pointer
+
+      # Divert step?
+      if !state.diverted_pointer.null_pointer?
+        state.current_pointer = state.diverted_pointer
+        state.diverted_pointer = Pointer.null_pointer
+
+        # Internally uses state.previous_content_object and state.current_content_object
+        visit_changed_containers_due_to_divert!
+
+        # Diverted location has valid content?
+        if !state.current_pointer.null_pointer?
+          return
+        end
+
+        # Otherwise, if diverted located doesn't have valid content,
+        # Drop down and attempt to increment
+        # This can happenm if the diverted path is intentionally jumping
+        # to the end of a container - e.g: a Conditional that's re-joining
+      end
+
+      successful_pointer_increment = increment_content_pointer!
+
+      # Ran out of content? Try to auto-exit from a function, or
+      # finish evaluating the content of a thread
+      if !successful_pointer_increment
+        did_pop = false
+
+        if state.call_stack.can_pop?(:function)
+          # Pop from the call stack
+          state.call_stack.pop_callstack(:function)
+
+          # This pop was due to dropping off the end of a function that didn't
+          # return anything, so in this case we make sure the evaluator has
+          # something to chomp on if it needs it
+
+          if state.in_expression_evaluation?
+            state.push_evaluation_stack(Value::VOID_VALUE)
+          end
+
+          did_pop = true
+        elsif state.call_stack.can_pop_thread?
+          state.call_stack.pop_thread!
+          did_pop = true
+        else
+          state.try_exit_function_evaluation_from_game?
+        end
+
+        # Step past the point where we last called out
+        if did_pop && !state.current_pointer.null_pointer?
+          next_content!
+        end
+      end
+    end
+
+    def increment_content_pointer
+      successful_increment = true
+
+      pointer = state.call_stack.current_element.current_pointer
+      pointer.index += 1
+
+      # Each time we step off the end, we fall out to the next container, all the
+      # time we're in indexed rather than named content
+      while pointer.index >= pointer.container.content.size
+        successful_increment = false
+
+        next_ancestor = pointer.container.parent
+        break if !next_ancestor.is_a?(Contaner)
+
+        index_in_ancestor = next_ancestor.content.index(pointer.container)
+        break if index_in_ancestor == -1
+
+        pointer = Pointer.new(next_ancestor, index_in_ancestor)
+
+        # Increment to the next content in outer container
+        pointer.index += 1
+        successful_increment = true
+      end
+
+      pointer = Pointer.null_pointer if !successful_increment
+
+      state.call_stack.current_element.current_pointer = pointer
+      return successful_increment
+    end
+
+    def try_follow_default_invisible_choice
+      all_choices = state.current_choices
+
+      # Is a default invisible choice the ONLY choice?
+      invisible_choices = all_choices.select{|choice| choice.invisible_default?}
+      if invisible_choices.empty? || all_choices.size > invisible_choices.size
+        return false
+      end
+
+      choice = invisible_choices[0]
+
+      # Invisible choice may have been generate on a different thread, in which
+      # case we need to restore it before we continue
+      state.call_stack.current_thread = choice.thread_at_generation
+
+      # If there's a chance that this state will be rolled back before the
+      # invisible choice then make sure that the choice thread is left intact,
+      # and it isn't re-entered in an old state
+      if !state_snapshot_at_last_newline.nil?
+        state.call_stack.current_thread = state.call_stack.fork_thread!
+      end
+
+      choose_path(choice.target_path, incrementing_turn_index: false)
+
+      return true
+    end
+
+
+    def next_sequence_shuffle_index
+      number_of_elements = state.pop_evaluation_stack
+      if !number_of_elements.is_a?(Numeric)
+        error!("Expected number of elements in sequence for shuffle index")
+        return 0
+      end
+
+      sequence_container = state.current_pointer.container
+
+      sequence_count = state.pop_evaluation_stack
+      loop_index = sequence_count / number_of_elements
+      iteration_index = sequence_count % number_of_elements
+
+      # Generate the same shuffle based on
+      # - the hash of this container, to make sure it's consistent
+      # - How many times the runtime has looped around this full shuffle
+      sequence_hash = sequence_container.path.as_string.bytes.sum
+
+      randomizer_seed = sequence_hash + loop_index + state.story_seed
+      randomizer = Random.new(randomizer_seed)
+      unpicked_indicies = (0..(number_of_elements-1)).to_a
+
+      (0..iteration_index).to_a.each do |i|
+        chosen = randomizer.rand(2147483647) % unpicked_indicies.size
+        chosen_index = unpicked_indicies[chosen]
+        unpicked_indicies.delete(chosen)
+
+        if i == iteration_index
+          return chosen_index
+        end
+      end
+
+      raise StoryError, "Should never reach here"
+    end
+
+    def error!(message, options = {use_end_line_number: false})
+      exception = StoryException.new(message)
+      e.use_end_line_number = options[:use_end_line_number]
+      raise e
+    end
+
+    def warning(message)
+      add_error!(message, is_warning: true)
+    end
+
+    def add_error(message, options = {is_warning: false, use_end_line_number: false})
+      debug_metadata = current_debug_metadata
+
+      error_type_string = options[:is_warning] ? "WARNING" : "ERROR"
+
+      if !debug_metadata.nil?
+        line_number = options[:use_end_line_number] ? debug_metadata.end_line_number : debug_metadata.start_line_number
+        message = "RUNTIME #{error_type_string}: '#{debug_metadata.file_name}' line #{line_number}: #{message}"
+      elsif !state.current_pointer.null_pointer?
+        message = "RUNTIME #{error_type_string}: (#{state.current_pointer.path}) #{message}"
+      else
+        message = "RUNTIME #{error_type_string}: #{message}"
+      end
+
+      state.add_error(message, options[:is_warning])
+
+      # In a broken state, we don't need to know about any other errors
+      if !options[:is_warning]?
+        state.force_end!
+      end
+    end
+
+    def assert!(condition, message = nil)
+      if !condition
+        if message.nil?
+          message = "Story assert"
+        end
+
+        throw new StoryError, "#{message} #{current_debug_metadata}"
+      end
+    end
+
+    def current_debug_metadata
+      pointer = state.current_pointer
+
+      if !pointer.null_pointer?
+        debug_metadata = pointer.resolve!.debug_metadata
+        return debug_metadata if !debug_metadata.nil?
+      end
+
+      # Move up callstack if possible
+      state.call_stack.elements.each do |element|
+        pointer = element.current_pointer
+        if !pointer.null_pointer? && pointer.resolve! != nil
+          debug_metadata = pointer.resolve!.debug_metadata
+          return debug_metadata if !debug_metadata.nil?
+        end
+      end
+
+      # Current/previous path may not be valid if we're just had an error, or
+      # if we've simply run out of content. As a last resort, try to grab
+      # something from the output stream
+      state.output_stream.each do |item|
+        return item.debug_metadata if !item.debug_metadata.nil?
+      end
+
+      return nil
+    end
+
+    def current_line_number
+      debug_metadata = current_debug_metadata
+      return 0 if debug_metadata.nil?
+      return debug_metadata.start_line_number
+    end
+
     def process_list_definitions!
       return nil root_container["listDefs"].empty?
       raise NotImplementedError
