@@ -1,0 +1,29 @@
+module RubyRedInk
+  class Choice < RuntimeObject
+    # The main text presented to the player for this choice
+    attr_accessor :text
+
+
+    # Get the path to the original choice point - where was this choice
+    # defined in the story?
+    attr_accessor :source_path
+
+    # The original index into current_choices list on the Story when
+    # this choice was generated, for convenience
+    attr_accessor :index
+
+    attr_accessor :target_path, :thread_at_generation, :original_thread_index,
+      :is_invisible_default
+
+    # The target path that the story should be diverted to
+    # if the choice is chosen
+    def path_string_on_choice
+      return target_path.as_string
+    end
+
+    def path_string_on_choice=(value)
+      target_path = Path.new(value)
+      value
+    end
+  end
+end
