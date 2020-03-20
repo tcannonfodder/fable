@@ -2,7 +2,7 @@ module RubyRedInk
   class RuntimeObject
     # RuntimeObjects can be included in the main story as a hierarchy
     # usually parents are container objectsd
-    attr_accessor :parent, :own_debug_metadata, :path
+    attr_accessor :parent, :own_debug_metadata, :path, :original_object
 
     def debug_metadata
       if @own_debug_metadata.nil?
