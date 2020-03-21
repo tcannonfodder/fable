@@ -1,5 +1,5 @@
 module RubyRedInk
-  class Container
+  class Container < RuntimeObject
     attr_accessor :bit_flags, :name, :content, :named_content,
     :visits_should_be_counted, :turn_index_should_be_counted,
     :counting_at_start_only, :path_to_first_leaf_content
