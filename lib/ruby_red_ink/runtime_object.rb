@@ -14,6 +14,10 @@ module RubyRedInk
       return @own_debug_metadata
     end
 
+    def indentation_string(indentation = 0)
+      " " * indentation
+    end
+
     def debug_line_number_of_path(path)
       return nil if path.nil?
 
