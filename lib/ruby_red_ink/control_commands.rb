@@ -1,14 +1,14 @@
 module RubyRedInk
   module ControlCommands
     COMMANDS = {
-      GLUE: "<>",
-      BEGIN_LOGICAL_EVALUATION_MODE: "ev",
-      END_LOGICAL_EVALUATION_MODE: "/ev",
-      MAIN_STORY_OUTPUT: "out",
-      POP: "pop",
-      TUNNEL_POP: "->->",
-      FUNCTION_POP: "~ret",
+      NOT_SET: -1,
+      EVALUATION_START: "ev",
+      EVALUATION_OUTPUT: "out",
+      EVALUATION_END: "/ev",
       DUPLICATE_TOPMOST: "du",
+      POP_EVALUATED_VALUE: "pop",
+      POP_FUNCTION: "~ret",
+      POP_TUNNEL: "->->",
       BEGIN_STRING_EVALUATION_MODE: "str",
       END_STRING_EVALUATION_MODE: "/str",
       NOOP: "nop",
@@ -26,6 +26,9 @@ module RubyRedInk
       LIST_FROM_INT: "listInt",
       LIST_RANGE: "range",
       LIST_RANDOM: "lrnd",
+
+      GLUE: "<>",
+
       # native functions
       ADDITION: "+",
       SUBTRACTION: "-",
@@ -55,25 +58,5 @@ module RubyRedInk
     def self.get_control_command(value)
       LOOKUP[value]
     end
-  end
-
-  module NativeFunctions
-    ADDITION = "+"
-    SUBTRACTION = "-"
-    DIVIDE = "/"
-    MULTIPLY = "*"
-    MODULO = "%"
-    UNARY_NEGATE = "~"
-    EQUALS = "=="
-    GREATER_THAN = ">"
-    LESS_THAN = "<"
-    GREATER_THAN_OR_EQUAL_TO = ">="
-    LESS_THAN_OR_EQUAL_TO = "<="
-    NOT_EQUAL = "!="
-    UNARY_NOT = "!"
-    AND = "&&"
-    OR = "||"
-    MIN = "MIN"
-    MAX = "MAX"
   end
 end
