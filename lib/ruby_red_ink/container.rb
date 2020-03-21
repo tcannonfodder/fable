@@ -1,108 +1,219 @@
 module RubyRedInk
   class Container
-    attr_accessor :original_object, :parent, :path_string,
-      :stack, :elements_array,
-      :nested_containers,
-      :final_attribute,
-      :record_visits, :record_turn_index, :count_start_only
+    attr_accessor :bit_flags, :name, :content, :named_content,
+    :visits_should_be_counted, :turn_index_should_be_counted,
+    :counting_at_start_only, :path_to_first_leaf_content
 
-    def initialize(original_object, parent, fallback_identifier = 0)
-      self.original_object = original_object
-      self.final_attribute = original_object.last
-      self.parent = parent
+    def initialize(flags)
+      self.bit_flags = flags
+      self.content = []
+      self.named_content = {}
+    end
 
-      if parent.nil?
-        self.path_string = ""
+    def add_content(content_to_add)
+      if content_to_add.is_a?(Enumerable)
+        content_to_add.each{|individual_items| add_content(content_to_add) }
+      end
+
+      if content_to_add.parent.present?
+        raise Error, "content is already in #{content_to_add.parent}"
+      end
+
+      content_to_add.parent = self
+      content << content_to_add
+
+      try_adding_to_named_content(content_to_add)
+    end
+
+    def insert_content_at(content_to_add, index)
+      if content_to_add.parent.present?
+        raise Error, "content is already in #{content_to_add.parent}"
+      end
+
+      content_to_add.parent = self
+      content.insert(index, content_to_add)
+      try_adding_to_named_content(content_to_add)
+    end
+
+    def try_adding_to_named_content(content_to_add)
+      if content_to_add.respond_to?(:valid_name?) && content_to_add.valid_name?
+        add_to_named_content(content_to_add)
+      end
+    end
+
+    def add_to_named_content(content_to_add)
+      content_to_add.parent = self
+      named_content[content_to_add.name] = content_to_add
+    end
+
+    def add_contents_of_container(other_container)
+      content += other_container.content
+      other_container.content.each do |content_to_add|
+        content_to_add.parent = self
+        try_adding_to_named_content(content_to_add)
+      end
+    end
+
+    def content_with_path_component(component)
+      if component.is_index?
+        return content[component.index]
+      elsif component.is_parent?
+        return self.parent
       else
-        self.path_string = Path.append_path_string(parent.path_string, (name || fallback_identifier))
+        return named_content[component.name]
+      end
+    end
+
+    def content_at_path(path, options= { partial_path_start: 0, partial_path_length: -1 })
+      partial_path_length = options[:partial_path_length]
+      partial_path_start = options[:partial_path_start]
+
+      if partial_path_length == -1
+        partial_path_length = path.length
       end
 
-      build_stack
-      process_nested_containers
-      process_bit_flags
-    end
+      result = SearchResult.new
+      result.approximate = false
 
-    def has_metadata?
-      !final_attribute.nil?
-    end
+      current_container = self
+      current_object = self
 
-    def name
-      return nil if !has_metadata?
-      final_attribute["#n"]
-    end
+      (partial_path_start..partial_path_length).each do |i|
+        component = path.get_component(i)
 
-    def has_bit_flags?
-      return false if !has_metadata?
-      bit_flag.is_a?(Numeric)
-    end
-
-    def bit_flag
-      final_attribute["#f"]
-    end
-
-    def build_stack
-      @elements_array = []
-
-      original_object[0..-2].each_with_index do |value, index|
-        if value.is_a?(Array)
-          @elements_array << self.class.new(value, self, index)
-          next
+        # Path component was wrong type
+        if current_container.nil?
+          result.approximate = true
+          break
         end
 
-        if ControlCommands.is_control_command?(value)
-          @elements_array << ControlCommands.get_control_command(value)
-          next
+        found_object = current_container.content_with_path_component(component)
+
+        # Couldn't resolve entire path?
+        if found_object.nil?
+          result.approximate = true
+          break
         end
 
-        @elements_array << Values.parse(value)
+        current_object = found_object
+        if found_object.is_a?(Container)
+          current_container = found_object
+        else
+          current_container = nil
+        end
       end
 
-      self.stack = ContainerStack.new(self)
+      result.object = current_object
+      return result
     end
 
-    def process_nested_containers
-      self.nested_containers = {}
-      return if !has_metadata?
+    def build_string_of_hierarchy(io, indentation, pointed_object)
+      io << indentation_string(indentation)
+      io << "["
 
-      final_attribute.each do |key, nested_container|
-        next if key == "#n" || key == "#f"
-        nested_containers[key] = self.class.new(nested_container, self, key)
+      if self.valid_name?
+        io << " (#{self.name})"
       end
+
+      if self == pointed_object
+        io << " <---"
+      end
+
+      io << "\n"
+
+      indentation += 1
+
+
+      content.each_with_index do |object, index|
+        if object.is_a?(Container)
+          object.build_string_of_hierarchy(io, indentation, pointed_object)
+        else
+          io << indentation_string(indentation)
+          if object.is_a?(StringValue)
+            io << "\"#{object.as_string.gsub("\n", "\\n")}\""
+          else
+            io << object.as_string
+          end
+        end
+
+        if index != (content.size - 1)
+          io << ","
+        end
+
+        if !object.is_a?(Container) && object == pointed_object
+          io << " <---"
+        end
+
+        io << "\n"
+      end
+
+      only_named_content = named_content.reject{|name, item| content.include?(item) }
+
+      if only_named_content.any?
+        io << indentation_string(indentation)
+        io << "-- named: --\n"
+
+        only_named_content.each do |key, container|
+          container.build_string_of_hierarchy(io, indentation, pointed_object)
+          io << "\n"
+        end
+      end
+
+      indentation -= 1
+
+      io << indentation_string(indentation)
+      io << "]"
     end
+
+    def build_string_of_hierarchy
+      io = StringIO.new
+      build_string_of_hierarchy(io, 0, nil)
+
+      io.rewind
+      return io.read
+    end
+
+    def path_to_first_leaf_content
+      @path_to_first_leaf_content || = path.path_by_appending_path(internal_path_to_first_lead_content)
+    end
+
+    def valid_name?
+      !name.to_s.empty?
+    end
+
+    alias_method :visits_should_be_counted, :visits_should_be_counted?
+    alias_method :turn_index_should_be_counted, :turn_index_should_be_counted?
+    alias_method :counting_at_start_only, :counting_at_start_only?
 
     def process_bit_flags
       if has_bit_flags?
-        self.record_visits = (bit_flag & 0x1) > 0
-        self.record_turn_index = (bit_flag & 0x2) > 0
-        self.count_start_only = (bit_flag & 0x4) > 0
+        self.visits_should_be_counted = (bit_flag & 0x1) > 0
+        self.turn_index_should_be_counted = (bit_flag & 0x2) > 0
+        self.counting_at_start_only = (bit_flag & 0x4) > 0
       else
-        self.record_visits = false
-        self.record_turn_index = false
-        self.count_start_only = false
+        self.visits_should_be_counted = false
+        self.turn_index_should_be_counted = false
+        self.counting_at_start_only = false
       end
     end
 
-    def record_visits?
-      record_visits
+    def has_bit_flags?
+      self.bit_flags.present?
     end
 
-    def record_turn_index?
-      record_turn_index
-    end
+    protected
 
-    def count_start_only?
-      count_start_only
-    end
+    def internal_path_to_first_lead_content
+      components = []
+      container = self
+      while !container.nil?
+        if container.content.size > 0
+          components << Path::Component.new(0)
+          container = container.content.first
+        end
+      end
 
-    def all_named_containers
-      non_numeric_tree_keys = stack.element_tree.keys.reject{|x| x.is_a?(Numeric)}
-      containers_from_tree = stack.element_tree.slice(non_numeric_tree_keys)
-      nested_containers.merge(containers_from_tree)
+      return Path.new(components)
     end
-
-    def all_elements
-      stack.element_tree.merge(nested_containers)
-    end
-
   end
 end
