@@ -54,8 +54,48 @@ module RubyRedInk
       end
     end
 
+    def ==(other_divert)
+      if !other_divert.nil?
+        if self.has_variable_target? == other_divert.has_variable_target?
+          if self.has_variable_target?
+            return self.variable_divert_name == other_divert.variable_divert_name
+          else
+            return self.target_path == other_divert.target_path
+          end
+        end
+      end
+      return false
+    end
+
     def has_variable_target?
       !variable_divert_name.nil?
+    end
+
+    def as_string
+      if has_variable_target?
+        return "Divert(variable: #{variable_divert_name})"
+      elsif target_path.nil?
+        return "Divert(null"
+      else
+        result = ""
+
+        target_string = target_path.as_string
+        target_line_number = debug_line_number_of_path(target_path)
+        if !target_line_number.nil?
+          target_string = "line #{target_line_number}"
+        end
+
+        push_type = ""
+        if pushes_to_stack?
+          if stack_push_type == :FUNCTION
+            push_type = " function"
+          else
+            push_type = " tunnel"
+          end
+        end
+
+        "Divert#{'?' if is_conditional?}#{push_type} -> #{target_path_string} (#{target_string})"
+      end
     end
   end
 end
