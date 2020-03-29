@@ -28,26 +28,7 @@ module RubyRedInk
       LIST_RANDOM: "lrnd",
 
       GLUE: "<>",
-
-      # native functions
-      ADDITION: "+",
-      SUBTRACTION: "-",
-      DIVIDE: "/",
-      MULTIPLY: "*",
-      MODULO: "%",
-      UNARY_NEGATE: "~",
-      EQUALS: "==",
-      GREATER_THAN: ">",
-      LESS_THAN: "<",
-      GREATER_THAN_OR_EQUAL_TO: ">=",
-      LESS_THAN_OR_EQUAL_TO: "<=",
-      NOT_EQUAL: "!=",
-      UNARY_NOT: "!",
-      AND: "&&",
-      OR: "||",
-      MIN: "MIN",
-      MAX: "MAX",
-    }
+    }.freeze
 
     LOOKUP = COMMANDS.invert
 
