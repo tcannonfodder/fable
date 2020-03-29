@@ -185,6 +185,10 @@ module RubyRedInk
       @origin_names = initial_origin_name
     end
 
+    def count
+      items.size
+    end
+
     # Get the maximum item in the list, equivalent to calling LIST_MAX(list) in ink.
     def max_item
       items.max do |a, b|
@@ -232,7 +236,7 @@ module RubyRedInk
 
     # Return a new list that is a combination of the current list and
     # one that's passed in. The equivalent of calling (list1 + list2) in ink.
-    def union(other_list)
+    def +(other_list)
       union_list = self.class.new(self)
       other_list.list.each do |item, int_value|
         union_list[item] = int_value
@@ -243,7 +247,7 @@ module RubyRedInk
 
     # Return a new list that is the intersection of the current list and
     # one that's passed in. The equivalent of calling (list1 ^ list2) in ink.
-    def intersection(other_list)
+    def &(other_list)
       intersection_list = self.class.new
       self.list.items do |item, int_value|
         if other_list.list.has_key?(item)
@@ -257,7 +261,7 @@ module RubyRedInk
     # Returns a new list that's the same as the current one, except with the
     # given items removed that are in the passed-in list. Equivalent to calling
     # (list1 - list2) in ink.
-    def without(other_list)
+    def -(other_list)
       without_list = self.class.new(self)
       other_list.list.each do |item, int_value|
         without_list.delete(item)
