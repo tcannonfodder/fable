@@ -395,7 +395,7 @@ module RubyRedInk
       end
     end
 
-    def visit_container!(contianer, options)
+    def visit_container!(container, options)
       at_start = options[:at_start]
 
       if !container.counting_start_only? || at_start
@@ -1112,7 +1112,7 @@ module RubyRedInk
       return main_content_container.build_string_of_hierarchy(0, state.current_pointer.resolve!)
     end
 
-    def build_string_of_container(contianer)
+    def build_string_of_container(container)
       container.build_string_of_hierarchy(0, state.current_pointer.resolve!)
     end
 
