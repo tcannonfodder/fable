@@ -210,6 +210,8 @@ module RubyRedInk
       attr_accessor :current_pointer, :in_expression_evaluation,
       :temporary_variables, :type,
 
+      alias_method :in_expression_evaluation?, :in_expression_evaluation
+
       # When this callstack element is actually a function evaluation called
       # from the game, we need to keep track of when it was called so that
       # we know whether there was any return value
