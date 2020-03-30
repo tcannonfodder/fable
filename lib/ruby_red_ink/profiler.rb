@@ -281,7 +281,7 @@ module RubyRedInk
       end
 
       def elapsed_from_start_to_stop
-        (stop_time || Time.now.utc).to_r - start_time.to_r)
+        ((stop_time || Time.now.utc).to_r - start_time.to_r)) * 1000.0
       end
     end
   end
