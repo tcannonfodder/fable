@@ -330,6 +330,39 @@ module RubyRedInk
       end
     end
 
+    def reset_errors!
+      self.current_errors = nil
+      self.current_warnings = nil
+    end
+
+    def reset_output!(objects_to_add = nil)
+      self.output_stream = []
+      if !objects_to_add.nil?
+        self.output_stream += objects_to_add
+      end
+
+      output_stream_dirty!
+    end
+
+    def push_to_output_stream(object)
+      if object.is_a?(StringValue)
+        lines = try_splitting_head_tail_whitespace(object)
+        lines.each do |line|
+          push_item_to_output_stream(line)
+        end
+
+        output_stream_dirty!
+        return
+      end
+
+      push_item_to_output_stream(object)
+      output_stream_dirty!
+    end
+
+    def pop_from_output_stream(count)
+      output_stream.pop(count)
+      output_stream_dirty!
+    end
 
     # Exports the current state to a hash that can be serialized in
     # the JSON format
