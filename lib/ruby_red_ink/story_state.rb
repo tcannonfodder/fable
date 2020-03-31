@@ -219,13 +219,36 @@ module RubyRedInk
     # - Removes all whitespace from the start/end of line (including just before an \n)
     # - Turns all consecutive tabs & space runs into single spaces (HTML-style)
     def clean_output_whitespace(string)
-      cleaned_string = ""
+      cleaned_string = StringIO.new
 
-      string.each_line(chomp: true) do |line|
-        cleaned_string += line.strip.gsub(MULTIPLE_WHITESPACE_REGEX, ' ')
+      current_whitespace_start = -1
+      start_of_line = 0
+
+      string.each_char.each_with_index do |character, i|
+        is_inline_whitespace = (character == ' ' || c == "\t")
+
+        if is_inline_whitespace && current_whitespace_start == -1
+          current_whitespace_start = i
+        end
+
+        if !is_inline_whitespace
+          if character != "\n" && current_whitespace_start > 0 && current_whitespace_start != start_of_line
+            cleaned_string << " "
+          end
+          current_whitespace_start = -1
+        end
+
+        if character == "\n"
+          start_of_line = i + 1
+        end
+
+        if !is_inline_whitespace
+          cleaned_string << character
+        end
       end
 
-      cleaned_string
+      cleaned_string.rewind
+      cleaned_string.read
     end
 
     def has_patch?
