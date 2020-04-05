@@ -206,6 +206,168 @@ module RubyRedInk
       callstack.current_element.in_expression_evaluation = value
     end
 
+    def in_string_evaluation?
+      @output_stream.reverse_each.any? do |item|
+        item == ControlCommands.get_control_command(:BEGIN_STRING_EVALUATION_MODE)
+      end
+    end
+
+    def push_evaluation_stack(object)
+      # include metadata about the origin List for list values when they're used
+      # so that lower-level functions can make sure of the origin list to get
+      # Related items, or make comparisons with integer values
+      if object.is_a?(ListValue)
+        # Update origin when list has something to indicate the list origin
+        raw_list = object.value
+        if !raw_list.origin_names.nil?
+          if raw_list.origins.nil?
+            raw_list.origins = []
+          end
+
+          raw_list.origins.clear
+
+          raw_list.origin_names.each do |name|
+            list_definition = story.list_definitions[name]
+            if !raw_list.origins.include?(list_definition)
+              raw_list.origins << list_definition
+            end
+          end
+        end
+      end
+
+      evaluation_stack << object
+    end
+
+    def pop_evaluation_stack(number_of_items = nil)
+      if number_of_items.nil?
+        return evaluation_stack.pop
+      end
+
+      if number_of_items > evaluation_stack.size
+        raise Error, "trying to pop too many objects"
+      end
+
+      return evaluation_stack.pop(number_of_items)
+    end
+
+
+    # <summary>
+    # Ends the current ink flow, unwrapping the callstack but without
+    # affecting any variables. Useful if the ink is (say) in the middle
+    # a nested tunnel, and you want it to reset so that you can divert
+    # elsewhere using choose_path_string. Otherwise, after finishing
+    # the content you diverted to, it would continue where it left off.
+    # Calling this is equivalent to calling -> END in ink.
+    # </summary>
+    def force_end!
+      callstack.reset!
+      @current_choices.clear
+      current_pointer = Pointer.null_pointer
+      previous_pointer = Pointer.null_pointer
+      did_safe_exit = true
+    end
+
+    # At the end of a function call, trim any whitespace from the end.
+    # We always trim the start and end of the text that a function produces.
+    # The start whitespace is discard as it is generated, and the end
+    # whitespace is trimmed in one go here when we pop the function.
+    def trim_whitespace_from_function_end!
+      assert!(callstack.current_element == PushPopType::TYPES[:function])
+
+      function_start_point = callstack.current_element.function_start_in_output_stream
+
+      # if the start point has become -1, it means that some non-whitespace
+      # text has been pushed, so it's safe to go as far back as we're able
+      if function_start_point == -1
+        function_start_point = 0
+      end
+
+      # Trim whitespace from END of function call
+      @output_stream.reverse_each.each_with_index do |object, index|
+        break if ControlCommands.is_control_command?(object)
+        next if !object.is_a?(StringValue)
+
+        if object.is_newline? || object.is_inline_whitespace?
+          @output_stream.delete_at(i)
+          output_stream_dirty!
+        else
+          break
+        end
+      end
+    end
+
+    def pop_callstack(pop_type)
+      # At the end of a function call, trim any whitespace from the end
+      if callstack.current_element.type == PushPopType::TYPES[:function]
+        trim_whitespace_from_function_end!
+      end
+
+      callstack.pop!(pop_type)
+    end
+
+    def pass_arguments_to_evaluation_stack(arguments)
+      if !arguments.nil?
+        arguments.each do |argument|
+          if !(argument.is_a?(Numeric) || argument.is_a?(String) || argument.is_a?(InkList))
+            raise ArgumentError, "ink arguments when calling evaluate_function/choose_path_string_with_parameters must be int, float, string, or InkList. Argument was #{argument.class.to_s}"
+          end
+
+          push_evaluation_stack(Value.create(argument))
+        end
+      end
+    end
+
+    def exit_function_evaluation_from_game?
+      if callstack.current_element.type == PushPopType::TYPES[:function_evaluation_from_game]
+        current_pointer = Pointer.null_pointer
+        did_safe_exit = true
+        return true
+      end
+
+      return false
+    end
+
+    def complete_function_evaluation_from_game
+      if callstack.current_element.type != PushPopType::TYPES[:function_evaluation_from_game]
+        raise Error, "Expected external function evaluation to be complete. Stack trace: #{callstack.call_stack_trace}"
+      end
+
+      original_evaluation_stack_height = callstack.current_element.evaluation_stack_height_when_pushed
+
+      # do we have a returned value?
+      # Potentially pop multiple values off the stack, in case we need to clean up after ourselves
+      # (e.g: caller of evaluate_function may have passed too many arguments, and we currently have no way
+      # to check for that)
+      while evaluation_stack.size > original_evaluation_stack_height
+        popped_object = pop_evaluation_stack
+        if returned_object.nil?
+          returned_object = popped_object
+        end
+      end
+
+      # Finally, pop the external function evaluation
+      pop_callstack(PushPopType::TYPES[:function_evaluation_from_game])
+
+      # What did we get back?
+      if !returned_object.nil?
+        if returned_object.is_a?(Void)
+          return nil
+        end
+
+        # DivertTargets get returned as the string of components
+        # (rather than a Path, which isn't public)
+        if returned_object.value_type == ValueType.DivertTarget
+          return returned_object.value_object.as_string
+        end
+
+        # Other types can just have their exact object type.
+        # VariablePointers get returned as strings.
+        return returned_object.value_object
+      end
+
+      return nil
+    end
+
     def output_stream_dirty!
       @output_stream_text_dirty = true
       @output_stream_tags_dirty = true
@@ -341,6 +503,240 @@ module RubyRedInk
       output_stream_dirty!
     end
 
+    def push_item_to_output_stream(object)
+      include_in_output = true
+
+      case object
+      when Glue
+        # new glue, so chomp away any whitespace from the end of the stream
+        trim_newlines_from_ouput_stream!
+        include_in_output = true
+      when StringValue
+        # New text: do we really want to append it, if it's whitespace?
+        # Two different reasons for whitespace to be thrown away:
+        # - Function start/end trimming
+        # - User defined glue: <>
+        # We also need to know when to stop trimming, when there's no whitespace
+
+        # where does the current function call begin?
+        function_trim_index = -1
+        current_element = callstack.current_element
+        if current_element == PushPopType::TYPES[:function]
+          function_trim_index = current_element.function_start_in_output_stream
+        end
+
+        # Do 2 things:
+        # - Find latest glue
+        # - Check whether we're in the middle of string evaluation
+        # If we're in string evaluation within the current function, we don't want to
+        # trim back further than the length of the current string
+        glue_trim_index = -1
+        @output_stream.reverse.each_with_index do |object, i|
+          if object.is_a?(Glue)
+            glue_trim_index = i
+            break
+          elsif object == ControlCommands.get_control_command(:BEGIN_STRING_EVALUATION_MODE)
+            if i >= function_trim_index
+              function_trim_index=  -1
+            end
+            break
+          end
+        end
+
+        # Where is the most aggresive (earliest) trim point?
+        trim_index = -1
+        if glue_trim_index != -1 && function_trim_index != -1
+          trim_index = [glue_trim_index, function_trim_index].min
+        elsif glue_trim_index != -1
+          trim_index = glue_trim_index
+        else
+          trim_index = function_trim_index
+        end
+
+        # So, what are we trimming them?
+        if trim_index != -1
+          # While trimming, we want to throw all newlines away,
+          # Whether due to glue, or start of a function
+          if object.is_newline?
+            include_in_output = false
+          # Able to completely reset when normal text is pushed
+          elsif object.is_nonwhitespace?
+            if glue_trim_index > -1
+              remove_existing_glue!
+            end
+
+            # Tell all functionms in callstack that we have seen proper text,
+            # so trimming whitespace at the start is done
+            if function_trim_index > -1
+              callstack.elements.each do |element|
+                if element == PushPopType::TYPES[:function]
+                  element.function_start_in_output_stream = -1
+                else
+                  break
+                end
+              end
+            end
+          end
+        # De-duplicate newlines, and don't ever lead with a newline
+        elsif object.is_newline?
+          if output_stream_ends_in_newline? || !output_stream_contains_content?
+            include_in_output = false
+          end
+        end
+      end
+
+      if include_in_output
+        @output_stream << object
+        output_stream_dirty!
+      end
+    end
+
+    # At both the start and the end of the string, split out the new lines like so:
+    #
+    #  "   \n  \n     \n  the string \n is awesome \n     \n     "
+    #      ^-----------^                           ^-------^
+    #
+    # Excess newlines are converted into single newlines, and spaces discarded.
+    # Outside spaces are significant and retained. "Interior" newlines within
+    # the main string are ignored, since this is for the purpose of gluing only.
+    #
+    #  - If no splitting is necessary, null is returned.
+    #  - A newline on its own is returned in a list for consistency.
+    def try_splitting_head_tail_whitespace(string)
+      head_first_newline_index = -1
+      head_last_newline_index = -1
+
+      string.each_char.each_with_index do |character, i|
+        if character == "\n"
+          if head_first_newline_index == -1
+            head_first_newline_index = i
+          end
+
+          head_last_newline_index = i
+        elsif character == " " || character == "\t"
+          next
+        else
+          break
+        end
+      end
+
+      tail_first_newline_index = -1
+      tail_last_newline_index = -1
+      string.reverse.each_char.each_with_index do |character, i|
+        if character == "\n"
+          if tail_last_newline_index == -1
+            tail_last_newline_index = i
+          end
+
+          tail_first_newline_index = i
+        elsif character == " " || character == "\t"
+          next
+        else
+          break
+        end
+      end
+
+      if head_first_newline_index == -1 && tail_last_newline_index == -1
+        return nil
+      end
+
+      list_texts = []
+      inner_string_start = 0
+      inner_string_end = string.length
+
+      if head_first_newline_index != -1
+        if head_first_newline_index > 0
+          leading_spaces = string[0, head_first_newline_index]
+          list_texts << leading_spaces
+        end
+
+        list_texts << "\n"
+        inner_string_start = head_last_newline_index + 1
+      end
+
+      if tail_last_newline_index != -1
+        inner_string_end = tail_first_newline_index
+      end
+
+      if inner_string_end > inner_string_start
+        inner_string_text = string[inner_string_start, (inner_string_end - inner_string_start)]
+        list_texts << inner_string_text
+      end
+
+      if tail_last_newline_index != -1 && tail_first_newline_index > head_last_newline_index
+        list_texts << "\n"
+        if tail_last_newline_index < (string.length -1)
+          number_of_spaces = (string.length - tail_last_newline_index) - 1
+          trailing_spaces = string[tail_last_newline_index + 1, number_of_spaces]
+          list_texts << trailing_spaces
+        end
+      end
+
+      return list_texts
+    end
+
+    def trim_newlines_from_output_stream!
+      remove_whitespace_from = -1
+
+      # Work back from the end, and try to find the point where we need to
+      # start removing content.
+      #  - Simply work backwards to find the first newline in a string of whitespace
+      # e.g. This is the content   \n   \n\n
+      #                            ^---------^ whitespace to remove
+      #                        ^--- first while loop stops here
+      i = @output_stream.count - 1
+      while i >= 0
+        object = @output_stream[i]
+        if ControlCommands.is_control_command?(object) || (object.is_a?(StringValue) && object.is_nonwhitespace?)
+          break
+        elsif object.is_a?(StringValue) && object.is_newline?
+          remove_whitespace_from = i
+        end
+
+        i -= 1
+      end
+
+      # Remove the whitespace
+      if remove_whitespace_from >= 0
+        output_stream.slice!(0..remove_whitespace_from)
+      end
+
+      output_stream_dirty!
+    end
+
+    # Only called when non-whitespace is appended
+    def remove_existing_glue!
+      @output_stream.each_with_index do |object, i|
+        if object.is_a?(Glue)
+          @output_stream.delete_at(i)
+        elsif ControlCommands.is_control_command?(object)
+        end
+      end
+
+      output_stream_dirty!
+    end
+
+    def output_stream_ends_in_newline?
+      return false if @output_stream.empty?
+
+      @output_stream.each do |item|
+        if ControlCommands.is_control_command?(item)
+          break
+        end
+
+        if item.is_a?(StringValue)
+          return true if item.is_newline?
+          break if item.is_nonwhitespace?
+        end
+      end
+
+      return false
+    end
+
+    def output_stream_contains_content?
+      @output_stream.any?{|x| x.is_a?(StringValue) }
+    end
+
     # Exports the current state to a hash that can be serialized in
     # the JSON format
     def to_hash
@@ -428,6 +824,26 @@ module RubyRedInk
           c.thread_at_generation = CallStack::Thread.new(saved_choice_thread, story)
         end
       end
+    end
+  end
+
+  protected
+
+  # Don't make public since the method needs to be wrapped in a story for visit countind
+  def set_chosen_path(path, incrementing_turn_index)
+    # Changing direction, assume we need to clear current set of choices
+    @current_choices.clear
+
+    new_pointer = story.pointer_at_path(path)
+
+    if !new_pointer.null_pointer? && new_pointer.index == -1
+      new_pointer.index = 0
+    end
+
+    current_pointer = new_pointer
+
+    if incrementing_turn_index
+      current_turn_index += 1
     end
   end
 end
