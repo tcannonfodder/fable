@@ -155,8 +155,8 @@ module RubyRedInk
 
         # And/or with any other types required coercion to bool (int)
         if (name == FUNCTIONS[:AND] || FUNCTIONS[:OR]) && (!value_1.is_a?(ListValue) || !value_2.is_a?(ListValue))
-          value_1_as_boolean = value_1.is_truthy? ? 1 : 0
-          value_2_as_boolean = value_2.is_truthy? ? 1 : 0
+          value_1_as_boolean = value_1.truthy? ? 1 : 0
+          value_2_as_boolean = value_2.truthy? ? 1 : 0
 
           result = run_operation(value_1_as_boolean, value_2_as_boolean)
           return IntValue.new(result)
