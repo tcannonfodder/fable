@@ -797,7 +797,7 @@ module RubyRedInk
       self.output_stream = Serializer.convert_to_runtime_objects(loaded_state["outputStream"])
       self.output_stream_dirty!
 
-      self.current_choices = Serializer.convert_to_choices(loaded_state["current_choices"])
+      self.current_choices = Serializer.convert_to_runtime_objects(loaded_state["current_choices"])
 
       if loaded_state.has_key?("currentDivertTarget")
         divert_path = Path.new(loaded_state["currentDivertTarget"])

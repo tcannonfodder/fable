@@ -23,7 +23,7 @@ module RubyRedInk
       @recursive_content_count = 0
 
       process_list_definitions!
-      self.main_content_container = Container.new(original_object["root"], nil)
+      self.main_content_container = Serializer.convert_to_runtime_object(original_object["root"])
 
       reset_state!
     end
@@ -1342,9 +1342,8 @@ module RubyRedInk
     end
 
     def process_list_definitions!
-      return nil root_container["listDefs"].empty?
-      raise NotImplementedError
-      # self.list_definitions = 
+      return nil if root_container["listDefs"].empty?
+      self.list_definitions = Serializer.convert_to_list_definitions(root_container["listDefs"])
     end
 
     def correct_ink_version?

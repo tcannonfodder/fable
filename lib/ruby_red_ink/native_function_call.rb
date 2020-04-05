@@ -89,6 +89,10 @@ module RubyRedInk
 
     attr_accessor :name, :number_of_parameters
 
+    def self.is_native_function?(value)
+      LOOKUP.has_key?(value)
+    end
+
     def initialize(function_symbol)
       self.name = LOOKUP[function_symbol]
       self.number_of_parameters = NUMBER_OF_PARAMETERS[self.name]

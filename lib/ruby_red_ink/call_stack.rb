@@ -273,7 +273,7 @@ module RubyRedInk
           new_element = Element.new(type, pointer, in_expression_evaluation)
 
           if element["temp"]
-            new_element.temporary_variables = element["temp"]
+            new_element.temporary_variables = Serializer.convert_to_runtime_objects_hash(element["temp"])
           else
             new_element.temporary_variables = {}
           end
