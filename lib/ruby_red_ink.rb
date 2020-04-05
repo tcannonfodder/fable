@@ -5,8 +5,8 @@ module RubyRedInk
     attr_accessor :use_end_line_number
   end
 
-  def assert!(error_message, &block)
-    if !yield block
+  def assert!(conditional, error_message = "")
+    if !conditional
       raise Error, error_message
     end
   end
