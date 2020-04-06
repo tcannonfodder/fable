@@ -58,7 +58,7 @@ module RubyRedInk
       current_element.type != :function_evaluation_from_game
     end
 
-    def push(type, options = {external_evaluation_stack_height: 0, output_stream_length_when_pushed: 0)
+    def push(type, options = {external_evaluation_stack_height: 0, output_stream_length_when_pushed: 0})
       # When pushing to callstack, maintain the current content path, but jump
       # out of expressions by default
       element = Element.new(type, current_element.current_pointer, in_expression_evaluation: false)
@@ -208,7 +208,7 @@ module RubyRedInk
 
     class Element
       attr_accessor :current_pointer, :in_expression_evaluation,
-      :temporary_variables, :type,
+      :temporary_variables, :type
 
       alias_method :in_expression_evaluation?, :in_expression_evaluation
 

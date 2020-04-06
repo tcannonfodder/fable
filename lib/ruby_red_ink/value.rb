@@ -1,19 +1,8 @@
 module RubyRedInk
-  OrderedValueTypes = {
-    # Used in coercion
-    IntValue => 0,
-    FloatValue => 1,
-    ListValue => 2,
-    StringValue => 3,
-
-    # Not used for coercion described above
-    DivertTargetValue => 4,
-    VariablePointerValue => 5
-  }.freeze
-
   class Value < RuntimeObject
     attr_accessor :value_object
     alias_method :value, :value_object
+    alias_method :value=, :value_object=
 
     def value_type
       raise NotImplementedError
@@ -316,4 +305,16 @@ module RubyRedInk
       end
     end
   end
+
+  OrderedValueTypes = {
+    # Used in coercion
+    IntValue => 0,
+    FloatValue => 1,
+    ListValue => 2,
+    StringValue => 3,
+
+    # Not used for coercion described above
+    DivertTargetValue => 4,
+    VariablePointerValue => 5
+  }.freeze
 end

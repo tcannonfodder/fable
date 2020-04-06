@@ -174,16 +174,16 @@ module RubyRedInk
     end
 
     def path_to_first_leaf_content
-      @path_to_first_leaf_content || = path.path_by_appending_path(internal_path_to_first_lead_content)
+      @path_to_first_leaf_content ||= path.path_by_appending_path(internal_path_to_first_lead_content)
     end
 
     def valid_name?
       !name.to_s.empty?
     end
 
-    alias_method :visits_should_be_counted, :visits_should_be_counted?
-    alias_method :turn_index_should_be_counted, :turn_index_should_be_counted?
-    alias_method :counting_at_start_only, :counting_at_start_only?
+    alias_method :visits_should_be_counted?, :visits_should_be_counted
+    alias_method :turn_index_should_be_counted?, :turn_index_should_be_counted
+    alias_method :counting_at_start_only?, :counting_at_start_only
 
     def process_bit_flags
       if has_bit_flags?

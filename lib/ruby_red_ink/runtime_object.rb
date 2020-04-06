@@ -114,7 +114,7 @@ module RubyRedInk
         new_path_components << Path::Component.parent_component
       end
 
-      (last_shared_path_comp_index + 1..global_path.length) do |i|
+      (last_shared_path_comp_index + 1..global_path.length).each do |i|
         new_path_components << global_path.components[i]
       end
 

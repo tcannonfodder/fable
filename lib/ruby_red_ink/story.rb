@@ -6,7 +6,7 @@ module RubyRedInk
     CURRENT_INK_VERSION = 19
     MINIMUM_COMPATIBLE_INK_VERSION = 18
 
-    attr_accessor :original_object, :state. :profiler,
+    attr_accessor :original_object, :state, :profiler,
       :list_definitions, :main_content_container,
       :allow_external_function_fallbacks
 
@@ -180,7 +180,7 @@ module RubyRedInk
 
     protected
 
-    def continue_internal(&block)
+    def internal_continue(&block)
       profiler.pre_continue! if profile?
 
       @recursive_content_count += 1
@@ -238,7 +238,7 @@ module RubyRedInk
           state.did_safe_exit = false
 
           if !block.nil?
-            yield &block
+            yield block
           end
         end
       end
@@ -589,7 +589,7 @@ module RubyRedInk
             end
           end
         when :NOOP
-          break
+          :NOOP
         when :DUPLICATE_TOPMOST
           state.push_evaluation_stack(state.peek_evaluation_stack)
         when :POP
@@ -607,10 +607,10 @@ module RubyRedInk
           end
 
           if state.try_exit_function_evaluation_from_game?
-            break
+            :NOOP
           elsif state.call_stack.current_element != element || !state.call_stack.can_pop?
             types = {
-              FUNCTION_POP: "function return statement (~return)"
+              FUNCTION_POP: "function return statement (~return)",
               TUNNEL_POP: "tunnel onwards statement (->->)"
             }
 
@@ -718,7 +718,7 @@ module RubyRedInk
         when :SEQUENCE_SHUFFLE_INDEX
           state.push_evaluation_stack(next_sequence_shuffle_index)
         when :START_THREAD
-          break #handled in main step function
+          :NOOP #handled in main step function
         when :DONE
           # we may exist in the context of the initial act of creating
           # the thread, or in the context of evaluating the content
@@ -1293,7 +1293,7 @@ module RubyRedInk
       state.add_error(message, options[:is_warning])
 
       # In a broken state, we don't need to know about any other errors
-      if !options[:is_warning]?
+      if !options[:is_warning]
         state.force_end!
       end
     end

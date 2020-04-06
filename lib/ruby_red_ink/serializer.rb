@@ -225,39 +225,39 @@ module RubyRedInk
           variable_assignment = VariableAssignment.new(variable_name, is_new_declaration)
           variable_assignment.global = is_global_variable
         end
-      end
 
-      # Tag
-      if given_hash["#"]
-        return Tag.new(given_hash["#"])
-      end
-
-      # List
-      if given_hash["list"]
-        list_content = given_hash["list"]
-        raw_list = InkList.new
-        if given_hash["origins"]
-          raw_list.set_initial_origin_names(given_hash["origins"])
+        # Tag
+        if given_hash["#"]
+          return Tag.new(given_hash["#"])
         end
 
-        list_content.each do |key, value|
-          item = InkList::InkListItem.new(key)
-          raw_list.add(item, value.to_i)
+        # List
+        if given_hash["list"]
+          list_content = given_hash["list"]
+          raw_list = InkList.new
+          if given_hash["origins"]
+            raw_list.set_initial_origin_names(given_hash["origins"])
+          end
+
+          list_content.each do |key, value|
+            item = InkList::InkListItem.new(key)
+            raw_list.add(item, value.to_i)
+          end
+
+          return ListValue.new(raw_list)
         end
 
-        return ListValue.new(raw_list)
+        # Used when serializing save state only
+        if given_hash["originalChoicePath"]
+          return object_to_choice(object)
+        end
+      when Array
+        return array_to_container(object)
+      when NilClass
+        return nil
+      else
+        raise Error, "Failed to convert to runtime object: #{object}"
       end
-
-      # Used when serializing save state only
-      if given_hash["originalChoicePath"]
-        return object_to_choice(object)
-      end
-    when Array
-      return array_to_container(object)
-    when NilClass
-      return nil
-    else
-      raise Error, "Failed to convert to runtime object: #{object}"
     end
   end
 

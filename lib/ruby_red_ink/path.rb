@@ -172,7 +172,7 @@ module RubyRedInk
       end
 
       def self.parent_component
-        self.new(Path::PARENT_ID})
+        self.new(Path::PARENT_ID)
       end
     end
   end

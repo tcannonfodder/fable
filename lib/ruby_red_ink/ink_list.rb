@@ -40,7 +40,7 @@ module RubyRedInk
         return "#{origin_name.nil? ? "?" : origin_name}.#{item_name}"
       end
 
-      alias_method :full_name, :as_string
+      alias_method :as_string, :full_name
 
       def equal?(other_object)
         return false if !other_object.is_a?(InkListItem)
@@ -297,7 +297,7 @@ module RubyRedInk
 
       return (
         self.min_item[1] >= other_list.min_item[1] &&
-        self.max_item[1] >= other_list.max_item[1] &&
+        self.max_item[1] >= other_list.max_item[1]
       )
     end
 
