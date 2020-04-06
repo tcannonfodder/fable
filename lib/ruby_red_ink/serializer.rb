@@ -1,7 +1,7 @@
 module RubyRedInk
   class Serializer
     def self.convert_to_runtime_objects(objects, skip_last = false)
-      last_item = array.last
+      last_item = objects.last
       runtime_objects = []
 
       objects.each do |object|
@@ -20,6 +20,45 @@ module RubyRedInk
       end
 
       return runtime_hash
+    end
+
+    def self.array_to_container(array)
+      contents = convert_to_runtime_objects(array, true)
+      # Final object in the array is always a combination of
+      # - named content
+      # - an #f key with the count flags
+      final_object = array.last
+      bit_flags = 0
+      container_name = nil
+      named_only_content = {}
+
+      if !final_object.nil?
+        final_object.each do |key, value|
+          if key == "#f"
+            bit_flags = value.to_i
+          elsif key == "#n"
+            container_name = value
+          else
+            named_content_item = convert_to_runtime_object(value)
+            if named_content_item.is_a?(Container)
+              named_content_item.name = key
+            end
+
+            named_only_content[key] = named_content_item
+          end
+        end
+      end
+
+      container = Container.new(bit_flags)
+      puts contents.inspect
+      container.add_content(contents)
+      if !container_name.nil?
+        container.name = container_name
+      end
+
+      container.named_content = {}
+
+      return container
     end
 
     # ----------------------
@@ -89,8 +128,8 @@ module RubyRedInk
         end
 
         # Control Commands
-        if ControlCommands.is_control_command?(string)
-          return ControlCommands.get_control_command(value)
+        if ControlCommand.is_control_command?(string)
+          return ControlCommand.get_control_command(string)
         end
 
         # Native functions
@@ -106,10 +145,10 @@ module RubyRedInk
         end
 
         # Pop
-        if string == ControlCommands::COMMANDS[:POP_TUNNEL]
-          return ControlCommands.get_control_command(string)
-        elsif string == ControlCommands::COMMANDS[:FUNCTION_POP]
-          return ControlCommands.get_control_command(string)
+        if string == ControlCommand::COMMANDS[:POP_TUNNEL]
+          return ControlCommand.get_control_command(string)
+        elsif string == ControlCommand::COMMANDS[:FUNCTION_POP]
+          return ControlCommand.get_control_command(string)
         end
 
         if string == "void"
@@ -136,7 +175,7 @@ module RubyRedInk
         # Divert
         is_divert = false
         pushes_to_stack = false
-        divert_push_pop_type = PushPopType::TYPE[:function]
+        divert_push_pop_type = PushPopType::TYPES[:function]
         external = false
         value = nil
 
@@ -146,18 +185,18 @@ module RubyRedInk
         elsif given_hash["f()"]
           is_divert = true
           pushes_to_stack = true
-          divert_push_pop_type = PushPopType::TYPE[:function]
+          divert_push_pop_type = PushPopType::TYPES[:function]
           value = given_hash["f()"]
         elsif given_hash["->t->"]
           is_divert = true
           pushes_to_stack = true
-          divert_push_pop_type = PushPopType::TYPE[:tunnel]
+          divert_push_pop_type = PushPopType::TYPES[:tunnel]
           value = given_hash["->t->"]
         elsif given_hash["x()"]
           is_divert = false
           external = true
           pushes_to_stack = false
-          divert_push_pop_type = PushPopType::TYPE[:function]
+          divert_push_pop_type = PushPopType::TYPES[:function]
           value = given_hash["x()"]
         end
 
@@ -198,8 +237,8 @@ module RubyRedInk
         end
 
         # Variable Reference
-        if given["VAR?"]
-          return VariableReference.new(given["VAR?"])
+        if given_hash["VAR?"]
+          return VariableReference.new(given_hash["VAR?"])
         elsif given_hash["CNT?"]
           read_count_variable_reference = VariableReference.new
           read_count_variable_reference.path_string_for_count = given_hash["CNT?"]
@@ -221,9 +260,10 @@ module RubyRedInk
         end
 
         if is_variable_assignment
-          is_new_declaration = !given_hash.has_key?["re"]
+          is_new_declaration = !given_hash.has_key?("re")
           variable_assignment = VariableAssignment.new(variable_name, is_new_declaration)
           variable_assignment.global = is_global_variable
+          return variable_assignment
         end
 
         # Tag
@@ -261,46 +301,7 @@ module RubyRedInk
     end
   end
 
-  def self.array_to_container(array)
-    contents = convert_to_runtime_objects(array, true)
-
-    # Final object in the array is always a combination of
-    # - named content
-    # - an #f key with the count flags
-    final_object = array.last
-    bit_flags = 0
-    container_name = nil
-    named_only_content = {}
-
-    if !final_object.nil?
-      final_object.each do |key, value|
-        if key == "#f"
-          bit_flags = value.to_i
-        elsif key == "#n"
-          container_name = value
-        else
-          named_content_item = convert_to_runtime_object(value)
-          if named_content_item.is_a?(Container)
-            named_content_item.name = key
-          end
-
-          named_only_content[key] = named_content_item
-        end
-      end
-    end
-
-    container = Container.new(bit_flags)
-    container.add_content(contents)
-    if !container_name.nil?
-      container.name = container_name
-    end
-
-    container.named_content = {}
-
-    return container
-  end
-
-  def object_to_choice(object)
+  def self.object_to_choice(object)
     choice = Choice.new
     choice.text = object["text"]
     choice.index = object["index"].to_i
@@ -310,7 +311,7 @@ module RubyRedInk
     return choice
   end
 
-  def convert_to_list_definitions(object)
+  def self.convert_to_list_definitions(object)
     all_definitions = []
 
     object.each do |name, list_definition_hash|

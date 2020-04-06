@@ -12,10 +12,13 @@ module RubyRedInk
 
     def add_content(content_to_add)
       if content_to_add.is_a?(Enumerable)
-        content_to_add.each{|individual_items| add_content(content_to_add) }
+        content_to_add.each{|individual_items| add_content(individual_items) }
+        return
       end
 
-      if content_to_add.parent.present?
+      debugger if content_to_add.nil?
+
+      if !content_to_add.parent.nil?
         raise Error, "content is already in #{content_to_add.parent}"
       end
 
@@ -26,7 +29,7 @@ module RubyRedInk
     end
 
     def insert_content_at(content_to_add, index)
-      if content_to_add.parent.present?
+      if !content_to_add.parent.nil?
         raise Error, "content is already in #{content_to_add.parent}"
       end
 
@@ -198,7 +201,7 @@ module RubyRedInk
     end
 
     def has_bit_flags?
-      self.bit_flags.present?
+      !self.bit_flags.nil?
     end
 
     protected

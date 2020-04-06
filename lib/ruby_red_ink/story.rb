@@ -1,5 +1,5 @@
 module RubyRedInk
-  class Story
+  class Story < RuntimeObject
     class CannotContinueError < Error ; end
 
 
@@ -12,7 +12,7 @@ module RubyRedInk
 
     def initialize(original_object)
       self.original_object = original_object
-      self.state = StoryState.new
+      self.state = StoryState.new(self)
 
       correct_ink_version?
 
@@ -22,19 +22,27 @@ module RubyRedInk
 
       @recursive_content_count = 0
 
-      process_list_definitions!
+      if !original_object["listDefs"].empty?
+        self.list_definitions = Serializer.convert_to_list_definitions(original_object["listDefs"])
+      end
       self.main_content_container = Serializer.convert_to_runtime_object(original_object["root"])
 
       reset_state!
     end
 
     def continue(&block)
-      internal_continue(block)
+      internal_continue(&block)
       return current_text
     end
 
     def continue_maximially(&block)
-      raise NotImplementedError
+      result = StringIO.new
+      while can_continue?
+        result << continue
+      end
+
+      result.rewind
+      return result.read
     end
 
     def current_choices
@@ -94,7 +102,7 @@ module RubyRedInk
     end
 
     def reset_state!
-      self.state = StoryState.new
+      self.state = StoryState.new(self)
     end
 
     def reset_errors!
@@ -219,16 +227,16 @@ module RubyRedInk
 
         # Finished this section of content, or reached a choice point
         if !can_continue?
-          if state.call_stack.can_pop_thread?
+          if state.callstack.can_pop_thread?
             add_error!("Thread available to pop, threads should always be flat by the end of evaluation?")
           end
 
           if state.generated_choices.empty? && !state.did_safe_exit? && @temporary_evaluation_container.nil?
-            if state.call_stack.can_pop?(:tunnel)
+            if state.callstack.can_pop?(:tunnel)
               add_error!("unexpectedly reached end of content. Do you need a '->->' to return from a tunnel?")
-            elsif state.call_stack.can_pop?(:function)
+            elsif state.callstack.can_pop?(:function)
               add_error!("unexpectedly reached end of content. Do you need a '~ return'?")
-            elsif state.call_stack.can_pop?
+            elsif state.callstack.can_pop?
               add_error!("ran out of content. Do you need a '-> DONE' or '-> END'?")
             else
               add_error!("unexpectedly reached end of content for unknown reason.")
@@ -255,7 +263,7 @@ module RubyRedInk
 
       profiler.post_step! if profile?
 
-      if !can_continue? && state.call_stack.element_is_evaluate_from_game?
+      if !can_continue? && state.callstack.element_is_evaluate_from_game?
         try_following_default_invisible_choice!
       end
 
@@ -328,7 +336,7 @@ module RubyRedInk
 
       # Step directly into the first element of content in a container (if necessary)
       container_to_enter = pointer.resolve!
-      while !container_to_enter.nil?
+      while container_to_enter.is_a?(Container)
         # Mark container as being entered
         visit_container!(container_to_enter, at_start: true)
 
@@ -341,7 +349,7 @@ module RubyRedInk
 
       state.current_pointer = pointer
 
-      profiler.step!(state.call_stack) if profile?
+      profiler.step!(state.callstack) if profile?
 
       # is the current content object:
       # - normal content
@@ -351,7 +359,7 @@ module RubyRedInk
       # rather than called as a function)
       current_content_object = pointer.resolve!
 
-      is_logic_or_flow_content = perform_logic_and_flow_control!(current_content_object)
+      is_logic_or_flow_content = perform_logic_and_flow_control(current_content_object)
 
       # Has flow been forced to end by flow control above?
       return if state.current_pointer.null_pointer?
@@ -370,7 +378,7 @@ module RubyRedInk
           variable_pointer = current_content_object
           if variable_pointer.context_index == -1
             # create a new object so we're not overwriting the story's own data
-            context_index = state.call_stack.context_for_variable_named(variable_pointer.variable_name)
+            context_index = state.callstack.context_for_variable_named(variable_pointer.variable_name)
             current_content_object = VariablePointerValue.new(variable_pointer.variable_name, context_index)
           end
         end
@@ -390,20 +398,21 @@ module RubyRedInk
       # Starting a thread should be done after the increment to the
       # content pointer, so that when returning from the thread, it
       # returns to the content after this instruction
-      if ControlCommands.get_control_command(value) == :CLONE_THREAD
-        state.call_stack.push_thread!
+      debugger
+      if ControlCommand.get_control_command(value) == :CLONE_THREAD
+        state.callstack.push_thread!
       end
     end
 
     def visit_container!(container, options)
       at_start = options[:at_start]
 
-      if !container.counting_start_only? || at_start
-        if container.count_vists?
+      if !container.counting_at_start_only? || at_start
+        if container.visits_should_be_counted?
           state.increment_visit_count_for_container!(container)
         end
 
-        if container.count_turn_index?
+        if container.turn_index_should_be_counted?
           state.record_turn_index_visit_to_container!(container)
         end
       end
@@ -439,7 +448,7 @@ module RubyRedInk
       currnet_container_ancestor = current_child_of_container.parent
 
       all_children_entered_at_start = true
-      while !currnet_container_ancestor.nil? && (!@previous_containers.include?(currnet_container_ancestor) || currnet_container_ancestor.counting_start_only?)
+      while !currnet_container_ancestor.nil? && (!@previous_containers.include?(currnet_container_ancestor) || currnet_container_ancestor.counting_at_start_only?)
         # check whether this ancestor container is being entered at the start
         # by checking whether the child object is the first
 
@@ -510,7 +519,7 @@ module RubyRedInk
       # wrapped in a conditional), or we may pop out from a thread, at which
       # point that thread is discarded. Fork clones the thread, gives it a new
       # ID, but without affecting the thread stack itself
-      choice.thread_at_generation = state.call_stack.fork_thread!
+      choice.thread_at_generation = state.callstack.fork_thread!
 
       # set the final text for the choice
       choice.text = "#{start_text} #{choice_only_text}".strip
@@ -554,7 +563,7 @@ module RubyRedInk
         end
 
         if element.pushes_to_stack?
-          state.call_stack.push(
+          state.callstack.push(
             element.stack_push_type,
             output_stream_length_when_pushed: state.output_stream.count
           )
@@ -571,8 +580,8 @@ module RubyRedInk
         return true
       end
 
-      if ControlCommands::COMMANDS.has_key?(element)
-        case element
+      if element.is_a?(ControlCommand)
+        case element.command_type
         when :BEGIN_LOGICAL_EVALUATION_MODE
           assert!(!state.in_expression_evaluation?, "Already in expression evaluation?")
           state.in_expression_evaluation = true
@@ -608,15 +617,15 @@ module RubyRedInk
 
           if state.try_exit_function_evaluation_from_game?
             :NOOP
-          elsif state.call_stack.current_element != element || !state.call_stack.can_pop?
+          elsif state.callstack.current_element != element || !state.callstack.can_pop?
             types = {
               FUNCTION_POP: "function return statement (~return)",
               TUNNEL_POP: "tunnel onwards statement (->->)"
             }
 
-            expected[state.call_stack.current_element]
+            expected[state.callstack.current_element]
 
-            if !state.call_stack.can_pop?
+            if !state.callstack.can_pop?
               expected = "end of flow (-> END or choice)"
             end
 
@@ -722,8 +731,8 @@ module RubyRedInk
         when :DONE
           # we may exist in the context of the initial act of creating
           # the thread, or in the context of evaluating the content
-          if state.call_stack.can_pop_thread?
-            state.call_stack.pop_thread!
+          if state.callstack.can_pop_thread?
+            state.callstack.pop_thread!
           else
             # in normal flow, allow safe exit without warning
             state.did_safe_exit = true
@@ -863,14 +872,14 @@ module RubyRedInk
         # choose_path_string is potentially dangerous since you can call it
         # when the stack is pretty much in any state. Let's catch one of the
         # worst offenders
-        if state.call_stack.current_element == :FUNCTION_POP
-          container = state.call_stack.current_element.current_pointer.container
+        if state.callstack.current_element == :FUNCTION_POP
+          container = state.callstack.current_element.current_pointer.container
           function_detail = ""
           if !container.nil?
             function_detail = "(#{container.path.as_string})"
           end
 
-          raise StoryError("Story was running a function #{function_detail} when you called choose_path_string(#{path_string}) - this is almost certainly not not what you want! Full stack trace:\n#{state.call_stack.call_stack_trace}")
+          raise StoryError("Story was running a function #{function_detail} when you called choose_path_string(#{path_string}) - this is almost certainly not not what you want! Full stack trace:\n#{state.callstack.callstack_trace}")
         end
       end
 
@@ -901,7 +910,7 @@ module RubyRedInk
         on_make_choice(choice_to_choose)
       end
 
-      state.call_stack.current_thread = choice_to_choose.thread_at_generation
+      state.callstack.current_thread = choice_to_choose.thread_at_generation
 
       choose_path(choice_to_choose.target_path)
     end
@@ -969,7 +978,7 @@ module RubyRedInk
           end
 
           # Divert directly into the fallback function and we're done
-          state.call_stack.push(:FUNCTION_POP, output_stream_length_when_pushed: state.output_stream.count)
+          state.callstack.push(:FUNCTION_POP, output_stream_length_when_pushed: state.output_stream.count)
           state.diverted_pointer = Pointer.start_of(fallback_function_container)
           return
         end
@@ -1146,9 +1155,9 @@ module RubyRedInk
       if !successful_pointer_increment
         did_pop = false
 
-        if state.call_stack.can_pop?(:function)
+        if state.callstack.can_pop?(:function)
           # Pop from the call stack
-          state.call_stack.pop_callstack(:function)
+          state.callstack.pop_callstack(:function)
 
           # This pop was due to dropping off the end of a function that didn't
           # return anything, so in this case we make sure the evaluator has
@@ -1159,8 +1168,8 @@ module RubyRedInk
           end
 
           did_pop = true
-        elsif state.call_stack.can_pop_thread?
-          state.call_stack.pop_thread!
+        elsif state.callstack.can_pop_thread?
+          state.callstack.pop_thread!
           did_pop = true
         else
           state.try_exit_function_evaluation_from_game?
@@ -1176,7 +1185,7 @@ module RubyRedInk
     def increment_content_pointer
       successful_increment = true
 
-      pointer = state.call_stack.current_element.current_pointer
+      pointer = state.callstack.current_element.current_pointer
       pointer.index += 1
 
       # Each time we step off the end, we fall out to the next container, all the
@@ -1199,7 +1208,7 @@ module RubyRedInk
 
       pointer = Pointer.null_pointer if !successful_increment
 
-      state.call_stack.current_element.current_pointer = pointer
+      state.callstack.current_element.current_pointer = pointer
       return successful_increment
     end
 
@@ -1216,13 +1225,13 @@ module RubyRedInk
 
       # Invisible choice may have been generate on a different thread, in which
       # case we need to restore it before we continue
-      state.call_stack.current_thread = choice.thread_at_generation
+      state.callstack.current_thread = choice.thread_at_generation
 
       # If there's a chance that this state will be rolled back before the
       # invisible choice then make sure that the choice thread is left intact,
       # and it isn't re-entered in an old state
       if !state_snapshot_at_last_newline.nil?
-        state.call_stack.current_thread = state.call_stack.fork_thread!
+        state.callstack.current_thread = state.callstack.fork_thread!
       end
 
       choose_path(choice.target_path, incrementing_turn_index: false)
@@ -1267,7 +1276,7 @@ module RubyRedInk
     end
 
     def error!(message, options = {use_end_line_number: false})
-      exception = StoryException.new(message)
+      exception = StoryError.new(message)
       e.use_end_line_number = options[:use_end_line_number]
       raise e
     end
@@ -1276,7 +1285,7 @@ module RubyRedInk
       add_error!(message, is_warning: true)
     end
 
-    def add_error(message, options = {is_warning: false, use_end_line_number: false})
+    def add_error!(message, options = {is_warning: false, use_end_line_number: false})
       debug_metadata = current_debug_metadata
 
       error_type_string = options[:is_warning] ? "WARNING" : "ERROR"
@@ -1290,7 +1299,7 @@ module RubyRedInk
         message = "RUNTIME #{error_type_string}: #{message}"
       end
 
-      state.add_error(message, options[:is_warning])
+      state.add_error(message, is_warning: options[:is_warning])
 
       # In a broken state, we don't need to know about any other errors
       if !options[:is_warning]
@@ -1317,7 +1326,7 @@ module RubyRedInk
       end
 
       # Move up callstack if possible
-      state.call_stack.elements.each do |element|
+      state.callstack.elements.each do |element|
         pointer = element.current_pointer
         if !pointer.null_pointer? && pointer.resolve! != nil
           debug_metadata = pointer.resolve!.debug_metadata
@@ -1339,11 +1348,6 @@ module RubyRedInk
       debug_metadata = current_debug_metadata
       return 0 if debug_metadata.nil?
       return debug_metadata.start_line_number
-    end
-
-    def process_list_definitions!
-      return nil if root_container["listDefs"].empty?
-      self.list_definitions = Serializer.convert_to_list_definitions(root_container["listDefs"])
     end
 
     def correct_ink_version?

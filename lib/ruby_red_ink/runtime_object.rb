@@ -49,7 +49,7 @@ module RubyRedInk
           container = child.parent
 
           while !container.nil?
-            if !child.nil? && child.has_valid_name?
+            if !child.nil? && child.valid_name?
               components << Path::Component.new(name: child.name)
             else
               components << Path::Component.new(index: container.content.index(child))

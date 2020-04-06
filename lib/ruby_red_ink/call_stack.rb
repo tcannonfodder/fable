@@ -242,11 +242,15 @@ module RubyRedInk
       attr_accessor :call_stack, :thread_index, :previous_pointer
 
 
-      def initialize
-        self.call_stack = []
+      def initialize(**arguments)
+        if arguments.size == 0
+          self.call_stack = []
+        else
+          self.initialize_with_thread_object_and_story_context(arguments[0], arguments[1])
+        end
       end
 
-      def initialize(thread_object, story_context)
+      def initialize_with_thread_object_and_story_context(thread_object, story_context)
         self.call_stack = []
         self.thread_index = thread_object["threadIndex"]
 
@@ -311,7 +315,7 @@ module RubyRedInk
           end
 
           element_export["exp"] = element.in_expression_evaluation?
-          element_export["type"] = PushPopType::TYPE[self.type]
+          element_export["type"] = PushPopType::TYPES[self.type]
 
           if element.temporary_variables.any?
             element_export["temp"] = element.temporary_variables.dup

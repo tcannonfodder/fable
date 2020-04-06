@@ -100,7 +100,7 @@ module RubyRedInk
 
     def call!(parameters)
       if parameters.size != self.number_of_parameters
-        raise StoryException, "Unexpected number of parameters"
+        raise StoryError, "Unexpected number of parameters"
       end
 
       has_list = false
@@ -108,7 +108,7 @@ module RubyRedInk
       parameters.each do |parameter|
         case parameter
         when Void
-          raise StoryException, "Attempting to perform operation on a void value. Did you forget to 'return' a value from a function you called here?"
+          raise StoryError, "Attempting to perform operation on a void value. Did you forget to 'return' a value from a function you called here?"
         when ListValue
           has_list = true
         end

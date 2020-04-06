@@ -16,7 +16,8 @@ module RubyRedInk
       :current_turn_index, :story_seed, :previous_random,
       :did_safe_exit, :story, :variables_state,
       :current_text, :output_stream_text_dirty,
-      :current_tags, :output_stream_tags_dirty
+      :current_tags, :output_stream_tags_dirty,
+      :visit_counts, :turn_indicies
 
     alias_method :did_safe_exit?, :did_safe_exit
 
@@ -472,6 +473,16 @@ module RubyRedInk
     def reset_errors!
       self.current_errors = nil
       self.current_warnings = nil
+    end
+
+    def add_error(message, options = {is_warning: false})
+      if !options[:is_warning]
+        self.current_errors ||= []
+        self.current_errors << message
+      else
+        self.current_warnings ||= []
+        self.current_warnings << message
+      end
     end
 
     def reset_output!(objects_to_add = nil)

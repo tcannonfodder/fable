@@ -4,6 +4,11 @@ module RubyRedInk
     alias_method :value, :value_object
     alias_method :value=, :value_object=
 
+
+    def initialize(value)
+      self.value_object = value
+    end
+
     def value_type
       raise NotImplementedError
     end
@@ -45,11 +50,7 @@ module RubyRedInk
     end
 
     def bad_cast_exception(target_type)
-      return StoryException.new("Can't cast #{self.value_object} from #{self.value_type} to #{target_type}")
-    end
-
-    def initialize(value)
-      self.value_object = value
+      return StoryError.new("Can't cast #{self.value_object} from #{self.value_type} to #{target_type}")
     end
   end
 
@@ -131,21 +132,25 @@ module RubyRedInk
       return !is_newline? && !is_inline_whitespace?
     end
 
-    def initialize(value)
+    def initialize(*args)
+      if args.size == 1
+        self.initialize_with_string(args[0])
+      else
+        super("")
+      end
+    end
+
+    def initialize_with_string(value)
       #classify whitespace status
       self.is_newline = (value == "\n")
       self.is_inline_whitespace = true
 
-      value.each_character do |character|
+      value.each_char do |character|
         if character != ' ' && character != "\t"
           self.is_inline_whitespace = false
           break
         end
       end
-    end
-
-    def initialize
-      super("")
     end
 
     def cast!(new_type)

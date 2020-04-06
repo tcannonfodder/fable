@@ -141,11 +141,11 @@ module RubyRedInk
 
       def initialize(options)
         if options[:index]
-          this.index = index_or_name
-          this.name = nil
+          self.index = options[:index]
+          self.name = nil
         elsif options[:name]
-          this.name = index_or_name
-          this.index = -1
+          self.name = options[:name]
+          self.index = -1
         end
       end
 

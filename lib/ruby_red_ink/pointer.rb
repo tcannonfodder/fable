@@ -19,7 +19,7 @@ module RubyRedInk
       return nil if index < 0
       return nil if container.nil?
       return container if container.content.empty?
-      return container[index]
+      return container.content[index]
     end
 
     def null_pointer?

@@ -8,8 +8,6 @@ class OriginalSpecTest < Minitest::Test
     json = load_json_export("test/fixtures/original-specs/arithmetic.ink.json")
     story = RubyRedInk::Story.new(json)
 
-    assert_nil story.engine.step
-
     result = <<~STORY
     36
     2
@@ -20,21 +18,19 @@ class OriginalSpecTest < Minitest::Test
     8
     STORY
 
-    assert_equal result, story.engine.current_text + "\n"
+    assert_equal result, story.continue_maximially + "\n"
   end
 
   def test_basic_string_literals
     json = load_json_export("test/fixtures/original-specs/basic-string-literals.ink.json")
     story = RubyRedInk::Story.new(json)
 
-    assert_nil story.engine.step
-
     result = <<~STORY
     Hello world 1
     Hello world 2.
     STORY
 
-    assert_equal result, story.engine.current_text + "\n"
+    assert_equal result, story.continue_maximially + "\n"
   end
 
   def test_basic_tunnel
