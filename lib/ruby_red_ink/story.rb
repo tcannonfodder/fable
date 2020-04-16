@@ -474,7 +474,7 @@ module RubyRedInk
 
       # don't create choice if it doesn't pass the conditional
       if choice_point.has_condition?
-        condition_value = state.pop_evaluation_stack!
+        condition_value = state.pop_evaluation_stack
         if !Value.truthy?(condition_value)
           show_choice = false
         end
@@ -484,11 +484,11 @@ module RubyRedInk
       choice_only_text = ""
 
       if choice_point.has_choice_only_content?
-        choice_only_text = state.pop_evaluation_stack!
+        choice_only_text = state.pop_evaluation_stack
       end
 
       if choice_point.has_start_content?
-        start_text = state.pop_evaluation_stack!
+        start_text = state.pop_evaluation_stack
       end
 
       # Don't create the choice if the player has aready read this content
@@ -529,7 +529,7 @@ module RubyRedInk
       # Divert
       if element.is_a?(Divert)
         if element.is_conditional?
-          return true if !Value.truthy?(state.pop_evaluation_stack!)
+          return true if !Value.truthy?(state.pop_evaluation_stack)
         end
 
         case element
@@ -598,14 +598,14 @@ module RubyRedInk
         when :DUPLICATE_TOPMOST
           state.push_evaluation_stack(state.peek_evaluation_stack)
         when :POP
-          state.pop_evaluation_stack!
+          state.pop_evaluation_stack
         when :TUNNEL_POP, :FUNCTION_POP
           # Tunnel onwards is allowed to specify an optional override divert
           # to go to immediately after returning: ->-> target
           override_tunnel_return_target = nil
 
           if element == :TUNNEL_POP
-            override_tunnel_return_target = state.pop_evaluation_stack!
+            override_tunnel_return_target = state.pop_evaluation_stack
             if !override_tunnel_return_target.is_a?(DivertTargetValue)
               assert!(override_tunnel_return_target == Values::VOID_VALUE, "Expected void if ->-> doesn't override target")
             end
@@ -685,8 +685,8 @@ module RubyRedInk
 
           state.push_evaluation_stack(count)
         when :RANDOM
-          max_int = state.pop_evaluation_stack!
-          min_int = state.pop_evaluation_stack!
+          max_int = state.pop_evaluation_stack
+          min_int = state.pop_evaluation_stack
 
           if !min_int.is_a?(Numeric)
             add_error!("Invalid value for minimum parameter of RANDOM(min, max)")
@@ -708,7 +708,7 @@ module RubyRedInk
           # next random number, rather than keeping the random object around
           state.previous_random = next_random
         when :SEED_RANDOM
-          seed = state.pop_evaluation_stack!
+          seed = state.pop_evaluation_stack
           if seed.nil?
             error!("Invalid value passed to SEED_RANDOM")
           end
@@ -740,8 +740,8 @@ module RubyRedInk
         when :STORY_END
           state.force_end!
         when :LIST_FROM_INT
-          integer_value = state.pop_evaluation_stack!
-          list_name = state.pop_evaluation_stack!
+          integer_value = state.pop_evaluation_stack
+          list_name = state.pop_evaluation_stack
 
           if integer_value.nil?
             raise StoryError, "Passed non-integer when creating a list element from a numerical value."
@@ -753,9 +753,9 @@ module RubyRedInk
             raise StoryError, "Failed to find LIST called #{list_name}"
           end
         when :LIST_RANGE
-          max = state.pop_evaluation_stack!
-          min = state.pop_evaluation_stack!
-          target_list = state.pop_evaluation_stack!
+          max = state.pop_evaluation_stack
+          min = state.pop_evaluation_stack
+          target_list = state.pop_evaluation_stack
 
           if target_list.nil? || min.nil? || max.nil?
             raise StoryError, "Expected list, minimum, and maximum for LIST_RANGE"
@@ -763,7 +763,7 @@ module RubyRedInk
 
           stack.push_evaluation_stack(target_list.sublist(min, max))
         when :LIST_RANDOM
-          list = state.pop_evaluation_stack!
+          list = state.pop_evaluation_stack
 
           if list.nil?
             raise StoryError, "Expected list for LIST_RANDOM"
@@ -819,7 +819,7 @@ module RubyRedInk
 
       if element.is_a?(NativeFunctionCall)
         parameters = []
-        element.number_of_parameters.times{ parameters << state.pop_evaluation_stack! }
+        element.number_of_parameters.times{ parameters << state.pop_evaluation_stack }
 
         state.push_evaluation_stack(element.call!(parameters))
         return true
@@ -985,7 +985,7 @@ module RubyRedInk
       end
 
       arguments = []
-      number_of_arguments.times{ arguments << state.pop_evaluation_stack! }
+      number_of_arguments.times{ arguments << state.pop_evaluation_stack }
 
       arguments.reverse!
 
