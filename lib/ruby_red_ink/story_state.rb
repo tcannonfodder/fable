@@ -705,7 +705,7 @@ module RubyRedInk
       i = @output_stream.count - 1
       while i >= 0
         object = @output_stream[i]
-        if ControlCommands.is_control_command?(object) || (object.is_a?(StringValue) && object.is_nonwhitespace?)
+        if object.is_a?(ControlCommand) || (object.is_a?(StringValue) && object.is_nonwhitespace?)
           break
         elsif object.is_a?(StringValue) && object.is_newline?
           remove_whitespace_from = i
@@ -727,7 +727,7 @@ module RubyRedInk
       @output_stream.each_with_index do |object, i|
         if object.is_a?(Glue)
           @output_stream.delete_at(i)
-        elsif ControlCommands.is_control_command?(object)
+        elsif object.is_a?(ControlCommand)
         end
       end
 
