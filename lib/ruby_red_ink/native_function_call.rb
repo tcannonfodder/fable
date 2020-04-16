@@ -118,7 +118,7 @@ module RubyRedInk
       if parameters.size == 2 && has_list
         return call_binary_list_operation(parameters)
       end
-      debugger
+
       coerced_parameters = coerce_values_to_single_type(parameters)
 
       return underlying_function_call(coerced_parameters)
@@ -132,9 +132,9 @@ module RubyRedInk
         raise Error, "Unexpected number of parameters to NativeFunctionCall: #{parameters.size}"
       end
 
-      if !can_perform_function_on?(value_type)
-        raise Error, "Cannot perform operation '#{self.name}' on #{value_type}"
-      end
+      # if !can_perform_function_on?(value_type)
+      #   raise Error, "Cannot perform operation '#{self.name}' on #{value_type}"
+      # end
 
       # Binary function
       if parameters.size == 2
