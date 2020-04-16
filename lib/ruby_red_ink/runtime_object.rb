@@ -67,7 +67,7 @@ module RubyRedInk
     end
 
     def resolve_path(path)
-      if path.relaive?
+      if path.relative?
         nearest_container = self
 
         if !nearest_container.is_a?(Container)
