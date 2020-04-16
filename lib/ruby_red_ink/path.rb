@@ -43,8 +43,8 @@ module RubyRedInk
         parse_components_string(components)
       else
         self.components = components
+        self.relative = relative
       end
-      self.relative = relative
     end
 
     def path_by_appending_path(path_to_append)
@@ -105,9 +105,9 @@ module RubyRedInk
       # ../../hello/5
 
       if components_string.start_with?(".")
-        relative = true
+        @relative = true
       else
-        relative = false
+        @relative = false
       end
 
       components_string.split('.').each do |section|
@@ -180,7 +180,7 @@ module RubyRedInk
       end
 
       def self.parent_component
-        self.new(Path::PARENT_ID)
+        self.new(name: Path::PARENT_ID)
       end
     end
   end
