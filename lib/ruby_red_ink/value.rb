@@ -63,8 +63,8 @@ module RubyRedInk
       return value != 0
     end
 
-    def initialize
-      super(0)
+    def initialize(value=0)
+      super(value)
     end
 
     def cast!(new_type)
@@ -93,8 +93,8 @@ module RubyRedInk
       return value != 0.0
     end
 
-    def initialize
-      super(0.0)
+    def initialize(value = 0.0)
+      super(value)
     end
 
     def cast!(new_type)
