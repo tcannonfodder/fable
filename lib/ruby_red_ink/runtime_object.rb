@@ -88,12 +88,11 @@ module RubyRedInk
 
       own_path = self.path
 
-      min_path_length = [global_path.length, own_path.length]
+      min_path_length = [global_path.length, own_path.length].min
       last_shared_path_comp_index = -1
-
       (0..min_path_length).each do |i|
         own_component = own_path.components[i]
-        other_component = other_component.components[i]
+        other_component = global_path.components[i]
 
         if own_component == other_component
           last_shared_path_comp_index = i
