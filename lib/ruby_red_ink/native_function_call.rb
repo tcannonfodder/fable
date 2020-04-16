@@ -251,41 +251,41 @@ module RubyRedInk
     def run_operation(*parameters)
       case name
       when :ADDITION
-        return self.class.addition(parameters[0], parameters[1])
+        return self.class.addition(parameters[1], parameters[0])
       when :SUBTRACTION
-        return self.class.subtraction(parameters[0], parameters[1])
+        return self.class.subtraction(parameters[1], parameters[0])
       when :DIVIDE
-        return self.class.divide(parameters[0], parameters[1])
+        return self.class.divide(parameters[1], parameters[0])
       when :MULTIPLY
-        return self.class.divide(parameters[0], parameters[1])
+        return self.class.multiply(parameters[1], parameters[0])
       when :MODULO
-        return self.class.modulo(parameters[0], parameters[1])
+        return self.class.modulo(parameters[1], parameters[0])
       when :NEGATE
         return self.class.negate(parameter[0])
       when :EQUALS
-        return self.class.equal(parameters[0], parameters[1])
+        return self.class.equal(parameters[1], parameters[0])
       when :GREATER_THAN
-        return self.class.greater(parameters[0], parameters[1])
+        return self.class.greater(parameters[1], parameters[0])
       when :LESS_THAN
-        return self.class.less(parameters[0], parameters[1])
+        return self.class.less(parameters[1], parameters[0])
       when :GREATER_THAN_OR_EQUAL_TO
-        return self.class.greater_than_or_equal(parameters[0], parameters[1])
+        return self.class.greater_than_or_equal(parameters[1], parameters[0])
       when :LESS_THAN_OR_EQUAL_TO
-        return self.class.less_than_or_equal(parameters[0], parameters[1])
+        return self.class.less_than_or_equal(parameters[1], parameters[0])
       when :NOT_EQUAL
-        return self.class.not_equal(parameters[0], parameters[1])
+        return self.class.not_equal(parameters[1], parameters[0])
       when :NOT
         return self.class.not(parameters[0])
       when :AND
-        return self.class.and(parameters[0], parameters[1])
+        return self.class.and(parameters[1], parameters[0])
       when :OR
-        return self.class.or(parameters[0], parameters[1])
+        return self.class.or(parameters[1], parameters[0])
       when :MIN
-        return self.class.min(parameters[0], parameters[1])
+        return self.class.min(parameters[1], parameters[0])
       when :MAX
-        return self.class.max(parameters[0], parameters[1])
+        return self.class.max(parameters[1], parameters[0])
       when :POWER
-        return self.class.pow(parameters[0], parameters[1])
+        return self.class.pow(parameters[1], parameters[0])
       when :FLOOR
         return self.class.floor(parameters[0])
       when :CEILING
@@ -295,11 +295,11 @@ module RubyRedInk
       when :FLOAT_VALUE
         return self.class.float_value(parameters[0])
       when :HAS
-        return self.class.has(parameters[0], parameters[1])
+        return self.class.has(parameters[1], parameters[0])
       when :HAS_NOT
-        return self.class.has_not(parameters[0], parameters[1])
+        return self.class.has_not(parameters[1], parameters[0])
       when :INTERSECTION
-        return self.class.intersection(parameters[0], parameters[1])
+        return self.class.intersection(parameters[1], parameters[0])
       when :LIST_MINIMUM
         return self.class.list_min(parameters[0])
       when :LIST_MAXIMUM
