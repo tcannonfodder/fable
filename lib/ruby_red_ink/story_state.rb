@@ -254,6 +254,10 @@ module RubyRedInk
       return evaluation_stack.pop(number_of_items)
     end
 
+    def peek_evaluation_stack
+      return evaluation_stack.last
+    end
+
 
     # <summary>
     # Ends the current ink flow, unwrapping the callstack but without
