@@ -75,7 +75,7 @@ module RubyRedInk
       if has_variable_target?
         return "Divert(variable: #{variable_divert_name})"
       elsif target_path.nil?
-        return "Divert(null"
+        return "Divert(null)"
       else
         result = ""
 
