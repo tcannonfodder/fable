@@ -16,7 +16,7 @@ module RubyRedInk
     end
 
     def resolve!
-      return nil if index < 0
+      return container if index < 0
       return nil if container.nil?
       return container if container.content.empty?
       return container.content[index]
