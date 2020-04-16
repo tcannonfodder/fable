@@ -28,8 +28,7 @@ module RubyRedInk
     def target_pointer
       if @target_pointer.null_pointer?
         target_object = resolve_path(@target_path).object
-
-        if @target_path.last_component.is_index?
+        if @target_path.components.last.is_index?
           @target_pointer.container = target_object.parent
           @target_pointer.index = @target_path.last_component.index
         else
