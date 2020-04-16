@@ -47,20 +47,20 @@ class OriginalSpecTest < Minitest::Test
 
     result = <<~STORY
     1. a
-    2. 
+    2.
     3. b
     4. b
     ---
-    1. 
+    1.
     2. a
     3. a
     ---
     1. a
-    2. 
-    3. 
+    2.
+    3.
     ---
-    1. 
-    2. 
+    1.
+    2.
     3.
     STORY
 
