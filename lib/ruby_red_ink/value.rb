@@ -50,7 +50,7 @@ module RubyRedInk
     end
 
     def bad_cast_exception(target_type)
-      return StoryError.new("Can't cast #{self.value_object} from #{self.value_type} to #{target_type}")
+      return StoryError.new("Can't cast #{self.value_object} from #{OrderedValueTypes.key(self.value_type)} to #{target_type}")
     end
   end
 
@@ -68,15 +68,15 @@ module RubyRedInk
     end
 
     def cast(new_type)
-      if new_type == self.value_type
+      if new_type == self.class
         return self
       end
 
-      if new_type == OrderedValueTypes[FloatValue]
+      if new_type == FloatValue
         return FloatValue.new(self.value.to_f)
       end
 
-      if new_type == OrderedValueTypes[StringValue]
+      if new_type == StringValue
         return StringValue.new(self.value.to_s)
       end
 
@@ -86,7 +86,7 @@ module RubyRedInk
 
   class FloatValue < Value
     def value_type
-      return OrderedValueTypes[FloatValue]
+      return FloatValue
     end
 
     def truthy?
@@ -98,15 +98,15 @@ module RubyRedInk
     end
 
     def cast(new_type)
-      if new_type == self.value_type
+      if new_type == self.class
         return self
       end
 
-      if new_type == OrderedValueTypes[IntValue]
+      if new_type == IntValue
         return IntValue.new(self.value.to_i)
       end
 
-      if new_type == OrderedValueTypes[StringValue]
+      if new_type == StringValue
         return StringValue.new(self.value.to_s)
       end
 
@@ -156,11 +156,11 @@ module RubyRedInk
     end
 
     def cast(new_type)
-      if new_type == self.value_type
+      if new_type == self.class
         return self
       end
 
-      if new_type == OrderedValueTypes[IntValue]
+      if new_type == IntValue
         begin
           return IntValue.new(Integer(self.value))
         rescue ArgumentError => e
@@ -168,7 +168,7 @@ module RubyRedInk
         end
       end
 
-      if new_type == OrderedValueTypes[FloatValue]
+      if new_type == FloatValue
         begin
           return FloatValue.new(Float(self.value))
         rescue ArgumentError => e
@@ -197,7 +197,7 @@ module RubyRedInk
     end
 
     def cast(new_type)
-      if new_type == value_type
+      if new_type == self.class
         return self
       end
 
@@ -237,7 +237,7 @@ module RubyRedInk
     end
 
     def cast(new_type)
-      if new_type == value_type
+      if new_type == self.class
         return self
       end
 
@@ -263,7 +263,7 @@ module RubyRedInk
     end
 
     def cast(new_type)
-      if new_type == OrderedValueTypes[IntValue]
+      if new_type == IntValue
         max = value.max_item
         if max.nil?
           return IntValue.new(0)
@@ -272,7 +272,7 @@ module RubyRedInk
         end
       end
 
-      if new_type == OrderedValueTypes[FloatValue]
+      if new_type == FloatValue
         max = value.max_item
         if max.nil?
           return FloatValue.new(0.0)
@@ -281,7 +281,7 @@ module RubyRedInk
         end
       end
 
-      if new_type == OrderedValueTypes[StringValue]
+      if new_type == StringValue
         max = value.max_item
         if max.nil?
           return StringValue.new("")
@@ -290,7 +290,7 @@ module RubyRedInk
         end
       end
 
-      if new_type == value_type
+      if new_type == self.class
         return self
       end
 
