@@ -48,9 +48,9 @@ module RubyRedInk
 
     def target_path_string=(value)
       if value.nil?
-        target_path = nil
+        self.target_path = nil
       else
-        target_path = Path.new(value)
+        self.target_path = Path.new(value)
       end
     end
 
