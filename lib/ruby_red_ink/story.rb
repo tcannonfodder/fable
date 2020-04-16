@@ -349,7 +349,6 @@ module RubyRedInk
       # (e.g: return/done statement in knot that was diverted to
       # rather than called as a function)
       current_content_object = pointer.resolve!
-      # debugger if current_content_object.to_s == "Hello"
       is_logic_or_flow_content = perform_logic_and_flow_control(current_content_object)
 
       # Has flow been forced to end by flow control above?
