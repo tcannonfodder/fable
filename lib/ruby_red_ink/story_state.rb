@@ -300,7 +300,7 @@ module RubyRedInk
       end
     end
 
-    def pop_callstack(pop_type)
+    def pop_callstack(pop_type=nil)
       # At the end of a function call, trim any whitespace from the end
       if callstack.current_element.type == PushPopType::TYPES[:function]
         trim_whitespace_from_function_end!
