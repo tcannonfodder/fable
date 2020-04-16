@@ -112,6 +112,10 @@ module RubyRedInk
 
       raise bad_cast_exception(new_type)
     end
+
+    def to_s
+      value.truncate(6).to_s
+    end
   end
 
   class StringValue < Value
