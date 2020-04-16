@@ -17,7 +17,7 @@ module RubyRedInk
       raise NotImplementedError
     end
 
-    def cast!(new_type)
+    def cast(new_type)
       raise NotImplementedError
     end
 
@@ -67,7 +67,7 @@ module RubyRedInk
       super(value)
     end
 
-    def cast!(new_type)
+    def cast(new_type)
       if new_type == self.value_type
         return self
       end
@@ -97,7 +97,7 @@ module RubyRedInk
       super(value)
     end
 
-    def cast!(new_type)
+    def cast(new_type)
       if new_type == self.value_type
         return self
       end
@@ -155,7 +155,7 @@ module RubyRedInk
       self.value = value
     end
 
-    def cast!(new_type)
+    def cast(new_type)
       if new_type == self.value_type
         return self
       end
@@ -196,7 +196,7 @@ module RubyRedInk
       super(nil)
     end
 
-    def cast!(new_type)
+    def cast(new_type)
       if new_type == value_type
         return self
       end
@@ -236,7 +236,7 @@ module RubyRedInk
       super(nil)
     end
 
-    def cast!(new_type)
+    def cast(new_type)
       if new_type == value_type
         return self
       end

@@ -3,6 +3,7 @@ module RubyRedInk
 
   class StoryError < Error
     attr_accessor :use_end_line_number
+    alias_method :use_end_line_number?, :use_end_line_number
   end
 
   def assert!(conditional, error_message = "")
