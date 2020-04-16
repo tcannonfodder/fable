@@ -351,13 +351,11 @@ module RubyRedInk
       # (e.g: return/done statement in knot that was diverted to
       # rather than called as a function)
       current_content_object = pointer.resolve!
-      puts current_content_object
+      # debugger if current_content_object.to_s == "Hello"
       is_logic_or_flow_content = perform_logic_and_flow_control(current_content_object)
-      # puts self.profiler.mega_log if !self.profiler.nil?
 
       # Has flow been forced to end by flow control above?
       if state.current_pointer.null_pointer?
-        puts "1111"
         return
       end
 
@@ -532,8 +530,7 @@ module RubyRedInk
           return true if !Value.truthy?(state.pop_evaluation_stack)
         end
 
-        case element
-        when VariableTarget
+        if element.has_variable_target?
           variable_name = element.target
           variable_value = state.variables_state.get_variable_with_name(variable_name)
 
@@ -550,12 +547,12 @@ module RubyRedInk
             add_error!(error_message)
           end
 
-          state.diverted_pointer = pointer_at_path(element.target)
-        when ExternalFunctionDivert
+          state.diverted_pointer = pointer_at_path(element.target_path)
+        elsif element.is_external?
           call_external_function(element.target, element.number_of_arguments)
           return true
         else
-          state.diverted_pointer = element.target
+          state.diverted_pointer = pointer_at_path(element.target_path)
         end
 
         if element.pushes_to_stack?
@@ -565,11 +562,11 @@ module RubyRedInk
           )
         end
 
-        if state.diverted_pointer.nil? && !element.is_a?(ExternalFunctionDivert)
+        if state.diverted_pointer.nil? && !element.is_external?
           if element && element.debug_metadata.source_name
             add_error!("Divert target doesn't exist: #{element.debug_metadata.source_name}")
           else
-            add_error!("Divert resolution failed: #{current_divert}")
+            add_error!("Divert resolution failed: #{element}")
           end
         end
 
@@ -590,7 +587,7 @@ module RubyRedInk
           if state.evaluation_stack.size > 0
             output = state.pop_evaluation_stack
             if !output.is_a?(Void)
-              state.push_to_output_stream(output)
+              state.push_to_output_stream(StringValue.new(output.to_s))
             end
           end
         when :NOOP
@@ -599,27 +596,33 @@ module RubyRedInk
           state.push_evaluation_stack(state.peek_evaluation_stack)
         when :POP
           state.pop_evaluation_stack
-        when :TUNNEL_POP, :FUNCTION_POP
+        when :POP_TUNNEL, :POP_FUNCTION
           # Tunnel onwards is allowed to specify an optional override divert
           # to go to immediately after returning: ->-> target
           override_tunnel_return_target = nil
 
-          if element == :TUNNEL_POP
+          if element.command_type == :POP_TUNNEL
+            pop_type = PushPopType::TYPES[:tunnel]
+          elsif element.command_type == :POP_FUNCTION
+            pop_type = PushPopType::TYPES[:function]
+          end
+
+          if pop_type == PushPopType::TYPES[:tunnel]
             override_tunnel_return_target = state.pop_evaluation_stack
             if !override_tunnel_return_target.is_a?(DivertTargetValue)
-              assert!(override_tunnel_return_target == Values::VOID_VALUE, "Expected void if ->-> doesn't override target")
+              assert!(override_tunnel_return_target.is_a?(Void), "Expected void if ->-> doesn't override target")
             end
           end
 
-          if state.try_exit_function_evaluation_from_game?
+          if state.exit_function_evaluation_from_game?
             :NOOP
-          elsif state.callstack.current_element != element || !state.callstack.can_pop?
+          elsif state.callstack.current_element.type != pop_type || !state.callstack.can_pop?
             types = {
-              FUNCTION_POP: "function return statement (~return)",
-              TUNNEL_POP: "tunnel onwards statement (->->)"
+              PushPopType::TYPES[:function] => "function return statement (~return)",
+              PushPopType::TYPES[:tunnel] => "tunnel onwards statement (->->)"
             }
 
-            expected[state.callstack.current_element]
+            expected = types[state.callstack.current_element.type]
 
             if !state.callstack.can_pop?
               expected = "end of flow (-> END or choice)"
@@ -627,10 +630,10 @@ module RubyRedInk
 
             add_error!("Found #{types[element]}, when expected #{expected}")
           else
-            state.pop_callstack!
+            state.pop_callstack
 
             # does tunnel onwards override by diverting to a new ->-> target?
-            if !override_tunnel_return_target.nil?
+            if override_tunnel_return_target.is_a?(DivertTargetValue)
               state.diverted_pointer = pointer_at_path(override_tunnel_return_target.target_path)
             end
           end
@@ -718,7 +721,7 @@ module RubyRedInk
           state.previous_random = 0
 
           # SEED_RANDOM returns nothing
-          state.push_evaluation_stack(Value::VOID_VALUE)
+          state.push_evaluation_stack(Void)
         when :VISIT_INDEX
           count = state.visit_count_for_container(state.current_pointer.container) - 1
           state.push_evaluation_stack(count)
@@ -870,7 +873,7 @@ module RubyRedInk
         # choose_path_string is potentially dangerous since you can call it
         # when the stack is pretty much in any state. Let's catch one of the
         # worst offenders
-        if state.callstack.current_element == :FUNCTION_POP
+        if state.callstack.current_element == :POP_FUNCTION
           container = state.callstack.current_element.current_pointer.container
           function_detail = ""
           if !container.nil?
@@ -976,7 +979,7 @@ module RubyRedInk
           end
 
           # Divert directly into the fallback function and we're done
-          state.callstack.push(:FUNCTION_POP, output_stream_length_when_pushed: state.output_stream.count)
+          state.callstack.push(:POP_FUNCTION, output_stream_length_when_pushed: state.output_stream.count)
           state.diverted_pointer = Pointer.start_of(fallback_function_container)
           return
         end
@@ -993,7 +996,7 @@ module RubyRedInk
       result = function(**arguments)
 
       if result.nil?
-        result = Value::VOID_VALUE
+        result = Void
       else
         result = Value.parse(result)
         if result.nil?
@@ -1133,7 +1136,7 @@ module RubyRedInk
         state.diverted_pointer = Pointer.null_pointer
 
         # Internally uses state.previous_content_object and state.current_content_object
-        visit_changed_containers_due_to_divert!
+        visit_changed_containers_due_to_divert
 
         # Diverted location has valid content?
         if !state.current_pointer.null_pointer?
@@ -1162,7 +1165,7 @@ module RubyRedInk
           # something to chomp on if it needs it
 
           if state.in_expression_evaluation?
-            state.push_evaluation_stack(Value::VOID_VALUE)
+            state.push_evaluation_stack(Void)
           end
 
           did_pop = true
@@ -1170,7 +1173,7 @@ module RubyRedInk
           state.callstack.pop_thread!
           did_pop = true
         else
-          state.try_exit_function_evaluation_from_game?
+          state.exit_function_evaluation_from_game?
         end
 
         # Step past the point where we last called out

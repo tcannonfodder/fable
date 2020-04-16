@@ -1,9 +1,9 @@
 module RubyRedInk
   module PushPopType
     TYPES = {
-      tunnel: 0,
-      function: 1,
-      function_evaluation_from_game: 2
+      tunnel: :tunnel,
+      function: :function,
+      function_evaluation_from_game: :function_evaluation_from_game
     }
 
     TYPE_LOOKUP = TYPES.invert

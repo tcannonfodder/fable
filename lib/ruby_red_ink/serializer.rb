@@ -146,7 +146,7 @@ module RubyRedInk
         # Pop
         if string == ControlCommand::COMMANDS[:POP_TUNNEL]
           return ControlCommand.get_control_command(string)
-        elsif string == ControlCommand::COMMANDS[:FUNCTION_POP]
+        elsif string == ControlCommand::COMMANDS[:POP_FUNCTION]
           return ControlCommand.get_control_command(string)
         end
 
