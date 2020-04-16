@@ -180,8 +180,6 @@ module RubyRedInk
       @state_snapshot_at_last_newline = nil
     end
 
-    protected
-
     def internal_continue(&block)
       profiler.pre_continue! if profile?
 
