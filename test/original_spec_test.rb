@@ -38,8 +38,7 @@ class OriginalSpecTest < Minitest::Test
     json = load_json_export("test/fixtures/original-specs/basic-tunnel.ink.json")
     story = RubyRedInk::Story.new(json)
 
-    assert_nil story.engine.step
-    assert_equal "Hello world\n", story.engine.current_text + "\n"
+    assert_equal "Hello world\n", story.continue_maximially + "\n"
   end
 
   def test_blanks_in_inline_sequences
