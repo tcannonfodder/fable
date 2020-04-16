@@ -7,7 +7,7 @@ module RubyRedInk
     def debug_metadata
       if @own_debug_metadata.nil?
         if !parent.nil?
-          return parent.debug_metadata
+          return parent.debug_metadata || DebugMetadata.new
         end
       end
 
