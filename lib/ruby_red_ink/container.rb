@@ -8,6 +8,7 @@ module RubyRedInk
       self.bit_flags = flags
       self.content = []
       self.named_content = {}
+      self.process_bit_flags
     end
 
     def add_content(content_to_add)
@@ -192,9 +193,9 @@ module RubyRedInk
 
     def process_bit_flags
       if has_bit_flags?
-        self.visits_should_be_counted = (bit_flag & 0x1) > 0
-        self.turn_index_should_be_counted = (bit_flag & 0x2) > 0
-        self.counting_at_start_only = (bit_flag & 0x4) > 0
+        self.visits_should_be_counted = (bit_flags & 0x1) > 0
+        self.turn_index_should_be_counted = (bit_flags & 0x2) > 0
+        self.counting_at_start_only = (bit_flags & 0x4) > 0
       else
         self.visits_should_be_counted = false
         self.turn_index_should_be_counted = false
