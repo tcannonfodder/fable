@@ -140,7 +140,7 @@ module RubyRedInk
         path_length_to_use = path.length - 1
         result = main_content_container.content_at_path(path, partial_path_length: path_length_to_use)
         new_pointer_container = result.container
-        new_pointer_index - path.components.last.index
+        new_pointer_index = path.components.last.index
         new_pointer = Pointer.new(new_pointer_container, new_pointer_index)
       else
         result = main_content_container.content_at_path(path)
@@ -527,7 +527,7 @@ module RubyRedInk
       # Divert
       if element.is_a?(Divert)
         if element.is_conditional?
-          return true if !Value.truthy?(state.pop_evaluation_stack)
+          return true if !state.pop_evaluation_stack.truthy?
         end
 
         if element.has_variable_target?
