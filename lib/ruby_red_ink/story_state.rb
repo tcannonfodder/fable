@@ -98,7 +98,8 @@ module RubyRedInk
       end
 
       container_path_string = container.path.to_s
-      count = (visit_counts[container_path_string] || 1)
+      count = (visit_counts[container_path_string] || 0)
+      count += 1
       visit_counts[container_path_string] = count
     end
 
