@@ -45,8 +45,6 @@ class OriginalSpecTest < Minitest::Test
     json = load_json_export("test/fixtures/original-specs/blanks-in-inline-sequences.ink.json")
     story = RubyRedInk::Story.new(json)
 
-    assert_nil story.engine.step
-
     result = <<~STORY
     1. a
     2. 
@@ -66,7 +64,7 @@ class OriginalSpecTest < Minitest::Test
     3.
     STORY
 
-    assert_equal result, story.engine.current_text + "\n"
+    assert_equal result, story.continue_maximially + "\n"
   end
 
   def test_all_sequence_types
