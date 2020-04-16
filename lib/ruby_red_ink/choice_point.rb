@@ -65,9 +65,9 @@ module RubyRedInk
       once_only
     end
 
-    def as_string
+    def to_s
       target_line_number = debug_line_number_of_path(path_on_choice)
-      target_string = path_on_choice.as_string
+      target_string = path_on_choice.to_s
 
       if !target_line_number.nil?
         target_string = " line #{target_line_number} (#{target_string})"

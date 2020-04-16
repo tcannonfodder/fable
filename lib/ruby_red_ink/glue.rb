@@ -1,6 +1,6 @@
 module RubyRedInk
   class Glue < RuntimeObject
-    def as_string
+    def to_s
       return "Glue"
     end
   end

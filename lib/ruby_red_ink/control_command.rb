@@ -47,7 +47,11 @@ module RubyRedInk
       self.command_type = LOOKUP[command_symbol]
     end
 
-    def as_string
+    def self.is_instance_of?(object, command_type)
+      object.is_a?(self) && object.command_type == command_type
+    end
+
+    def to_s
       command_type.to_s
     end
 

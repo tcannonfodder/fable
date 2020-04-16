@@ -12,7 +12,7 @@ module RubyRedInk
       self.new_declaration = new_declaration
     end
 
-    def as_string
+    def to_s
       return "VarAssign to #{variable_name}"
     end
   end

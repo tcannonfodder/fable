@@ -26,7 +26,7 @@ module RubyRedInk
       self.name = name
     end
 
-    def as_string
+    def to_s
       if !name.nil?
         return "var(#{name})"
       else

@@ -43,6 +43,9 @@ module RubyRedInk
 
       self.current_choices = []
 
+      self.diverted_pointer = Pointer.null_pointer
+      self.current_pointer = Pointer.null_pointer
+
       self.go_to_start!
     end
 
@@ -83,7 +86,7 @@ module RubyRedInk
         return patch.get_visit_count(container)
       end
 
-      container_path_string = container.path.as_string
+      container_path_string = container.path.to_s
       return visit_counts[container_path_string] || 0
     end
 
@@ -94,7 +97,7 @@ module RubyRedInk
         return
       end
 
-      container_path_string = container.path.as_string
+      container_path_string = container.path.to_s
       count = (visit_counts[container_path_string] || 1)
       visit_counts[container_path_string] = count
     end
@@ -105,7 +108,7 @@ module RubyRedInk
         return
       end
 
-      container_path_string = container.path.as_string
+      container_path_string = container.path.to_s
       turn_indicies[container_path_string] = current_turn_index
     end
 
@@ -118,7 +121,7 @@ module RubyRedInk
         return (current_turn_index - patch.get_turn_index(container))
       end
 
-      container_path_string = container.path.as_string
+      container_path_string = container.path.to_s
 
       if turn_indicies[container_path_string]
         return current_turn_index - turn_indicies[container_path_string]
@@ -147,7 +150,7 @@ module RubyRedInk
       if current_pointer.null_pointer?
         return nil
       else
-        return current_pointer.path.as_string
+        return current_pointer.path.to_s
       end
     end
 
@@ -160,11 +163,11 @@ module RubyRedInk
     end
 
     def previous_pointer
-      callstack.current_element.previous_pointer
+      callstack.current_thread.previous_pointer
     end
 
     def previous_pointer=(value)
-      callstack.current_element.previous_pointer = value
+      callstack.current_thread.previous_pointer = value
     end
 
     def can_continue?
@@ -209,7 +212,7 @@ module RubyRedInk
 
     def in_string_evaluation?
       @output_stream.reverse_each.any? do |item|
-        item == ControlCommands.get_control_command(:BEGIN_STRING_EVALUATION_MODE)
+        item.is_a?(ControlCommand) && item.command_type == :BEGIN_STRING_EVALUATION_MODE
       end
     end
 
@@ -263,9 +266,9 @@ module RubyRedInk
     def force_end!
       callstack.reset!
       @current_choices.clear
-      current_pointer = Pointer.null_pointer
-      previous_pointer = Pointer.null_pointer
-      did_safe_exit = true
+      self.current_pointer = Pointer.null_pointer
+      self.previous_pointer = Pointer.null_pointer
+      self.did_safe_exit = true
     end
 
     # At the end of a function call, trim any whitespace from the end.
@@ -358,7 +361,7 @@ module RubyRedInk
         # DivertTargets get returned as the string of components
         # (rather than a Path, which isn't public)
         if returned_object.value_type == ValueType.DivertTarget
-          return returned_object.value_object.as_string
+          return returned_object.value_object.to_s
         end
 
         # Other types can just have their exact object type.
@@ -382,11 +385,9 @@ module RubyRedInk
     # - Removes all whitespace from the start/end of line (including just before an \n)
     # - Turns all consecutive tabs & space runs into single spaces (HTML-style)
     def clean_output_whitespace(string)
-      cleaned_string = ""
-
-      string.each_line(chomp: true) do |line|
-        cleaned_string += line.strip.gsub(MULTIPLE_WHITESPACE_REGEX, ' ')
-      end
+      cleaned_string = string.each_line(chomp: true).map do |line|
+        line.strip.gsub(MULTIPLE_WHITESPACE_REGEX, ' ')
+      end.join("\n")
 
       cleaned_string
     end
@@ -462,11 +463,11 @@ module RubyRedInk
       variables_state.apply_patch!
 
       patch.visit_counts.each do |container, new_count|
-        self.visit_counts[container.path.as_string] = new_count
+        self.visit_counts[container.path.to_s] = new_count
       end
 
       patch.turn_indicies.each do |container, new_count|
-        self.turn_indicies[container.path.as_string] = new_count
+        self.turn_indicies[container.path.to_s] = new_count
       end
     end
 
@@ -483,6 +484,9 @@ module RubyRedInk
         self.current_warnings ||= []
         self.current_warnings << message
       end
+
+      puts current_errors.inspect
+      puts current_warnings.inspect
     end
 
     def reset_output!(objects_to_add = nil)
@@ -496,22 +500,25 @@ module RubyRedInk
 
     def push_to_output_stream(object)
       if object.is_a?(StringValue)
-        lines = try_splitting_head_tail_whitespace(object)
-        lines.each do |line|
-          push_item_to_output_stream(line)
-        end
+        lines = try_splitting_head_tail_whitespace(object.value)
+        if !lines.nil?
+          lines.each do |line|
+            push_item_to_output_stream(line)
+          end
 
-        output_stream_dirty!
-        return
+          output_stream_dirty!
+          return
+        end
       end
 
       push_item_to_output_stream(object)
       output_stream_dirty!
     end
 
-    def pop_from_output_stream(count)
-      output_stream.pop(count)
+    def pop_from_output_stream
+      results = output_stream.pop
       output_stream_dirty!
+      return results
     end
 
     def push_item_to_output_stream(object)
@@ -546,7 +553,7 @@ module RubyRedInk
           if object.is_a?(Glue)
             glue_trim_index = i
             break
-          elsif object == ControlCommands.get_control_command(:BEGIN_STRING_EVALUATION_MODE)
+          elsif ControlCommand.is_instance_of?(object, :BEGIN_STRING_EVALUATION_MODE)
             if i >= function_trim_index
               function_trim_index=  -1
             end
@@ -683,7 +690,7 @@ module RubyRedInk
         end
       end
 
-      return list_texts
+      return list_texts.map{|x| StringValue.new(x) }
     end
 
     def trim_newlines_from_output_stream!
@@ -731,7 +738,7 @@ module RubyRedInk
       return false if @output_stream.empty?
 
       @output_stream.each do |item|
-        if ControlCommands.is_control_command?(item)
+        if item.is_a?(ControlCommand)
           break
         end
 
@@ -836,25 +843,23 @@ module RubyRedInk
         end
       end
     end
-  end
 
-  protected
+    # Don't make public since the method needs to be wrapped in a story for visit countind
+    def set_chosen_path(path, incrementing_turn_index)
+      # Changing direction, assume we need to clear current set of choices
+      @current_choices.clear
 
-  # Don't make public since the method needs to be wrapped in a story for visit countind
-  def set_chosen_path(path, incrementing_turn_index)
-    # Changing direction, assume we need to clear current set of choices
-    @current_choices.clear
+      new_pointer = story.pointer_at_path(path)
 
-    new_pointer = story.pointer_at_path(path)
+      if !new_pointer.null_pointer? && new_pointer.index == -1
+        new_pointer.index = 0
+      end
 
-    if !new_pointer.null_pointer? && new_pointer.index == -1
-      new_pointer.index = 0
-    end
+      self.current_pointer = new_pointer
 
-    current_pointer = new_pointer
-
-    if incrementing_turn_index
-      current_turn_index += 1
+      if incrementing_turn_index
+        self.current_turn_index += 1
+      end
     end
   end
 end

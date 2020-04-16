@@ -151,6 +151,8 @@ module RubyRedInk
           break
         end
       end
+
+      self.value = value
     end
 
     def cast!(new_type)
@@ -303,7 +305,7 @@ module RubyRedInk
       self.value = InkList.new([single_item, single_value])
     end
 
-    def retain_list_origins_for_assignment(old_value, new_value)
+    def self.retain_list_origins_for_assignment(old_value, new_value)
       # When assigning the empty list, try to retain any initial origin names
       if (old_value.is_a?(ListValue) && new_value.is_a?(ListValue) && new_value.value.size == 0)
         new_list.value.set_initial_origin_names(old_value.value.origin_names)

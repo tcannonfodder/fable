@@ -81,8 +81,10 @@ module RubyRedInk
       current_container = self
       current_object = self
 
-      (partial_path_start..partial_path_length).each do |i|
-        component = path.get_component(i)
+      partial_path_end = (partial_path_length - 1)
+
+      (partial_path_start..partial_path_end).each do |i|
+        component = path.components[i]
 
         # Path component was wrong type
         if current_container.nil?
@@ -133,9 +135,9 @@ module RubyRedInk
         else
           io << indentation_string(indentation)
           if object.is_a?(StringValue)
-            io << "\"#{object.as_string.gsub("\n", "\\n")}\""
+            io << "\"#{object.to_s.gsub("\n", "\\n")}\""
           else
-            io << object.as_string
+            io << object.to_s
           end
         end
 

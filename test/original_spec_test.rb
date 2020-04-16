@@ -24,12 +24,13 @@ class OriginalSpecTest < Minitest::Test
   def test_basic_string_literals
     json = load_json_export("test/fixtures/original-specs/basic-string-literals.ink.json")
     story = RubyRedInk::Story.new(json)
+    story.start_profiling
 
     result = <<~STORY
     Hello world 1
     Hello world 2.
     STORY
-
+    debugger
     assert_equal result, story.continue_maximially + "\n"
   end
 

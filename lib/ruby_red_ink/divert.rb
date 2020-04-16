@@ -71,7 +71,7 @@ module RubyRedInk
       !variable_divert_name.nil?
     end
 
-    def as_string
+    def to_s
       if has_variable_target?
         return "Divert(variable: #{variable_divert_name})"
       elsif target_path.nil?
@@ -79,7 +79,7 @@ module RubyRedInk
       else
         result = ""
 
-        target_string = target_path.as_string
+        target_string = target_path.to_s
         target_line_number = debug_line_number_of_path(target_path)
         if !target_line_number.nil?
           target_string = "line #{target_line_number}"

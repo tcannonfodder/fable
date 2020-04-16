@@ -50,13 +50,12 @@ module RubyRedInk
       end
 
       container = Container.new(bit_flags)
-      puts contents.inspect
       container.add_content(contents)
       if !container_name.nil?
         container.name = container_name
       end
 
-      container.named_content = {}
+      container.named_content = named_only_content
 
       return container
     end
@@ -299,30 +298,30 @@ module RubyRedInk
         raise Error, "Failed to convert to runtime object: #{object}"
       end
     end
-  end
 
-  def self.object_to_choice(object)
-    choice = Choice.new
-    choice.text = object["text"]
-    choice.index = object["index"].to_i
-    choice.source_path = object["originalChoicePath"]
-    choice.original_thread_index = object["originalThreadIndex"].to_i
-    choice.path_string_on_choice = object["targetPath"]
-    return choice
-  end
-
-  def self.convert_to_list_definitions(object)
-    all_definitions = []
-
-    object.each do |name, list_definition_hash|
-      items = {}
-      list_definition_hash.each do |key, value|
-        items[key] = value.to_i
-      end
-
-      all_definitions << ListDefinition.new(name, items)
+    def self.object_to_choice(object)
+      choice = Choice.new
+      choice.text = object["text"]
+      choice.index = object["index"].to_i
+      choice.source_path = object["originalChoicePath"]
+      choice.original_thread_index = object["originalThreadIndex"].to_i
+      choice.path_string_on_choice = object["targetPath"]
+      return choice
     end
 
-    return ListDefinitionsOrigin.new(all_definitions)
+    def self.convert_to_list_definitions(object)
+      all_definitions = []
+
+      object.each do |name, list_definition_hash|
+        items = {}
+        list_definition_hash.each do |key, value|
+          items[key] = value.to_i
+        end
+
+        all_definitions << ListDefinition.new(name, items)
+      end
+
+      return ListDefinitionsOrigin.new(all_definitions)
+    end
   end
 end

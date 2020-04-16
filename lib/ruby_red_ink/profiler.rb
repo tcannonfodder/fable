@@ -23,6 +23,9 @@ module RubyRedInk
       self.snapshot_watch = Stopwatch.new
       self.step_details = []
       self.number_of_continues = 0
+      self.step_total = 0
+      self.snapshot_total = 0
+      self.continue_total = 0
     end
 
     # Generate a printable report based on the data recorded during profiling
@@ -32,27 +35,27 @@ module RubyRedInk
       TOTAL TIME: #{self.class.format_milliseconds(continue_total)}
       SNAPSHOTTING: #{self.class.format_milliseconds(snapshot_total)}
       OTHER: #{self.class.format_milliseconds(continue_total - (step_total + snapshot_total))}
-      #{root_node.as_string}
+      #{root_node.to_s}
       STR
     end
 
     def pre_continue!
-      continue_watch.restart!
+      self.continue_watch.restart!
     end
 
     def post_continue!
-      continue_watch.stop!
-      continue_total += continue_watch.elapsed_milliseconds
-      number_of_continues += 1
+      self.continue_watch.stop!
+      self.continue_total += continue_watch.elapsed_milliseconds
+      self.number_of_continues += 1
     end
 
     def pre_step!
-      current_step_stack = nil
-      step_watch.restart!
+      self.current_step_stack = nil
+      self.step_watch.restart!
     end
 
     def step!(callstack)
-      step_watch.stop!
+      self.step_watch.stop!
 
       stack = []
       callstack.elements.each do |element|
@@ -70,33 +73,32 @@ module RubyRedInk
         stack << stack_element_name
       end
 
-      current_step_stack = stack
+      self.current_step_stack = stack
 
       current_object = callstack.current_element.current_pointer.resolve!
 
-      if ControlCommands::COMMANDS.has_key?(element)
-        step_type = "#{element} CC"
+      if current_object.is_a?(ControlCommand)
+        step_type = "#{current_object} CC"
       else
         step_type = current_object.class.to_s
       end
 
-      current_step_details = StepDetails.new(
+      self.current_step_details = OpenStruct.new(
         type: step_type,
         object: current_object
       )
 
-      step_watch.start!
+      self.step_watch.start!
     end
 
     def post_step!
-      step_watch.stop!
+      self.step_watch.stop!
       duration = step_watch.elapsed_milliseconds
-      step_total += duration
+      self.step_total += duration
+      self.root_node.add_sample(self.current_step_stack, duration)
 
-      root_node.add_sample(current_step_stack, duration)
-
-      current_step_details.time = duration
-      step_details << current_step_details
+      self.current_step_details.time = duration
+      self.step_details << self.current_step_details
     end
 
     # Generate a printable report specifying the average and maximum times spent
@@ -136,7 +138,7 @@ module RubyRedInk
       report << "Step type\tDescription\tPath\tTime\n"
 
       step_details.each do |step|
-        report << "#{step.type}\t#{step.object.as_string}\t#{step.object.path.as_string}\t#{step.time.to_s}\n"
+        report << "#{step.type}\t#{step.object.to_s}\t#{step.object.path.to_s}\t#{step.time.to_s}\n"
       end
 
       report.rewind
@@ -144,12 +146,12 @@ module RubyRedInk
     end
 
     def pre_snapshot!
-      snapshot_watch.restart!
+      self.snapshot_watch.restart!
     end
 
     def post_snapshot!
-      snapshot_watch.stop!
-      snapshot_total += snapshot_watch.elapsed_milliseconds
+      self.snapshot_watch.stop!
+      self.snapshot_total += self.snapshot_watch.elapsed_milliseconds
     end
 
     def self.format_milliseconds(milliseconds)
@@ -170,28 +172,25 @@ module RubyRedInk
         !nodes.nil? && nodes.size > 0
       end
 
-      def initialize
-        total_sample_count = 0
-        total_milliseconds = 0
-        self_sample_count = 0
-        self_milliseconds = 0
-      end
-
-      def initialize(key)
+      def initialize(key="")
         self.key = key
+        self.total_sample_count = 0
+        self.total_milliseconds = 0
+        self.self_sample_count = 0
+        self.self_milliseconds = 0
       end
 
       def add_sample(stack, duration)
-        add_sample(stack, -1, duration)
+        add_sample_with_index(stack, -1, duration)
       end
 
-      def add_sample(stack, stack_index, duration)
-        total_milliseconds += 1
-        total_milliseconds += duration
+      def add_sample_with_index(stack, stack_index, duration)
+        self.total_milliseconds += 1
+        self.total_milliseconds += duration
 
         if stack_index == (stack.size - 1)
-          self_sample_count += 1
-          self_milliseconds += duration
+          self.self_sample_count += 1
+          self.self_milliseconds += duration
         end
 
         if stack_index < stack.size
@@ -203,7 +202,7 @@ module RubyRedInk
         node_key = stack[stack_index]
         nodes ||= {node_key => ProfileNode.new(node_key)}
 
-        node[node_key].add_sample(stack, stack_index, duration)
+        nodes[node_key].add_sample_with_index(stack, stack_index, duration)
       end
 
       def print_hierarchy(io, indent)
@@ -233,7 +232,7 @@ module RubyRedInk
         report.read
       end
 
-      def as_string
+      def to_s
         report = StringIO.new
         print_hierarchy(report, 0)
         report.rewind
@@ -249,16 +248,16 @@ module RubyRedInk
       attr_accessor :start_time, :stop_time, :elapsed_milliseconds
 
       def initialize
-        elapsed_milliseconds = 0
+        @elapsed_milliseconds = 0
       end
 
       def start!
-        stop_time = nil
-        start_time = Time.now.utc
+        @stop_time = nil
+        @start_time = Time.now.utc
       end
 
       def reset!
-        elapsed_milliseconds = 0
+        @elapsed_milliseconds = 0
       end
 
       def restart!
@@ -267,8 +266,8 @@ module RubyRedInk
       end
 
       def stop!
-        stop_time = Time.now.utc
-        elapsed_milliseconds += elapsed_from_start_to_stop
+        @stop_time = Time.now.utc
+        @elapsed_milliseconds += elapsed_from_start_to_stop
       end
 
       def elapsed_milliseconds
@@ -281,7 +280,7 @@ module RubyRedInk
       end
 
       def elapsed_from_start_to_stop
-        ((stop_time || Time.now.utc).to_r - start_time.to_r) * 1000.0
+        ((@stop_time || Time.now.utc).to_r - @start_time.to_r) * 1000.0
       end
     end
   end

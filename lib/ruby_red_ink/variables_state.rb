@@ -5,7 +5,8 @@ module RubyRedInk
   class VariablesState
     attr_accessor :patch, :batch_observing_variable_changes,
       :changed_variables_for_batch_observing, :callstack,
-      :globals, :list_definitions_origins, :variable_did_change_event
+      :globals, :list_definitions_origins, :variable_did_change_event,
+      :default_global_variables
 
     def batch_observing_variable_changes=(value)
       @batch_observing_variable_changes = value
@@ -140,7 +141,7 @@ module RubyRedInk
     end
 
     def get_variable_with_name(variable_name)
-      return get_variable_with_name(variable_name, -1)
+      return get_variable_with_name_internal(variable_name, -1)
     end
 
     def get_default_variable_value(variable_name)
@@ -151,7 +152,7 @@ module RubyRedInk
       globals.has_key?(variable_name) || (!default_global_variables.nil? && default_global_variables.has_key?(variable_name))
     end
 
-    def get_variable_with_name(variable_name, context_index)
+    def get_variable_with_name_internal(variable_name, context_index)
       variable_value = get_raw_variable_with_name(variable_name, context_index)
 
       # Get value from pointer?
@@ -164,7 +165,6 @@ module RubyRedInk
 
     def get_raw_variable_with_name(variable_name, context_index)
       varibale_value = nil
-
       if context_index == 0 || context_index == -1
         if !patch.nil? && patch.get_global(variable_name)
           return patch.get_global(variable_name)
@@ -195,7 +195,7 @@ module RubyRedInk
     end
 
     def assign(variable_assignment, value)
-      name = variable_assignment.name
+      name = variable_assignment.variable_name
       context_index = -1
 
       # Are we assigning to a global variable?
@@ -238,7 +238,7 @@ module RubyRedInk
     def set_global(variable_name, value)
       old_value = nil
       if patch.nil? || !patch.get_global(variable_name)
-        old_value = patch.get_global(variable_name)
+        old_value = globals[variable_name]
       end
 
       ListValue.retain_list_origins_for_assignment(old_value, value)

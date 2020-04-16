@@ -241,7 +241,7 @@ module RubyRedInk
         return parameters_out
       end
 
-      def as_string
+      def to_s
         "Native '#{name}'"
       end
 

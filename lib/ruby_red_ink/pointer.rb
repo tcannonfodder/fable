@@ -29,7 +29,7 @@ module RubyRedInk
     def path
       return nil if null_pointer?
       if index > 0
-        return container.path.append_component(index)
+        return container.path.path_by_appending_component(index)
       else
         return container.path
       end

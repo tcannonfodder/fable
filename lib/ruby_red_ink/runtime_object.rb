@@ -38,7 +38,7 @@ module RubyRedInk
     def path
       if @path.nil?
         if parent.nil?
-          @path = Path.new
+          @path = Path.new("")
         else
           # Maintain a stack so that the order of the components is reversed
           # when they're added to the Path. We're iterating up from the
@@ -49,7 +49,7 @@ module RubyRedInk
           container = child.parent
 
           while !container.nil?
-            if !child.nil? && child.valid_name?
+            if child.is_a?(Container) && child.valid_name?
               components << Path::Component.new(name: child.name)
             else
               components << Path::Component.new(index: container.content.index(child))

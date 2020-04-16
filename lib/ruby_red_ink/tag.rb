@@ -6,7 +6,7 @@ module RubyRedInk
       self.text = tag_text
     end
 
-    def as_string
+    def to_s
       return "# #{self.text}"
     end
   end

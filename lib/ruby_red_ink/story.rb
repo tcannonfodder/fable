@@ -24,6 +24,8 @@ module RubyRedInk
 
       if !original_object["listDefs"].empty?
         self.list_definitions = Serializer.convert_to_list_definitions(original_object["listDefs"])
+      else
+        self.list_definitions = Serializer.convert_to_list_definitions({})
       end
       self.main_content_container = Serializer.convert_to_runtime_object(original_object["root"])
 
@@ -32,6 +34,7 @@ module RubyRedInk
 
     def continue(&block)
       internal_continue(&block)
+      debugger
       return current_text
     end
 
@@ -46,23 +49,23 @@ module RubyRedInk
     end
 
     def current_choices
-      raise NotImplementedError
+      return self.state.current_choices
     end
 
     def current_text
-      raise NotImplementedError
+      return self.state.current_text
     end
 
     def current_tags
-      raise NotImplementedError
+      return self.state.current_tags
     end
 
     def current_errors
-      raise NotImplementedError
+      return self.state.current_errors
     end
 
     def current_warnings
-      raise NotImplementedError
+      return self.state.current_warnings
     end
 
     def has_errors?
@@ -75,10 +78,6 @@ module RubyRedInk
 
     def can_continue?
       state.can_continue?
-    end
-
-    def global_variables
-      state.global_variables
     end
 
     def ink_version
@@ -98,11 +97,12 @@ module RubyRedInk
     end
 
     def global_declaration
-      root.nested_containers["global decl"]
+      self.main_content_container.named_content["global decl"]
     end
 
     def reset_state!
       self.state = StoryState.new(self)
+      reset_globals!
     end
 
     def reset_errors!
@@ -114,17 +114,15 @@ module RubyRedInk
     end
 
     def reset_globals!
-      if global_declaration?
+      if !global_declaration.nil?
         original_pointer = state.current_pointer
-
         choose_path(Path.new("global decl"), {incrementing_turn_index: false})
 
         internal_continue
-
         state.current_pointer = original_pointer
       end
 
-      global_variables.snapshot_default_globals!
+      self.state.variables_state.snapshot_default_globals
     end
 
     def content_at_path(path)
@@ -138,25 +136,22 @@ module RubyRedInk
     def pointer_at_path(path)
       return Pointer.null_pointer if path.empty?
 
-      new_pointer = Pointer.new
-
       path_length_to_use = path.length
-
       if path.components.last.is_index?
         path_length_to_use = path.length - 1
         result = main_content_container.content_at_path(path, partial_path_length: path_length_to_use)
-        new_pointer.container = result.container
-        new_pointer.index - path.components.last.index
+        new_pointer_container = result.container
+        new_pointer_index - path.components.last.index
+        new_pointer = Pointer.new(new_pointer_container, new_pointer_index)
       else
         result = main_content_container.content_at_path(path)
-        new_pointer.container = result.container
-        new_pointer.index = -1
+        new_pointer = Pointer.new(result.container, -1)
       end
 
       if result.object.nil? || (result.object == main_content_container && path_length_to_use > 0)
         raise StoryError, "Failed to find content at path '#{path.components_string}', and no approximation was possible."
       elsif result.approximate?
-        add_warning!("Failed to find content at path '#{path.components_string}', so it was approximated to '#{result.object.path.components_string}'")
+        warning("Failed to find content at path '#{path.components_string}', so it was approximated to '#{result.object.path.components_string}'")
       end
 
       return new_pointer
@@ -204,6 +199,7 @@ module RubyRedInk
 
       while can_continue?
         begin
+          puts "aaa"
           output_stream_ends_in_newline = continue_single_step!
         rescue StoryError => e
           add_error!(e.message, {use_end_line_number: e.use_end_line_number?})
@@ -264,7 +260,7 @@ module RubyRedInk
       profiler.post_step! if profile?
 
       if !can_continue? && state.callstack.element_is_evaluate_from_game?
-        try_following_default_invisible_choice!
+        try_following_default_invisible_choice
       end
 
       profiler.pre_snapshot! if profile?
@@ -350,7 +346,7 @@ module RubyRedInk
       state.current_pointer = pointer
 
       profiler.step!(state.callstack) if profile?
-
+      puts "bbb"
       # is the current content object:
       # - normal content
       # - or a logic/flow statement? If so, do it
@@ -358,11 +354,15 @@ module RubyRedInk
       # (e.g: return/done statement in knot that was diverted to
       # rather than called as a function)
       current_content_object = pointer.resolve!
-
+      puts current_content_object
       is_logic_or_flow_content = perform_logic_and_flow_control(current_content_object)
+      # puts self.profiler.mega_log if !self.profiler.nil?
 
       # Has flow been forced to end by flow control above?
-      return if state.current_pointer.null_pointer?
+      if state.current_pointer.null_pointer?
+        puts "1111"
+        return
+      end
 
       if is_logic_or_flow_content
         should_add_to_stream = false
@@ -398,8 +398,7 @@ module RubyRedInk
       # Starting a thread should be done after the increment to the
       # content pointer, so that when returning from the thread, it
       # returns to the content after this instruction
-      debugger
-      if ControlCommand.get_control_command(value) == :CLONE_THREAD
+      if current_content_object.is_a?(ControlCommand) && current_content_object.command_type == :CLONE_THREAD
         state.callstack.push_thread!
       end
     end
@@ -445,16 +444,16 @@ module RubyRedInk
 
       return if current_child_of_container.nil?
 
-      currnet_container_ancestor = current_child_of_container.parent
+      current_container_ancestor = current_child_of_container.parent
 
       all_children_entered_at_start = true
-      while !currnet_container_ancestor.nil? && (!@previous_containers.include?(currnet_container_ancestor) || currnet_container_ancestor.counting_at_start_only?)
+      while !current_container_ancestor.nil? && (!@previous_containers.include?(current_container_ancestor) || current_container_ancestor.counting_at_start_only?)
         # check whether this ancestor container is being entered at the start
         # by checking whether the child object is the first
 
         entering_at_start = (
           current_container_ancestor.content.size > 0 &&
-          current_child_of_container == currnet_container_ancestor.content[0] &&
+          current_child_of_container == current_container_ancestor.content[0] &&
           all_children_entered_at_start
         )
 
@@ -510,7 +509,7 @@ module RubyRedInk
 
       choice = Choice.new
       choice.target_path = choice_point.path_when_chosen
-      choice.source_path = choice_point.path.as_string
+      choice.source_path = choice_point.path.to_s
       choice.invisible_default = choice_point.is_invisible_default?
 
       # We need to capture the state of the callstack at the point where
@@ -582,19 +581,19 @@ module RubyRedInk
 
       if element.is_a?(ControlCommand)
         case element.command_type
-        when :BEGIN_LOGICAL_EVALUATION_MODE
+        when :EVALUATION_START
           assert!(!state.in_expression_evaluation?, "Already in expression evaluation?")
           state.in_expression_evaluation = true
-        when :END_LOGICAL_EVALUATION_MODE
+        when :EVALUATION_END
           assert!(state.in_expression_evaluation?, "Not in expression evaluation mode")
           state.in_expression_evaluation = false
-        when :MAIN_STORY_OUTPUT
+        when :EVALUATION_OUTPUT
           # if the expression turned out to be empty, there may not be
           # anything on the stack
           if state.evaluation_stack.size > 0
-            output = state.pop_evaluation_stack!
-            if output != Values::VOID_VALUE
-              state.push_to_output_stream(output.to_s)
+            output = state.pop_evaluation_stack
+            if !output.is_a?(Void)
+              state.push_to_output_stream(output)
             end
           end
         when :NOOP
@@ -645,9 +644,11 @@ module RubyRedInk
         when :END_STRING_EVALUATION_MODE
           content_stack_for_string = []
           item_from_output_stream = nil
-          while item_from_output_stream != :BEGIN_STRING_EVALUATION_MODE
-            item_from_output_stream = state.pop_from_output_stream!
-            content_stack_for_string << item_from_output_stream
+          while !ControlCommand.is_instance_of?(item_from_output_stream, :BEGIN_STRING_EVALUATION_MODE)
+            item_from_output_stream = state.pop_from_output_stream
+            if item_from_output_stream.is_a?(StringValue)
+              content_stack_for_string << item_from_output_stream
+            end
           end
 
           #return to expression evaluation (from content mode)
@@ -682,7 +683,7 @@ module RubyRedInk
               count = 0 #visit count, assume 0 to default to allowing entry
             end
 
-            add_warning!("Failed to find container for #{element} lookup at #{target.target}")
+            warning("Failed to find container for #{element} lookup at #{target.target}")
           end
 
           state.push_evaluation_stack(count)
@@ -799,10 +800,9 @@ module RubyRedInk
 
       # variable handling
       case element
-      when GlobalVariableTarget
-        global_variables[element.name] = state.pop_evaluation_stack!
-      when TemporaryVariableTarget
-        variables_state.assign(element.name, state.pop_evaluation_stack!)
+      when VariableAssignment
+        state.variables_state.assign(element, Value.create(state.pop_evaluation_stack))
+        return true
       when VariableReference
         if !element.path_for_count.nil?
           count = state.visit_count_for_container(element.container_for_count)
@@ -811,12 +811,13 @@ module RubyRedInk
           found_value = state.variables_state.get_variable_with_name(element.name)
 
           if found_value.nil?
-            add_warning!("Variable not found: '#{element.name}'. Using default value of 0 (false). This can happen with temporary variables if the declaration hasn't yet been hit. Globals are always given a default value on load if a value doesn't exist in the save state.");
+            warning("Variable not found: '#{element.name}'. Using default value of 0 (false). This can happen with temporary variables if the declaration hasn't yet been hit. Globals are always given a default value on load if a value doesn't exist in the save state.");
             found_value = 0
           end
         end
 
         state.push_evaluation_stack(found_value)
+        return true
       end
 
       if element.is_a?(NativeFunctionCall)
@@ -876,7 +877,7 @@ module RubyRedInk
           container = state.callstack.current_element.current_pointer.container
           function_detail = ""
           if !container.nil?
-            function_detail = "(#{container.path.as_string})"
+            function_detail = "(#{container.path.to_s})"
           end
 
           raise StoryError("Story was running a function #{function_detail} when you called choose_path_string(#{path_string}) - this is almost certainly not not what you want! Full stack trace:\n#{state.callstack.callstack_trace}")
@@ -1148,7 +1149,7 @@ module RubyRedInk
         # to the end of a container - e.g: a Conditional that's re-joining
       end
 
-      successful_pointer_increment = increment_content_pointer!
+      successful_pointer_increment = increment_content_pointer
 
       # Ran out of content? Try to auto-exit from a function, or
       # finish evaluating the content of a thread
@@ -1212,7 +1213,7 @@ module RubyRedInk
       return successful_increment
     end
 
-    def try_follow_default_invisible_choice
+    def try_following_default_invisible_choice
       all_choices = state.current_choices
 
       # Is a default invisible choice the ONLY choice?
@@ -1256,7 +1257,7 @@ module RubyRedInk
       # Generate the same shuffle based on
       # - the hash of this container, to make sure it's consistent
       # - How many times the runtime has looped around this full shuffle
-      sequence_hash = sequence_container.path.as_string.bytes.sum
+      sequence_hash = sequence_container.path.to_s.bytes.sum
 
       randomizer_seed = sequence_hash + loop_index + state.story_seed
       randomizer = Random.new(randomizer_seed)

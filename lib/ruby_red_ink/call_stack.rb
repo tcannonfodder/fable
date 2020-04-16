@@ -197,7 +197,7 @@ module RubyRedInk
 
           pointer = element.current_pointer
           if !pointer.null_pointer?
-            result << "<SOMEWHERE IN #{pointer.container.path.as_string}>\n"
+            result << "<SOMEWHERE IN #{pointer.container.path.to_s}>\n"
           end
         end
       end
@@ -243,6 +243,8 @@ module RubyRedInk
 
 
       def initialize(**arguments)
+        self.previous_pointer = Pointer.null_pointer
+
         if arguments.size == 0
           self.call_stack = []
         else
@@ -268,7 +270,7 @@ module RubyRedInk
             if thread_pointer_result.object.nil?
               raise Error, "When loading state, internal story location couldn't be found: #{current_container_path_string}. Has the story changed since this save data was created?"
             elsif thread_pointer_result.approximate?
-              story_context.warning("When loading state, internal story location couldn't be found: #{current_container_path_string}, so it wa approximated to #{pointer.container.path.as_string} to recover. Has the story changed since this save data was created?")
+              story_context.warning("When loading state, internal story location couldn't be found: #{current_container_path_string}, so it wa approximated to #{pointer.container.path.to_s} to recover. Has the story changed since this save data was created?")
             end
           end
 
@@ -310,7 +312,7 @@ module RubyRedInk
         call_stack.each do |element|
           element_export = {}
           if !element.current_pointer.null_pointer?
-            element_export["cPath"] = element.current_pointer.container.path.as_string
+            element_export["cPath"] = element.current_pointer.container.path.to_s
             element_export["idx"] = element.current_pointer.index
           end
 
@@ -327,7 +329,7 @@ module RubyRedInk
         export["threadIndex"] = thread_index
 
         if !previous_pointer.null_pointer?
-          export["previousContentObject"] = self.previous_pointer.resolve!.path.as_string
+          export["previousContentObject"] = self.previous_pointer.resolve!.path.to_s
         end
 
         export

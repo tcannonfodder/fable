@@ -38,13 +38,9 @@ module RubyRedInk
       path
     end
 
-    def initialize
-      components = []
-    end
-
     def initialize(components, relative= false)
       if components.is_a?(String)
-        self.components = parse_components_string(components)
+        parse_components_string(components)
       else
         self.components = components
       end
@@ -52,7 +48,7 @@ module RubyRedInk
     end
 
     def path_by_appending_path(path_to_append)
-      new_path = Path.new
+      new_path = Path.new("")
 
       upward_moves = 0
 
@@ -80,15 +76,19 @@ module RubyRedInk
     end
 
     def path_by_appending_component(component)
-      new_path = Path.new
+      if !component.is_a?(Path::Component)
+        component = Component.new(Component.component_type(component))
+      end
+      new_path = Path.new("")
 
       new_path.components += self.components
+
       new_path.components << component
       new_path
     end
 
     def components_string
-      string = components.map{|x| x.as_string}.join('.')
+      string = components.map{|x| x.to_s}.join('.')
       if relative?
         string = ".#{string}"
       end
@@ -98,7 +98,7 @@ module RubyRedInk
 
     def parse_components_string(components_string)
       self.components = []
-      return if components_string.strip!.empty?
+      return if components_string.strip.empty?
 
       # Relative path when components staet with "."
       # example: .^.^.hello.5 is equivalent to filesystem path
@@ -113,11 +113,7 @@ module RubyRedInk
       components_string.split('.').each do |section|
         next if section.empty? #usually the first item in a relative path
 
-        if section.match?(/^\d+$/)
-          components << Component.new(index: Integer(section))
-        else
-          components << Component.new(name: section)
-        end
+        components << Component.new(Component.component_type(section))
       end
     end
 
@@ -126,6 +122,10 @@ module RubyRedInk
       return false if other_path.components.size != components.size
       return false if other_path.relative? != relative?
       return other_path.components == components
+    end
+
+    def to_s
+      components_string
     end
 
     class Component
@@ -139,6 +139,14 @@ module RubyRedInk
         name == Path::PARENT_ID
       end
 
+      def self.component_type(value)
+        if value.is_a?(Numeric) || value.match?(/^\d+$/)
+          return {index: Integer(value)}
+        else
+          return {name: value}
+        end
+      end
+
       def initialize(options)
         if options[:index]
           self.index = options[:index]
@@ -149,7 +157,7 @@ module RubyRedInk
         end
       end
 
-      def as_string
+      def to_s
         if is_index?
           index.to_s
         else

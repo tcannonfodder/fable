@@ -40,7 +40,7 @@ module RubyRedInk
         return "#{origin_name.nil? ? "?" : origin_name}.#{item_name}"
       end
 
-      alias_method :as_string, :full_name
+      alias_method :to_s, :full_name
 
       def equal?(other_object)
         return false if !other_object.is_a?(InkListItem)
@@ -399,7 +399,7 @@ module RubyRedInk
     # Returns a string in the form "a, b, c" with the names of the items in the
     # list, without the origin list definition names. Equivalent to writing
     # {list} in ink
-    def as_string
+    def to_s
       ordered_items.map{|item, int_value| item.item_name }.join(", ")
     end
   end
