@@ -55,7 +55,9 @@ module RubyRedInk
         container.name = container_name
       end
 
-      container.named_content = named_only_content
+      named_only_content.each do |key, content|
+        container.add_to_named_content(content)
+      end
 
       return container
     end
