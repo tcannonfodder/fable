@@ -527,7 +527,7 @@ module RubyRedInk
       case object
       when Glue
         # new glue, so chomp away any whitespace from the end of the stream
-        trim_newlines_from_ouput_stream!
+        trim_newlines_from_output_stream!
         include_in_output = true
       when StringValue
         # New text: do we really want to append it, if it's whitespace?
