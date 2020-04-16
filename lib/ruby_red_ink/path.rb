@@ -168,7 +168,7 @@ module RubyRedInk
       def ==(other_component)
         return false if other_component.nil?
 
-        if self.is_index? == other_component.is_index
+        if self.is_index? == other_component.is_index?
           if is_index?
             return self.index == other_component.index
           else
