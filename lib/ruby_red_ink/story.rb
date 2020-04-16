@@ -34,7 +34,6 @@ module RubyRedInk
 
     def continue(&block)
       internal_continue(&block)
-      debugger
       return current_text
     end
 
@@ -199,7 +198,6 @@ module RubyRedInk
 
       while can_continue?
         begin
-          puts "aaa"
           output_stream_ends_in_newline = continue_single_step!
         rescue StoryError => e
           add_error!(e.message, {use_end_line_number: e.use_end_line_number?})
@@ -346,7 +344,6 @@ module RubyRedInk
       state.current_pointer = pointer
 
       profiler.step!(state.callstack) if profile?
-      puts "bbb"
       # is the current content object:
       # - normal content
       # - or a logic/flow statement? If so, do it

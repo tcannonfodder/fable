@@ -30,7 +30,7 @@ class OriginalSpecTest < Minitest::Test
     Hello world 1
     Hello world 2.
     STORY
-    debugger
+
     assert_equal result, story.continue_maximially + "\n"
   end
 
