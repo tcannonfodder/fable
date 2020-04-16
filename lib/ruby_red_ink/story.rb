@@ -650,7 +650,7 @@ module RubyRedInk
 
           #return to expression evaluation (from content mode)
           state.in_expression_evaluation = true
-          state.push_evaluation_stack(content_stack_for_string.reverse.join)
+          state.push_evaluation_stack(StringValue.new(content_stack_for_string.reverse.join.to_s))
         when :PUSH_CHOICE_COUNT
           state.push_evaluation_stack(state.generated_choices.size)
         when :TURNS
@@ -798,7 +798,7 @@ module RubyRedInk
       # variable handling
       case element
       when VariableAssignment
-        state.variables_state.assign(element, Value.create(state.pop_evaluation_stack))
+        state.variables_state.assign(element, state.pop_evaluation_stack)
         return true
       when VariableReference
         if !element.path_for_count.nil?
