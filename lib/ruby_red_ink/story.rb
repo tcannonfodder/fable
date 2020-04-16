@@ -591,7 +591,7 @@ module RubyRedInk
           :NOOP
         when :DUPLICATE_TOPMOST
           state.push_evaluation_stack(state.peek_evaluation_stack)
-        when :POP
+        when :POP_EVALUATED_VALUE
           state.pop_evaluation_stack
         when :POP_TUNNEL, :POP_FUNCTION
           # Tunnel onwards is allowed to specify an optional override divert
@@ -1192,7 +1192,7 @@ module RubyRedInk
         successful_increment = false
 
         next_ancestor = pointer.container.parent
-        break if !next_ancestor.is_a?(Contaner)
+        break if !next_ancestor.is_a?(Container)
 
         index_in_ancestor = next_ancestor.content.index(pointer.container)
         break if index_in_ancestor == -1

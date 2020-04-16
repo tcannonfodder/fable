@@ -30,7 +30,7 @@ module RubyRedInk
         target_object = resolve_path(@target_path).object
         if @target_path.components.last.is_index?
           @target_pointer.container = target_object.parent
-          @target_pointer.index = @target_path.last_component.index
+          @target_pointer.index = @target_path.components.last.index
         else
           @target_pointer = Pointer.start_of(target_object)
         end
