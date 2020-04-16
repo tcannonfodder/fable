@@ -655,9 +655,9 @@ module RubyRedInk
           state.in_expression_evaluation = true
           state.push_evaluation_stack(StringValue.new(content_stack_for_string.reverse.join.to_s))
         when :PUSH_CHOICE_COUNT
-          state.push_evaluation_stack(state.generated_choices.size)
+          state.push_evaluation_stack(IntValue.new(state.generated_choices.size))
         when :TURNS
-          state.push_evaluation_stack(state.current_turn_index + 1)
+          state.push_evaluation_stack(IntValue.new(state.current_turn_index + 1))
         when :TURNS_SINCE, :READ_COUNT
           target = state.pop_evaluation_stack
           if !target.is_a?(DivertTargetValue)
@@ -686,7 +686,7 @@ module RubyRedInk
             warning("Failed to find container for #{element} lookup at #{target.target}")
           end
 
-          state.push_evaluation_stack(count)
+          state.push_evaluation_stack(IntValue.new(count))
         when :RANDOM
           max_int = state.pop_evaluation_stack
           min_int = state.pop_evaluation_stack
@@ -707,7 +707,7 @@ module RubyRedInk
           random = new Random(result_seed)
 
           next_random = random.rand(min_int, max_int)
-          state.push_evaluation_stack(next_random)
+          state.push_evaluation_stack(IntValue.new(next_random))
           # next random number, rather than keeping the random object around
           state.previous_random = next_random
         when :SEED_RANDOM
@@ -724,9 +724,9 @@ module RubyRedInk
           state.push_evaluation_stack(Void)
         when :VISIT_INDEX
           count = state.visit_count_for_container(state.current_pointer.container) - 1
-          state.push_evaluation_stack(count)
+          state.push_evaluation_stack(IntValue.new(count))
         when :SEQUENCE_SHUFFLE_INDEX
-          state.push_evaluation_stack(next_sequence_shuffle_index)
+          state.push_evaluation_stack(IntValue.new(next_sequence_shuffle_index))
         when :START_THREAD
           :NOOP #handled in main step function
         when :DONE
