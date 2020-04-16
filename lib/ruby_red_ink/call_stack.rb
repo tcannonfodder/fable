@@ -46,10 +46,6 @@ module RubyRedInk
       threads.last
     end
 
-    def can_pop?
-      call_stack.size > 1
-    end
-
     def can_pop_thread?
       threads.size > 1 && !element_is_evaluate_from_game?
     end
@@ -70,14 +66,14 @@ module RubyRedInk
     end
 
     def can_pop?(type = nil)
-      return false if !can_pop?
+      return false if call_stack.size <= 1
       return true if type.nil?
       return current_element.type == type
     end
 
     def pop!(type=nil)
       if can_pop?(type)
-        callstack.pop
+        call_stack.pop
       else
         raise Error, "Mismatched push/pop in Callstack"
       end
