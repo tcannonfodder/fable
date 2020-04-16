@@ -716,7 +716,7 @@ module RubyRedInk
 
       # Remove the whitespace
       if remove_whitespace_from >= 0
-        output_stream.slice!(0..remove_whitespace_from)
+        self.output_stream = self.output_stream[0..(remove_whitespace_from-1)]
       end
 
       output_stream_dirty!
