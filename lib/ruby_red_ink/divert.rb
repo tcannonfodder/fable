@@ -55,7 +55,7 @@ module RubyRedInk
     end
 
     def ==(other_divert)
-      if !other_divert.nil?
+      if other_divert.is_a?(Divert) && !other_divert.nil?
         if self.has_variable_target? == other_divert.has_variable_target?
           if self.has_variable_target?
             return self.variable_divert_name == other_divert.variable_divert_name
