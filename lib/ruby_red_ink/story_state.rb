@@ -390,9 +390,14 @@ module RubyRedInk
     # - Removes all whitespace from the start/end of line (including just before an \n)
     # - Turns all consecutive tabs & space runs into single spaces (HTML-style)
     def clean_output_whitespace(string)
-      cleaned_string = string.each_line(chomp: true).map do |line|
-        line.strip.gsub(MULTIPLE_WHITESPACE_REGEX, ' ')
-      end.join("\n")
+      x = string.each_line(chomp: true).map do |line|
+        if line.empty?
+          nil
+        else
+          line.strip.gsub(MULTIPLE_WHITESPACE_REGEX, ' ')
+        end
+      end
+      cleaned_string = x.compact.join("\n")
 
       cleaned_string
     end
