@@ -138,7 +138,7 @@ module RubyRedInk
       path_length_to_use = path.length
       if path.components.last.is_index?
         path_length_to_use = path.length - 1
-        result = main_content_container.content_at_path(path, partial_path_length: path_length_to_use)
+        result = main_content_container.content_at_path(path, partial_path_start: 0, partial_path_length: path_length_to_use)
         new_pointer_container = result.container
         new_pointer_index = path.components.last.index
         new_pointer = Pointer.new(new_pointer_container, new_pointer_index)
