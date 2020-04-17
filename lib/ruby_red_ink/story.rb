@@ -1154,8 +1154,9 @@ module RubyRedInk
         did_pop = false
 
         if state.callstack.can_pop?(:function)
+          # debugger
           # Pop from the call stack
-          state.callstack.pop_callstack(:function)
+          state.pop_callstack(:function)
 
           # This pop was due to dropping off the end of a function that didn't
           # return anything, so in this case we make sure the evaluator has
@@ -1195,7 +1196,7 @@ module RubyRedInk
         break if !next_ancestor.is_a?(Container)
 
         index_in_ancestor = next_ancestor.content.index(pointer.container)
-        break if index_in_ancestor == -1
+        break if index_in_ancestor.nil?
 
         pointer = Pointer.new(next_ancestor, index_in_ancestor)
 
@@ -1275,8 +1276,8 @@ module RubyRedInk
 
     def error!(message, options = {use_end_line_number: false})
       exception = StoryError.new(message)
-      e.use_end_line_number = options[:use_end_line_number]
-      raise e
+      exception.use_end_line_number = options[:use_end_line_number]
+      raise exception
     end
 
     def warning(message)
