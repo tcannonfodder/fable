@@ -855,6 +855,10 @@ module RubyRedInk
       end
     end
 
+    def assert!(condition, message=nil)
+      story.assert!(condition, message)
+    end
+
     # Don't make public since the method needs to be wrapped in a story for visit countind
     def set_chosen_path(path, incrementing_turn_index)
       # Changing direction, assume we need to clear current set of choices
