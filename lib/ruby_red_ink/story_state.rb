@@ -281,7 +281,8 @@ module RubyRedInk
     # The start whitespace is discard as it is generated, and the end
     # whitespace is trimmed in one go here when we pop the function.
     def trim_whitespace_from_function_end!
-      assert!(callstack.current_element == PushPopType::TYPES[:function])
+      # debugger
+      assert!(callstack.current_element.type == PushPopType::TYPES[:function])
 
       function_start_point = callstack.current_element.function_start_in_output_stream
 
@@ -293,7 +294,7 @@ module RubyRedInk
 
       # Trim whitespace from END of function call
       @output_stream.reverse_each.each_with_index do |object, index|
-        break if ControlCommands.is_control_command?(object)
+        break if object.is_a?(ControlCommand)
         next if !object.is_a?(StringValue)
 
         if object.is_newline? || object.is_inline_whitespace?
@@ -549,7 +550,7 @@ module RubyRedInk
         # where does the current function call begin?
         function_trim_index = -1
         current_element = callstack.current_element
-        if current_element == PushPopType::TYPES[:function]
+        if current_element.type == PushPopType::TYPES[:function]
           function_trim_index = current_element.function_start_in_output_stream
         end
 
