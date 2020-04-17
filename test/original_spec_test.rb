@@ -80,7 +80,7 @@ class OriginalSpecTest < Minitest::Test
     Stopping: one two two two
     Default: one two two two
     Cycle: one two one two
-    Shuffle: two one two one
+    Shuffle: two one one two
     Shuffle stopping: one two final final
     Shuffle once: one two
     STORY
