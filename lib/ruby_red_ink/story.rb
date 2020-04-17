@@ -718,7 +718,7 @@ module RubyRedInk
           state.previous_random = 0
 
           # SEED_RANDOM returns nothing
-          state.push_evaluation_stack(Void)
+          state.push_evaluation_stack(Void.new)
         when :VISIT_INDEX
           count = state.visit_count_for_container(state.current_pointer.container) - 1
           state.push_evaluation_stack(IntValue.new(count))
@@ -1163,7 +1163,7 @@ module RubyRedInk
           # something to chomp on if it needs it
 
           if state.in_expression_evaluation?
-            state.push_evaluation_stack(Void)
+            state.push_evaluation_stack(Void.new)
           end
 
           did_pop = true
