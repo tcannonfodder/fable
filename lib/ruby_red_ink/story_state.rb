@@ -298,7 +298,7 @@ module RubyRedInk
         next if !object.is_a?(StringValue)
 
         if object.is_newline? || object.is_inline_whitespace?
-          @output_stream.delete_at(i)
+          @output_stream.delete(object)
           output_stream_dirty!
         else
           break
