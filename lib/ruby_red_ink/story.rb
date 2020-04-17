@@ -390,7 +390,7 @@ module RubyRedInk
       # Starting a thread should be done after the increment to the
       # content pointer, so that when returning from the thread, it
       # returns to the content after this instruction
-      if current_content_object.is_a?(ControlCommand) && current_content_object.command_type == :CLONE_THREAD
+      if ControlCommand.is_instance_of?(current_content_object, :START_THREAD)
         state.callstack.push_thread!
       end
     end
