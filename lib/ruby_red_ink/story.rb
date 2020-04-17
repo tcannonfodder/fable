@@ -1240,7 +1240,8 @@ module RubyRedInk
 
 
     def next_sequence_shuffle_index
-      number_of_elements = state.pop_evaluation_stack
+      number_of_elements = state.pop_evaluation_stack.value
+
       if !number_of_elements.is_a?(Numeric)
         error!("Expected number of elements in sequence for shuffle index")
         return 0
@@ -1248,7 +1249,7 @@ module RubyRedInk
 
       sequence_container = state.current_pointer.container
 
-      sequence_count = state.pop_evaluation_stack
+      sequence_count = state.pop_evaluation_stack.value
       loop_index = sequence_count / number_of_elements
       iteration_index = sequence_count % number_of_elements
 
@@ -1257,7 +1258,7 @@ module RubyRedInk
       # - How many times the runtime has looped around this full shuffle
       sequence_hash = sequence_container.path.to_s.bytes.sum
 
-      randomizer_seed = sequence_hash + loop_index + state.story_seed
+      randomizer_seed = sequence_hash + loop_index + state.story_seed.value
       randomizer = Random.new(randomizer_seed)
       unpicked_indicies = (0..(number_of_elements-1)).to_a
 
