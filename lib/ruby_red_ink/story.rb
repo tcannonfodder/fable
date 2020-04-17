@@ -1313,7 +1313,7 @@ module RubyRedInk
           message = "Story assert"
         end
 
-        throw new StoryError, "#{message} #{current_debug_metadata}"
+        raise StoryError, "#{message} #{current_debug_metadata}"
       end
     end
 
