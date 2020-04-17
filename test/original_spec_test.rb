@@ -76,7 +76,7 @@ class OriginalSpecTest < Minitest::Test
     # Switched the order of "shuffle once" because it's still got the job done,
     # just at a different order
     result = <<~STORY
-    Once: one two  
+    Once: one two
     Stopping: one two two two
     Default: one two two two
     Cycle: one two one two
