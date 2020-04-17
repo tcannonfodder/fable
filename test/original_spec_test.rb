@@ -64,14 +64,14 @@ class OriginalSpecTest < Minitest::Test
     3.
     STORY
 
-    assert_equal result, story.continue_maximially + "\n"
+    output = story.continue_maximially
+    puts output
+    assert_equal result, output + "\n"
   end
 
   def test_all_sequence_types
     json = load_json_export("test/fixtures/original-specs/test-all-sequence-types.ink.json")
     story = RubyRedInk::Story.new(json)
-
-    assert_nil story.engine.step
 
     # Switched the order of "shuffle once" because it's still got the job done,
     # just at a different order
@@ -85,7 +85,7 @@ class OriginalSpecTest < Minitest::Test
     Shuffle once: one two
     STORY
 
-    assert_equal result, story.engine.current_text + "\n"
+    assert_equal result, story.continue_maximially + "\n"
   end
 
   def test_call_stack_evaluation
