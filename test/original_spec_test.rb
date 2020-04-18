@@ -106,32 +106,28 @@ class OriginalSpecTest < Minitest::Test
     json = load_json_export("test/fixtures/original-specs/choice-diverts-to-done.ink.json")
     story = RubyRedInk::Story.new(json)
 
-    assert_nil story.engine.step
-    assert_equal "", story.engine.current_text
+    assert_equal "", story.continue
 
-    assert_equal 1, story.engine.current_choices.size
+    assert_equal 1, story.current_choices.size
 
-    picked = story.engine.pick_choice(0)
+    picked = story.choose_choice_index(0)
 
-    assert_nil story.engine.step
-    assert_equal "choice", story.engine.current_text
+    assert_equal "choice", story.continue
+    assert !story.has_errors?
   end
 
   def test_choice_with_brackets_only
     json = load_json_export("test/fixtures/original-specs/choice-with-brackets-only.ink.json")
     story = RubyRedInk::Story.new(json)
 
-    assert_nil story.engine.step
-    assert_equal "", story.engine.current_text
-    assert_equal 1, story.engine.current_choices.size
+    assert_equal "", story.continue
+    assert_equal 1, story.current_choices.size
 
-    picked = story.engine.pick_choice(0)
+    assert_equal "Option", story.current_choices[0].text
 
-    assert_equal "Option", picked.choice_only_content
-    assert_nil picked.start_content
+    story.choose_choice_index(0)
 
-    assert_nil story.engine.step
-    assert_equal "Text", story.engine.current_text
+    assert_equal "Text", story.continue
   end
 
   def test_call_complex_tunnels
