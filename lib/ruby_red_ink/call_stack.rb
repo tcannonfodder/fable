@@ -23,6 +23,7 @@ module RubyRedInk
       new_thread = Thread.new
       new_thread.call_stack << Element.new(:tunnel, self.start_of_root)
       self.threads = [new_thread]
+      self.thread_counter = 0
     end
 
     def elements
