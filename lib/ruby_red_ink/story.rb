@@ -257,7 +257,7 @@ module RubyRedInk
 
       profiler.post_step! if profile?
 
-      if !can_continue? && state.callstack.element_is_evaluate_from_game?
+      if !can_continue? && !state.callstack.element_is_evaluate_from_game?
         try_following_default_invisible_choice
       end
 
@@ -489,7 +489,7 @@ module RubyRedInk
       # don't create choice if it doesn't pass the conditional
       if choice_point.has_condition?
         condition_value = state.pop_evaluation_stack
-        if !Value.truthy?(condition_value)
+        if !condition_value.truthy?
           show_choice = false
         end
       end
@@ -1248,7 +1248,7 @@ module RubyRedInk
       # If there's a chance that this state will be rolled back before the
       # invisible choice then make sure that the choice thread is left intact,
       # and it isn't re-entered in an old state
-      if !state_snapshot_at_last_newline.nil?
+      if !@state_snapshot_at_last_newline.nil?
         state.callstack.current_thread = state.callstack.fork_thread!
       end
 
