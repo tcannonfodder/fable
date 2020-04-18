@@ -514,7 +514,7 @@ module RubyRedInk
 
       # Don't create the choice if the player has aready read this content
       if choice_point.once_only?
-        if state.visit_count_for_container(choice_point.choice_target) > 0
+        if state.visit_count_for_container(choice_point.choice_target).value > 0
           show_choice = false
         end
       end
@@ -746,7 +746,7 @@ module RubyRedInk
           # SEED_RANDOM returns nothing
           state.push_evaluation_stack(Void.new)
         when :VISIT_INDEX
-          count = state.visit_count_for_container(state.current_pointer.container) - 1
+          count = state.visit_count_for_container(state.current_pointer.container).value - 1
           state.push_evaluation_stack(IntValue.new(count))
         when :SEQUENCE_SHUFFLE_INDEX
           state.push_evaluation_stack(IntValue.new(next_sequence_shuffle_index))

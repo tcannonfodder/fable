@@ -87,7 +87,7 @@ module RubyRedInk
       end
 
       container_path_string = container.path.to_s
-      return visit_counts[container_path_string] || 0
+      return IntValue.new(visit_counts[container_path_string] || 0)
     end
 
     def increment_visit_count_for_container!(container)
