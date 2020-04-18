@@ -52,7 +52,7 @@ module RubyRedInk
     end
 
     def element_is_evaluate_from_game?
-      current_element.type != :function_evaluation_from_game
+      current_element.type == :function_evaluation_from_game
     end
 
     def push(type, options = {external_evaluation_stack_height: 0, output_stream_length_when_pushed: 0})
