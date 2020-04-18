@@ -77,7 +77,7 @@ module RubyRedInk
 
         return nearest_container.content_at_path(path)
       else
-        return this.root_content_container.content_at_path(path)
+        return self.root_content_container.content_at_path(path)
       end
     end
 

@@ -517,9 +517,9 @@ module RubyRedInk
       return nil if !show_choice
 
       choice = Choice.new
-      choice.target_path = choice_point.path_when_chosen
+      choice.target_path = choice_point.path_on_choice
       choice.source_path = choice_point.path.to_s
-      choice.invisible_default = choice_point.is_invisible_default?
+      choice.invisible_default = choice_point.invisible_default?
 
       # We need to capture the state of the callstack at the point where
       # the choice was generated, since after the generation of this choice
@@ -545,7 +545,7 @@ module RubyRedInk
         end
 
         if element.has_variable_target?
-          variable_name = element.target
+          variable_name = element.variable_divert_name
           variable_value = state.variables_state.get_variable_with_name(variable_name)
 
           if variable_value.nil?
@@ -561,7 +561,7 @@ module RubyRedInk
             add_error!(error_message)
           end
 
-          state.diverted_pointer = pointer_at_path(element.target_path)
+          state.diverted_pointer = pointer_at_path(variable_value.target_path)
         elsif element.is_external?
           call_external_function(element.target, element.number_of_arguments)
           return true
