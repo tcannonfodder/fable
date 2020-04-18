@@ -360,6 +360,23 @@ module RubyRedInk
         should_add_to_stream = false
       end
 
+      # Is choice with condition?
+      if current_content_object.is_a?(ChoicePoint)
+        choice = process_choice(current_content_object)
+        if !choice.nil?
+          state.generated_choices << choice
+        end
+
+        current_content_object = nil
+        should_add_to_stream = false
+      end
+
+      # If the container has no content, then it will be the "content"
+      # itself, but we skip over it
+      if current_content_object.is_a?(Container)
+        should_add_to_stream = false
+      end
+
       # content to add to the evaluation stack or output stream
       if should_add_to_stream
         # If we're pushing a variable pointer onto the evaluation stack,
