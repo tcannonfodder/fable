@@ -2,8 +2,14 @@ module RubyRedInk
   class ChoicePoint < RuntimeObject
     attr_accessor :has_condition,
       :has_start_content, :has_choice_only_content,
-      :is_invisible_default,
+      :invisible_default,
       :once_only, :path_on_choice
+
+      alias_method :invisible_default?, :invisible_default
+      alias_method :has_start_content?, :has_start_content
+      alias_method :has_condition?, :has_condition
+      alias_method :has_choice_only_content?, :has_choice_only_content
+      alias_method :once_only?, :once_only
 
     # The ChoicePoint represents the point within the Story
     # where a Choice instance gets generated. The distinction
@@ -41,28 +47,8 @@ module RubyRedInk
       self.has_condition = (flag & 0x1) > 0
       self.has_start_content = (flag & 0x2) > 0
       self.has_choice_only_content = (flag & 0x4) > 0
-      self.is_invisible_default = (flag & 0x8) > 0
+      self.invisible_default = (flag & 0x8) > 0
       self.once_only = (flag & 0x16) > 0
-    end
-
-    def has_condition?
-      has_condition
-    end
-
-    def has_start_content?
-      has_start_content
-    end
-
-    def has_choice_only_content?
-      has_choice_only_content
-    end
-
-    def is_invisible_default?
-      is_invisible_default
-    end
-
-    def once_only?
-      once_only
     end
 
     def to_s

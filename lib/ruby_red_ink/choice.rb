@@ -13,7 +13,9 @@ module RubyRedInk
     attr_accessor :index
 
     attr_accessor :target_path, :thread_at_generation, :original_thread_index,
-      :is_invisible_default
+      :invisible_default
+
+    alias_method :invisible_default?, :invisible_default
 
     # The target path that the story should be diverted to
     # if the choice is chosen
