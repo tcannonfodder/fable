@@ -171,6 +171,7 @@ module RubyRedInk
 
       self.thread_counter = hash_to_use["threadCounter"]
       self.start_of_root = Pointer.start_of(story_context.root_content_container)
+      self
     end
 
     def to_hash
@@ -247,7 +248,7 @@ module RubyRedInk
       attr_accessor :call_stack, :thread_index, :previous_pointer
 
 
-      def initialize(**arguments)
+      def initialize(*arguments)
         self.previous_pointer = Pointer.null_pointer
 
         if arguments.size == 0
@@ -281,7 +282,7 @@ module RubyRedInk
 
           in_expression_evaluation = element["exp"]
 
-          new_element = Element.new(type, pointer, in_expression_evaluation)
+          new_element = Element.new(type, pointer, in_expression_evaluation: in_expression_evaluation)
 
           if element["temp"]
             new_element.temporary_variables = Serializer.convert_to_runtime_objects_hash(element["temp"])
@@ -296,6 +297,8 @@ module RubyRedInk
           previous_path = Path.new(thread_object["previousContentObject"])
           self.previous_pointer = story_context.pointer_at_path(previous_path)
         end
+
+        self
       end
 
       def copy
