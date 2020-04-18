@@ -438,4 +438,132 @@ class OriginalSpecTest < Minitest::Test
     assert_equal "", story.continue
     assert_equal "visible choice", story.current_choices[0].text
   end
+
+  def test_hello_world
+    json = load_json_export("test/fixtures/original-specs/test-hello-world.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "Hello world", story.continue_maximially
+  end
+
+  def test_identifiers_can_start_with_numbers
+    json = load_json_export("test/fixtures/original-specs/test-identifiers-can-start-with-numbers.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "512x2 = 1024\n512x2p2 = 1026", story.continue_maximially
+  end
+
+  def test_implicit_inline_glue
+    json = load_json_export("test/fixtures/original-specs/test-implicit-inline-glue.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "I have five eggs.", story.continue_maximially
+  end
+
+  def test_implicit_inline_glue_b
+    json = load_json_export("test/fixtures/original-specs/test-implicit-inline-glue-b.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    A
+    X
+    STORY
+
+    assert_equal result, story.continue_maximially + "\n"
+  end
+
+  def test_implicit_inline_glue_c
+    json = load_json_export("test/fixtures/original-specs/test-implicit-inline-glue-c.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    A
+    C
+    STORY
+
+    assert_equal result, story.continue_maximially + "\n"
+  end
+
+  def test_include
+    json = load_json_export("test/fixtures/original-specs/test-include.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    This is include 1.
+    This is include 2.
+    This is the main file.
+    STORY
+
+    assert_equal result, story.continue_maximially + "\n"
+  end
+
+  def test_increment
+    json = load_json_export("test/fixtures/original-specs/test-increment.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    6
+    5
+    STORY
+
+    assert_equal result, story.continue_maximially + "\n"
+  end
+
+  def test_knot_gather
+    json = load_json_export("test/fixtures/original-specs/test-knot-gather.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "g", story.continue_maximially
+  end
+
+  def test_knot_thread_interaction
+    json = load_json_export("test/fixtures/original-specs/test-knot-thread-interaction.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    blah blah
+    STORY
+
+    assert_equal result, story.continue + "\n"
+
+    assert_equal 2, story.current_choices.size
+    assert_equal "option", story.current_choices[0].text
+    assert_equal "wigwag", story.current_choices[1].text
+
+    picked = story.choose_choice_index(1)
+
+    result = <<~STORY
+    wigwag
+    THE END
+    STORY
+
+    assert_equal result, story.continue_maximially + "\n"
+    assert !story.has_errors?
+  end
+
+  def test_knot_thread_interaction_2
+    json = load_json_export("test/fixtures/original-specs/test-knot-thread-interaction-2.ink.json")
+    story = RubyRedInk::Story.new(json)
+    story.start_profiling
+    result = <<~STORY
+    I’m in a tunnel
+    When should this get printed?
+    STORY
+
+    assert_equal result, story.continue + "\n"
+
+    assert_equal 1, story.current_choices.size
+    assert_equal "I’m an option", story.current_choices[0].text
+    debugger
+    picked = story.choose_choice_index(0)
+
+    result = <<~STORY
+    I’m an option
+    Finishing thread.
+    STORY
+    story.profiler.mega_log
+    debugger
+    assert_equal result, story.continue_maximially + "\n"
+    assert !story.has_errors?
+  end
 end
