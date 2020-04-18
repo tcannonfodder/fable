@@ -49,7 +49,7 @@ module RubyRedInk
     end
 
     def current_choices
-      return self.state.current_choices
+      return self.state.current_choices.select{|choice| !choice.invisible_default? }
     end
 
     def current_text
