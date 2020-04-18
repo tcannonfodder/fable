@@ -9,10 +9,14 @@ module RubyRedInk
     attr_accessor :original_object, :state, :profiler,
       :list_definitions, :main_content_container,
       :allow_external_function_fallbacks,
-      :on_make_choice
+      :on_make_choice, :external_functions
+
+
+    alias_method :allow_external_function_fallbacks?, :allow_external_function_fallbacks
 
     def initialize(original_object)
       super()
+      self.external_functions = {}
       self.original_object = original_object
       self.state = StoryState.new(self)
 
@@ -568,7 +572,7 @@ module RubyRedInk
 
           state.diverted_pointer = pointer_at_path(variable_value.target_path)
         elsif element.is_external?
-          call_external_function(element.target, element.number_of_arguments)
+          call_external_function(element.target_path.to_s, element.external_arguments)
           return true
         else
           state.diverted_pointer = pointer_at_path(element.target_path)
@@ -990,7 +994,7 @@ module RubyRedInk
 
     def call_external_function(function_name, number_of_arguments)
       function = external_functions[function_name]
-      if function.nil?
+      if !function.nil?
         if allow_external_function_fallbacks?
           fallback_function_container = knot_container_with_name(function_name)
           if fallback_function_container.nil?
@@ -1012,12 +1016,12 @@ module RubyRedInk
       arguments.reverse!
 
       # Run the function
-      result = function(**arguments)
+      result = function.call(*arguments.map{|x| x.value})
 
       if result.nil?
         result = Void
       else
-        result = Value.parse(result)
+        result = Value.create(result)
         if result.nil?
           raise StoryError, "Could not create ink value from returned object of type #{result.class}"
         end
@@ -1026,12 +1030,12 @@ module RubyRedInk
       state.push_evaluation_stack(result)
     end
 
-    def bind_external_function(function_name, external_function)
+    def bind_external_function(function_name, &block)
       if external_functions.has_key?(function_name)
         raise StoryError, "Function #{function_name} has already been bound."
       end
 
-      external_functions[function_name] = external_function
+      external_functions[function_name] = block
     end
 
     def unbind_external_function(function_name)
