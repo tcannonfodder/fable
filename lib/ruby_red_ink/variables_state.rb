@@ -209,7 +209,7 @@ module RubyRedInk
       # Constructing new variable pointer reference
       if variable_assignment.new_declaration?
         if value.is_a?(VariablePointerValue)
-          fully_resolved_variable_pointer = resolve_variable_pointer!(variable_pointer)
+          fully_resolved_variable_pointer = resolve_variable_pointer!(value)
           value = fully_resolved_variable_pointer
         end
       # Assign to existing variable pointer?
