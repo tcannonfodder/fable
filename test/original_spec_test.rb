@@ -409,4 +409,33 @@ class OriginalSpecTest < Minitest::Test
     assert_equal "120", story.continue_maximially
     assert !story.has_errors?
   end
+
+  def test_factorial_recursive
+    json = load_json_export("test/fixtures/original-specs/test-factorial-recursive.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "120", story.continue_maximially
+    assert !story.has_errors?
+  end
+
+  def test_gather_choice_same_line
+    json = load_json_export("test/fixtures/original-specs/test-gather-choice-same-line.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "", story.continue
+    assert_equal "hello", story.current_choices[0].text
+
+    story.choose_choice_index(0)
+    story.continue
+
+    assert_equal "world", story.current_choices[0].text
+  end
+
+  def test_has_read_on_choice
+    json = load_json_export("test/fixtures/original-specs/test-has-read-on-choice.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "", story.continue
+    assert_equal "visible choice", story.current_choices[0].text
+  end
 end
