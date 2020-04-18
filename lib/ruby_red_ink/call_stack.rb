@@ -227,7 +227,7 @@ module RubyRedInk
       end
 
       def copy
-        copied_element = self.class.new(type, pointer, in_expression_evaluation: in_expression_evaluation)
+        copied_element = self.class.new(type, current_pointer, in_expression_evaluation: in_expression_evaluation)
         copied_element.temporary_variables = temporary_variables.dup
         copied_element.evaluation_stack_height_when_pushed = evaluation_stack_height_when_pushed
         copied_element.function_start_in_output_stream = function_start_in_output_stream
