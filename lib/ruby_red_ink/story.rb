@@ -651,7 +651,7 @@ module RubyRedInk
               expected = "end of flow (-> END or choice)"
             end
 
-            add_error!("Found #{types[element]}, when expected #{expected}")
+            add_error!("Found #{types[state.callstack.current_element.type]}, when expected #{expected}")
           else
             state.pop_callstack
 
