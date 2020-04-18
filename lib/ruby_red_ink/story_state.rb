@@ -431,6 +431,7 @@ module RubyRedInk
         copy.current_warnings += self.current_warnings
       end
 
+      copy.callstack = CallStack.new(story).from_hash!(self.callstack.to_hash, story)
       # reference copoy- exactly the same variable state!
       # we're expected not to read it only while in patch mode
       # (though the callstack will be modified)
