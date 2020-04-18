@@ -64,9 +64,7 @@ class OriginalSpecTest < Minitest::Test
     3.
     STORY
 
-    output = story.continue_maximially
-    puts output
-    assert_equal result, output + "\n"
+    assert_equal result, story.continue_maximially + "\n"
   end
 
   def test_all_sequence_types
@@ -266,5 +264,149 @@ class OriginalSpecTest < Minitest::Test
     picked = story.choose_choice_index(0)
 
     assert_equal "After choice\nThis is default.", story.continue_maximially
+  end
+
+  def test_default_simple_gather
+    json = load_json_export("test/fixtures/original-specs/test-default-simple-gather.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "x", story.continue
+  end
+
+  def test_divert_in_conditionals
+    json = load_json_export("test/fixtures/original-specs/test-divert-in-conditionals.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "", story.continue_maximially
+  end
+
+  def test_divert_to_weave_points
+    json = load_json_export("test/fixtures/original-specs/test-divert-to-weave-points.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    gather
+    test
+    choice content
+    gather
+    second time round
+    STORY
+
+    assert_equal result, story.continue_maximially + "\n"
+    assert_equal 0, story.current_choices.size
+  end
+
+  def test_else_branches
+    json = load_json_export("test/fixtures/original-specs/test-else-branches.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    other
+    other
+    other
+    other
+    STORY
+
+    assert_equal result, story.continue_maximially + "\n"
+    assert_equal 0, story.current_choices.size
+  end
+
+  def test_empty
+    json = load_json_export("test/fixtures/original-specs/test-empty.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "", story.continue_maximially
+  end
+
+  def test_empty_multiline_conditional_branch
+    json = load_json_export("test/fixtures/original-specs/text-empty-multiline-conditional-branch.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "", story.continue_maximially
+  end
+
+  def test_all_switch_branches_fail_is_clean
+    json = load_json_export("test/fixtures/original-specs/test-all-switch-branches-fail-is-clean.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "", story.continue_maximially
+    assert_equal 0, story.state.evaluation_stack.size
+  end
+
+  def test_trivial_condition
+    json = load_json_export("test/fixtures/original-specs/test-trivial-condition.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "", story.continue_maximially
+    assert !story.has_errors?
+  end
+
+  def test_empty_sequence_content
+    json = load_json_export("test/fixtures/original-specs/test-empty-sequence-content.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    Wait for it....
+    Surprise!
+    Done.
+    STORY
+
+    assert_equal result, story.continue_maximially + "\n"
+    assert_equal 0, story.current_choices.size
+  end
+
+  def test_end
+    json = load_json_export("test/fixtures/original-specs/test-end.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "hello", story.continue_maximially
+    assert !story.has_errors?
+  end
+
+  def test_end_2
+    json = load_json_export("test/fixtures/original-specs/test-end-2.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "hello", story.continue_maximially
+    assert !story.has_errors?
+  end
+
+  def test_escape_character
+    json = load_json_export("test/fixtures/original-specs/test-escape-character.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "this is a '|' character", story.continue_maximially
+    assert !story.has_errors?
+  end
+
+  def test_external_binding
+    json = load_json_export("test/fixtures/original-specs/test-external-binding.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    message = nil
+
+    story.bind_external_function("message") do |argument|
+        message = "MESSAGE: #{argument}"
+    end
+
+    story.bind_external_function("multiply") do |argument_1, argument_2|
+        return argument_1 * argument_2
+    end
+
+    story.bind_external_function("times") do |number_of_times, string|
+        string * number_of_times
+    end
+
+    assert_equal "15", story.continue
+    assert_equal "knock knock knock", story.continue
+    assert_equal "MESSAGE: hello world", message
+  end
+
+  def test_factorial_by_reference
+    json = load_json_export("test/fixtures/original-specs/test-factorial-by-reference.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "120", story.continue_maximially
+    assert !story.has_errors?
   end
 end
