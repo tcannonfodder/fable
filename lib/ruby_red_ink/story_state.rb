@@ -747,19 +747,7 @@ module RubyRedInk
 
     def output_stream_ends_in_newline?
       return false if @output_stream.empty?
-
-      @output_stream.each do |item|
-        if item.is_a?(ControlCommand)
-          break
-        end
-
-        if item.is_a?(StringValue)
-          return true if item.is_newline?
-          break if item.is_nonwhitespace?
-        end
-      end
-
-      return false
+      return @output_stream.last.is_a?(StringValue) && @output_stream.last.is_newline?
     end
 
     def output_stream_contains_content?
