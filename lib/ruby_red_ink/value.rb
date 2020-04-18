@@ -196,8 +196,8 @@ module RubyRedInk
       raise Error, "Shouldn't be checking the truthiness of a divert target"
     end
 
-    def initialize
-      super(nil)
+    def initialize(value=nil)
+      super(value)
     end
 
     def cast(new_type)
@@ -236,8 +236,8 @@ module RubyRedInk
       self.context_index = context_index
     end
 
-    def initialize
-      super(nil)
+    def initialize(value=nil)
+      super(value)
     end
 
     def cast(new_type)
