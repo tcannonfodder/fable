@@ -117,7 +117,7 @@ module RubyRedInk
           end
         end
 
-        export[key] = value
+        export[key] = Serializer.convert_from_runtime_object(value)
       end
 
       return export

@@ -325,5 +325,230 @@ module RubyRedInk
 
       return ListDefinitionsOrigin.new(all_definitions)
     end
+
+    def self.convert_hash_of_runtime_objects(hash_value)
+      result = {}
+      hash_value.each do |key, value|
+        result[key] = convert_from_runtime_object(value)
+      end
+    end
+
+    def self.convert_array_of_runtime_objects(array)
+      array.map{|x| convert_from_runtime_object(x) }
+    end
+
+    def self.convert_from_runtime_object(object)
+      if object.is_a?(Container)
+        return convert_from_container(object)
+      end
+
+      if object.is_a?(Divert)
+        return convert_from_divert(object)
+      end
+
+      if object.is_a?(ChoicePoint)
+        return convert_from_choice_point(object)
+      end
+
+      if object.is_a?(IntValue) || object.is_a?(FloatValue)
+        return object.value
+      end
+
+      if object.is_a?(StringValue)
+        return convert_from_string_value(object)
+      end
+
+      if object.is_a?(ListValue)
+        return convert_from_list(object)
+      end
+
+      if object.is_a?(DivertTargetValue)
+        return convert_divert_target_value(object)
+      end
+
+      if object.is_a?(VariablePointerValue)
+        return convert_variable_pointer_value(object)
+      end
+
+      if object.is_a?(Glue)
+        return convert_glue(object)
+      end
+
+      if object.is_a?(ControlCommand)
+        return convert_control_command(object)
+      end
+
+      if object.is_a?(NativeFunctionCall)
+        return convert_native_function_call(object)
+      end
+
+      if object.is_a?(VariableReference)
+        return convert_variable_reference(object)
+      end
+
+      if object.is_a?(VariableAssignment)
+        return convert_variable_assignment(object)
+      end
+
+      if object.is_a?(Void)
+        return convert_void
+      end
+
+      if object.is_a?(Tag)
+        return convert_tag(object)
+      end
+
+      if object.is_a?(Choice)
+        return convert_choice(object)
+      end
+
+      raise ArgumentError, "Failed to serialize runtime object: #{object}"
+    end
+
+    def self.convert_from_divert(object)
+      result = {}
+      divert_type_key = "->"
+
+      if divert.external?
+        divert_type_key = "x()"
+      elsif divert.pushes_to_stack?
+        if divert.stack_push_type == PushPopType::TYPES[:function]
+          divert_type_key = "f()"
+        else
+          divert_type_key = "->t->"
+        end
+      end
+
+      if divert.has_variable_target?
+        target_string = divert.variable_divert_name
+      else
+        target_string = divert.target_path_string
+      end
+
+      result[divert_type_key] = target_string
+
+      if divert.has_variable_target?
+        result["var"] = true
+      end
+
+      if divert.is_conditional?
+        result["c"] = true
+      end
+
+      if divert.external_arguments > 0
+        result["exArgs"] = divert.external_arguments
+      end
+
+      return result
+    end
+
+    def self.convert_from_choice_point(choice_point)
+      return {
+        "*" => choice_point.path_string_on_choice,
+        "flg" => choice_point.flags
+      }
+    end
+
+    def self.convert_from_string_value(string_value)
+      if string_value.is_newline?
+        return "\\n"
+      else
+        return "^#{string_value.value}"
+      end
+    end
+
+    def self.convert_from_list(list_value)
+      result = {}
+      raw_list = list_value.value
+
+      raw_list.list.each do |list_item, value|
+        result[list_item.full_name] = value
+      end
+
+      if raw_list.list.empty? && !raw_list.origin_names.nil? && !raw_list.origin_names.empty?
+        result["origins"] = raw_list.origin_names
+      end
+
+      return result
+    end
+
+    def self.convert_divert_target_value(divert_target_value)
+      return {"^->" => divert_target_value.value.components_string }
+    end
+
+    def self.convert_variable_pointer_value(variable_pointer_value)
+      return {
+        "^var" => variable_pointer_value.value,
+        "ci" => variable_pointer_value.context_index
+      }
+    end
+
+    def self.convert_glue(glue)
+      return "<>"
+    end
+
+    def self.convert_control_command(control_command)
+      return control_command.command_type
+    end
+
+    def self.convert_native_function_call(native_function_call)
+      function_name = native_function_call.name
+      if name == "^"
+        return "L^"
+      else
+        return name
+      end
+    end
+
+    def self.convert_variable_reference(variable_reference)
+      read_count_path = variable_reference.path_string_for_count
+      if read_count_path.nil?
+        return {"CNT?" => read_count_path}
+      else
+        return {"VAR?" => variable_reference.name}
+      end
+    end
+
+    def self.convert_variable_assignment(variable_assignment)
+      result = {}
+
+      if variable_assignment.global?
+        key = "VAR="
+      else
+        key = "temp="
+      end
+
+      result[key] = variable_assignment.variable_name
+
+      if !variable_assignment.new_declaration?
+        result["re"] = true
+      end
+
+      return result
+    end
+
+    def self.convert_void
+      return "void"
+    end
+
+    def self.convert_tag(tag)
+      return {
+        "#" => tag.text
+      }
+    end
+
+    def self.convert_choice(choice)
+      return {
+        "text" => choice.text,
+        "index" => choice.index,
+        "originalChoicePath" => choice.source_path,
+        "originalThreadIndex" => choice.original_thread_index,
+        "targetPath" => choice.path_string_on_choice
+      }
+    end
+
+    def self.convert_choices(choices)
+      choices.map{|choice| convert_choice(choice) }
+    end
   end
 end

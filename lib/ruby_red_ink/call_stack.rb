@@ -236,7 +236,7 @@ module RubyRedInk
 
       def copy
         copied_element = self.class.new(type, current_pointer, in_expression_evaluation: in_expression_evaluation)
-        copied_element.temporary_variables = temporary_variables.dup
+        copied_element.temporary_variables = Serializer.convert_hash_of_runtime_objects(temporary_variables)
         copied_element.evaluation_stack_height_when_pushed = evaluation_stack_height_when_pushed
         copied_element.function_start_in_output_stream = function_start_in_output_stream
         copied_element
@@ -322,13 +322,13 @@ module RubyRedInk
           end
 
           element_export["exp"] = element.in_expression_evaluation?
-          element_export["type"] = PushPopType::TYPES[self.type]
+          element_export["type"] = PushPopType::TYPES[element.type]
 
           if element.temporary_variables.any?
-            element_export["temp"] = element.temporary_variables.dup
+            element_export["temp"] = Serializer.convert_hash_of_runtime_objects(element.temporary_variables)
           end
 
-          export["call_stack"] << element_export
+          export["callstack"] << element_export
         end
 
         export["threadIndex"] = thread_index
