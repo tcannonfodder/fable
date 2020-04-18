@@ -76,6 +76,7 @@ module RubyRedInk
     end
 
     def has_warnings?
+      return false if current_warnings.nil?
       current_warnings.any?
     end
 
