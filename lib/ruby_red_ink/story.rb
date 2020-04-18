@@ -68,6 +68,7 @@ module RubyRedInk
     end
 
     def has_errors?
+      return false if current_errors.nil?
       current_errors.any?
     end
 
