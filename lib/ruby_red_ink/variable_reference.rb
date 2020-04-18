@@ -16,9 +16,9 @@ module RubyRedInk
 
     def path_string_for_count=(value)
       if value.nil?
-        path_for_count = nil
+        self.path_for_count = nil
       else
-        path_for_count = Path.new(value)
+        self.path_for_count = Path.new(value)
       end
     end
 
