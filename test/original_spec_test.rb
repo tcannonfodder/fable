@@ -92,18 +92,14 @@ class OriginalSpecTest < Minitest::Test
     json = load_json_export("test/fixtures/original-specs/test-call-stack-evaluation.ink.json")
     story = RubyRedInk::Story.new(json)
 
-    assert_nil story.engine.step
-
-    assert_equal "8\n", story.engine.current_text + "\n"
+    assert_equal "8\n", story.continue_maximially + "\n"
   end
 
   def test_choice_count
     json = load_json_export("test/fixtures/original-specs/choice-count.ink.json")
     story = RubyRedInk::Story.new(json)
 
-    assert_nil story.engine.step
-
-    assert_equal "2\n", story.engine.current_text + "\n"
+    assert_equal "2\n", story.continue_maximially + "\n"
   end
 
   def test_choice_diverts_to_done
