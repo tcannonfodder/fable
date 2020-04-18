@@ -550,7 +550,7 @@ class OriginalSpecTest < Minitest::Test
     When should this get printed?
     STORY
 
-    assert_equal result, story.continue + "\n"
+    assert_equal result, story.continue_maximially + "\n"
 
     assert_equal 1, story.current_choices.size
     assert_equal "I’m an option", story.current_choices[0].text
