@@ -221,6 +221,7 @@ module RubyRedInk
           name = existing_pointer.variable_name
           context_index = existing_pointer.context_index
           set_global = (context_index == 0)
+          existing_pointer = get_raw_variable_with_name(name, context_index)
         end
       end
 
