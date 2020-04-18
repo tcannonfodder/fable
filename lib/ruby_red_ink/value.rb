@@ -232,13 +232,9 @@ module RubyRedInk
       raise Error, "Shouldn't be checking the truthiness of a variable pointer"
     end
 
-    def initialize(variable_name, context_index = -1)
+    def initialize(variable_name=nil, context_index = -1)
       super(variable_name)
       self.context_index = context_index
-    end
-
-    def initialize(value=nil)
-      super(value)
     end
 
     def cast(new_type)
