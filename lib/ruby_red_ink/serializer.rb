@@ -331,6 +331,8 @@ module RubyRedInk
       hash_value.each do |key, value|
         result[key] = convert_from_runtime_object(value)
       end
+
+      result
     end
 
     def self.convert_array_of_runtime_objects(array)
