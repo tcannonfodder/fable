@@ -47,6 +47,14 @@ module RubyRedInk
       threads.last
     end
 
+    def current_thread=(value)
+      if threads.size != 1
+        raise StoryError, "Shouldn't be directly setting the current thread when we have a stack of them"
+        threads.clear
+        threads << value
+      end
+    end
+
     def can_pop_thread?
       threads.size > 1 && !element_is_evaluate_from_game?
     end
