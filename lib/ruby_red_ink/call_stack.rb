@@ -294,7 +294,7 @@ module RubyRedInk
         copied_thread = self.class.new
         copied_thread.thread_index = thread_index
         self.call_stack.each do |element|
-          copied_thread.call_stack << element
+          copied_thread.call_stack << element.copy
         end
 
         copied_thread.previous_pointer = previous_pointer
