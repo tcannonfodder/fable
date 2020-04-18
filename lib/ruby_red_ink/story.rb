@@ -8,7 +8,8 @@ module RubyRedInk
 
     attr_accessor :original_object, :state, :profiler,
       :list_definitions, :main_content_container,
-      :allow_external_function_fallbacks
+      :allow_external_function_fallbacks,
+      :on_make_choice
 
     def initialize(original_object)
       self.original_object = original_object
