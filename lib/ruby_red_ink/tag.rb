@@ -3,6 +3,7 @@ module RubyRedInk
     attr_accessor :text
 
     def initialize(tag_text)
+      super()
       self.text = tag_text
     end
 

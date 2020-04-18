@@ -6,6 +6,7 @@ module RubyRedInk
 
 
     def initialize(value)
+      super()
       self.value_object = value
     end
 

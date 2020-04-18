@@ -4,6 +4,10 @@ module RubyRedInk
     # usually parents are container objectsd
     attr_accessor :parent, :own_debug_metadata, :path, :original_object
 
+    def initialize
+      @path = nil
+    end
+
     def debug_metadata
       if @own_debug_metadata.nil?
         if !parent.nil?

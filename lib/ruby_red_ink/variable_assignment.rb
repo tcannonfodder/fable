@@ -8,6 +8,7 @@ module RubyRedInk
     alias_method :global?, :global
 
     def initialize(variable_name, new_declaration)
+      super()
       self.variable_name = variable_name
       self.new_declaration = new_declaration
     end

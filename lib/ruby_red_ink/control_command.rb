@@ -44,6 +44,7 @@ module RubyRedInk
     end
 
     def initialize(command_symbol)
+      super()
       self.command_type = LOOKUP[command_symbol]
     end
 

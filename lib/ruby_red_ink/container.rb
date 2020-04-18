@@ -5,6 +5,7 @@ module RubyRedInk
     :counting_at_start_only, :path_to_first_leaf_content
 
     def initialize(flags)
+      super()
       self.bit_flags = flags
       self.content = []
       self.named_content = {}

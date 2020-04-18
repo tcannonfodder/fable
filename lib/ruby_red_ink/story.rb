@@ -12,6 +12,7 @@ module RubyRedInk
       :on_make_choice
 
     def initialize(original_object)
+      super()
       self.original_object = original_object
       self.state = StoryState.new(self)
 
@@ -21,6 +22,7 @@ module RubyRedInk
         raise ArgumentError, "no root object in ink"
       end
 
+      @state_snapshot_at_last_newline = nil
       @recursive_content_count = 0
 
       if !original_object["listDefs"].empty?

@@ -23,6 +23,7 @@ module RubyRedInk
     end
 
     def initialize(name)
+      super()
       self.name = name
     end
 

@@ -94,6 +94,7 @@ module RubyRedInk
     end
 
     def initialize(function_symbol)
+      super()
       self.name = LOOKUP[function_symbol]
       self.number_of_parameters = NUMBER_OF_PARAMETERS[self.name]
     end
