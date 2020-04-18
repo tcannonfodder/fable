@@ -150,10 +150,6 @@ class OriginalSpecTest < Minitest::Test
     json = load_json_export("test/fixtures/original-specs/complex-tunnels.ink.json")
     story = RubyRedInk::Story.new(json)
 
-    assert_nil story.engine.step
-
-    puts story.engine.current_text
-
     result = <<~STORY
     one (1)
     one and a half (1.5)
@@ -161,82 +157,63 @@ class OriginalSpecTest < Minitest::Test
     three (3)
     STORY
 
-    assert_equal result, story.engine.current_text + "\n"
+    assert_equal result, story.continue_maximially + "\n"
   end
 
   def test_conditional_choice_in_weave_1
     json = load_json_export("test/fixtures/original-specs/conditional-choice-in-weave-1.ink.json")
     story = RubyRedInk::Story.new(json)
 
-    assert_nil story.engine.step
-
-    puts story.engine.current_text
-
     result = <<~STORY
     start
     gather should be seen
     STORY
 
-    assert_equal result, story.engine.current_text + "\n"
+    assert_equal result, story.continue_maximially + "\n"
 
-    assert_equal 1, story.engine.current_choices.size
+    assert_equal 1, story.current_choices.size
 
-    picked = story.engine.pick_choice(0)
+    picked = story.choose_choice_index(0)
 
-    assert_nil story.engine.step
-    assert_equal "result", story.engine.current_text
-    assert_equal 0, story.engine.current_choices.size
+    assert_equal "result", story.continue_maximially
+    assert_equal 0, story.current_choices.size
   end
 
   def test_conditional_choice_in_weave_2
     json = load_json_export("test/fixtures/original-specs/conditional-choice-in-weave-2.ink.json")
     story = RubyRedInk::Story.new(json)
 
-    assert_nil story.engine.step
-
-    puts story.engine.current_text
-
     result = <<~STORY
     first gather
     STORY
 
-    assert_equal result, story.engine.current_text + "\n"
+    assert_equal result, story.continue + "\n"
 
-    assert_equal 2, story.engine.current_choices.size
+    assert_equal 2, story.current_choices.size
 
-    picked = story.engine.pick_choice(0)
+    picked = story.choose_choice_index(0)
 
     result = <<~STORY
     the main gather
     bottom gather
     STORY
 
-    assert_nil story.engine.step
-    assert_equal result, story.engine.current_text + "\n"
-    assert_equal 0, story.engine.current_choices.size
+    assert_equal result, story.continue + "\n"
+    assert_equal 0, story.current_choices.size
   end
 
   def test_conditional_choices
     json = load_json_export("test/fixtures/original-specs/test-conditional-choices.ink.json")
     story = RubyRedInk::Story.new(json)
 
-    assert_nil story.engine.step
+    assert_equal "", story.continue_maximially
 
-    assert story.engine.current_text.empty?
+    assert_equal 4, story.current_choices.size
 
-    assert_equal 4, story.engine.current_choices.size
-
-    assert_equal "one", story.engine.current_choices[0].start_content
-    assert_nil story.engine.current_choices[0].choice_only_content
-
-    assert_equal "two", story.engine.current_choices[1].start_content
-    assert_nil story.engine.current_choices[1].choice_only_content
-
-    assert_equal "three", story.engine.current_choices[2].start_content
-    assert_nil story.engine.current_choices[2].choice_only_content
-
-    assert_equal "four", story.engine.current_choices[3].start_content
-    assert_nil story.engine.current_choices[3].choice_only_content
+    assert_equal "one", story.current_choices[0].text
+    assert_equal "two", story.current_choices[1].text
+    assert_equal "three", story.current_choices[2].text
+    assert_equal "four", story.current_choices[3].text
   end
 
   def test_conditionals
@@ -253,54 +230,41 @@ class OriginalSpecTest < Minitest::Test
     right?
     STORY
 
-    assert_nil story.engine.step
-    assert_equal result, story.engine.current_text + "\n"
-
-    assert_equal 0, story.engine.current_choices.size
+    assert_equal result, story.continue_maximially + "\n"
+    assert_equal 0, story.current_choices.size
   end
 
   def test_const
     json = load_json_export("test/fixtures/original-specs/test-const.ink.json")
     story = RubyRedInk::Story.new(json)
 
-    assert_nil story.engine.step
-    assert_equal "5", story.engine.current_text
-
-    assert_equal 0, story.engine.current_choices.size
+    assert_equal "5", story.continue
+    assert_equal 0, story.current_choices.size
   end
 
   def test_default_choice
     json = load_json_export("test/fixtures/original-specs/test-default-choice.ink.json")
     story = RubyRedInk::Story.new(json)
+    story.start_profiling
 
-    assert_nil story.engine.step
+    assert_equal "", story.continue
 
-    assert  story.engine.current_text.empty?
+    assert_equal 2, story.current_choices.size
 
-    assert_equal 2, story.engine.current_choices.size
+    assert_equal "Choice 1", story.current_choices[0].text
 
-    assert_nil story.engine.current_choices[0].start_content
-    assert_equal "Choice 1", story.engine.current_choices[0].choice_only_content
+    assert_equal "Choice 2", story.current_choices[1].text
 
-    assert_nil story.engine.current_choices[1].start_content
-    assert_equal "Choice 2", story.engine.current_choices[1].choice_only_content
+    picked = story.choose_choice_index(0)
 
-    puts "***************************"
+    assert_equal "After choice", story.continue
 
-    picked = story.engine.pick_choice(0)
+    assert_equal 1, story.current_choices.size
 
-    assert_nil story.engine.step
+    assert_equal "Choice 2", story.current_choices[0].text
 
-    assert_equal "After choice", story.engine.current_text
+    picked = story.choose_choice_index(0)
 
-    assert_equal 1, story.engine.current_choices.size
-
-    assert_equal "Choice 2", story.engine.current_choices[0].start_content
-    assert_nil story.engine.current_choices[0].choice_only_content
-
-    picked = story.engine.pick_choice(0)
-
-    assert_nil story.engine.step
-    assert_equal "After choice\nThis is default.", story.engine.current_text
+    assert_equal "After choice\nThis is default.", story.continue_maximially
   end
 end
