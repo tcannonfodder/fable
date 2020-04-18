@@ -157,7 +157,7 @@ module RubyRedInk
 
       # Get value from pointer?
       if variable_value.is_a?(VariablePointerValue)
-        variable_value = value_at_variable_pointer(variable_value)
+        variable_value = get_variable_with_name_internal(variable_value.variable_name, variable_value.context_index)
       end
 
       return variable_value
