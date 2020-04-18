@@ -194,7 +194,7 @@ module RubyRedInk
           divert_push_pop_type = PushPopType::TYPES[:tunnel]
           value = given_hash["->t->"]
         elsif given_hash["x()"]
-          is_divert = false
+          is_divert = true
           external = true
           pushes_to_stack = false
           divert_push_pop_type = PushPopType::TYPES[:function]
@@ -241,7 +241,7 @@ module RubyRedInk
         if given_hash["VAR?"]
           return VariableReference.new(given_hash["VAR?"])
         elsif given_hash["CNT?"]
-          read_count_variable_reference = VariableReference.new
+          read_count_variable_reference = VariableReference.new(nil)
           read_count_variable_reference.path_string_for_count = given_hash["CNT?"]
           return read_count_variable_reference
         end
