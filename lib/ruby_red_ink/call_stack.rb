@@ -238,7 +238,7 @@ module RubyRedInk
 
       def copy
         copied_element = self.class.new(type, current_pointer, in_expression_evaluation: in_expression_evaluation)
-        copied_element.temporary_variables = Serializer.convert_hash_of_runtime_objects(temporary_variables)
+        copied_element.temporary_variables = Serializer.convert_to_runtime_objects_hash(Serializer.convert_hash_of_runtime_objects(temporary_variables))
         copied_element.evaluation_stack_height_when_pushed = evaluation_stack_height_when_pushed
         copied_element.function_start_in_output_stream = function_start_in_output_stream
         copied_element
