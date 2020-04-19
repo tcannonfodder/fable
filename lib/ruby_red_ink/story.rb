@@ -1142,11 +1142,14 @@ module RubyRedInk
     # It's only recommended that this is used on very short debug stories, since
     # it can end up generate a large quantity of text otherwise.
     def build_string_of_hierarchy
-      return main_content_container.build_string_of_hierarchy(0, state.current_pointer.resolve!)
+      result = StringIO.new
+      main_content_container.build_string_of_hierarchy(result, 0, state.current_pointer.resolve!)
+      result.rewind
+      result.read
     end
 
     def build_string_of_container(container)
-      container.build_string_of_hierarchy(0, state.current_pointer.resolve!)
+      container.build_string_of_hierarchy(StringIO.new, 0, state.current_pointer.resolve!)
     end
 
     def next_content!
