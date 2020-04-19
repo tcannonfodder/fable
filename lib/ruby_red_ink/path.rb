@@ -33,9 +33,7 @@ module RubyRedInk
     end
 
     def self.self
-      path = self.new
-      path.relative = true
-      path
+      Path.new(".^")
     end
 
     def initialize(components, relative= false)
