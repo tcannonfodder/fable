@@ -79,11 +79,11 @@ module RubyRedInk
     def visit_count_for_container(container)
       if !container.visits_should_be_counted?
         story.add_error!("Read count for target (#{container.name} - on #{container.debug_metadata}) unknown.")
-        return 0
+        return IntValue.new(0)
       end
 
       if has_patch? && patch.get_visit_count(container)
-        return patch.get_visit_count(container)
+        return IntValue.new(patch.get_visit_count(container))
       end
 
       container_path_string = container.path.to_s
@@ -93,7 +93,7 @@ module RubyRedInk
     def increment_visit_count_for_container!(container)
       if has_patch?
         current_count = visit_count_for_container(container)
-        patch.set_visit_count(container, current_count + 1)
+        patch.set_visit_count(container, current_count.value + 1)
         return
       end
 
