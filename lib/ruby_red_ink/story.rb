@@ -1154,11 +1154,11 @@ module RubyRedInk
 
     def next_content!
       # setting previousContentObject is critical for visit_changed_containers_due_to_divert
-      state.previous_pointer = state.current_pointer
+      state.previous_pointer = state.current_pointer.dup
 
       # Divert step?
       if !state.diverted_pointer.null_pointer?
-        state.current_pointer = state.diverted_pointer
+        state.current_pointer = state.diverted_pointer.dup
         state.diverted_pointer = Pointer.null_pointer
 
         # Internally uses state.previous_content_object and state.current_content_object
@@ -1213,7 +1213,7 @@ module RubyRedInk
     def increment_content_pointer
       successful_increment = true
 
-      pointer = state.callstack.current_element.current_pointer
+      pointer = state.callstack.current_element.current_pointer.dup
       pointer.index += 1
 
       # Each time we step off the end, we fall out to the next container, all the
@@ -1236,7 +1236,7 @@ module RubyRedInk
 
       pointer = Pointer.null_pointer if !successful_increment
 
-      state.callstack.current_element.current_pointer = pointer
+      state.callstack.current_element.current_pointer = pointer.dup
       return successful_increment
     end
 

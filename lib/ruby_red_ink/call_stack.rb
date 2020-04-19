@@ -229,7 +229,7 @@ module RubyRedInk
       attr_accessor :function_start_in_output_stream
 
       def initialize(type, pointer, options = {in_expression_evaluation: false})
-        self.current_pointer = pointer
+        self.current_pointer = pointer.dup
         self.in_expression_evaluation = options[:in_expression_evaluation]
         self.temporary_variables = {}
         self.type = type
