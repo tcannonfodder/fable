@@ -640,7 +640,6 @@ module RubyRedInk
           end
         # De-duplicate newlines, and don't ever lead with a newline
         elsif object.is_newline?
-          puts "😂 #{output_stream_ends_in_newline?}"
           if output_stream_ends_in_newline? || !output_stream_contains_content?
             include_in_output = false
           end
