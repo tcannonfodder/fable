@@ -761,4 +761,65 @@ class OriginalSpecTest < Minitest::Test
 
     assert_equal result, story.continue_maximially
   end
+
+  def test_read_count_across_threads
+    json = load_json_export("test/fixtures/original-specs/test-read-count-across-threads.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    1
+    1
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_read_count_dot_separated_path
+    json = load_json_export("test/fixtures/original-specs/test-read-count-dot-separated-path.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    hi
+    hi
+    hi
+    3
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_same_line_divert_is_newline
+    json = load_json_export("test/fixtures/original-specs/test-same-line-divert-is-inline.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    We hurried home to Savile Row as fast as we could.
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_shouldnt_gather_due_to_choice
+    json = load_json_export("test/fixtures/original-specs/test-shouldnt-gather-due-to-choice.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "", story.continue_maximially
+    story.choose_choice_index(0)
+
+    result = <<~STORY
+    opt
+    text
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_shuffle_stack_muddying
+    json = load_json_export("test/fixtures/original-specs/shuffle-stack-muddying.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "", story.continue
+
+    assert_equal 2, story.current_choices.size
+  end
 end
