@@ -391,16 +391,48 @@ module RubyRedInk
     # - Removes all whitespace from the start/end of line (including just before an \n)
     # - Turns all consecutive tabs & space runs into single spaces (HTML-style)
     def clean_output_whitespace(string)
-      x = string.each_line(chomp: true).map do |line|
-        if line.empty?
-          nil
-        else
-          line.strip.gsub(MULTIPLE_WHITESPACE_REGEX, ' ')
+      x = ""
+
+      current_whitespace_start = -1
+      start_of_line = 0
+
+      string.each_char.with_index do |character, i|
+        is_inline_whitespace = (character == " " || character == "\t")
+
+        if is_inline_whitespace && current_whitespace_start == -1
+          current_whitespace_start = i
+        end
+
+        if !is_inline_whitespace
+          if(character != "\n" && (current_whitespace_start > 0) && current_whitespace_start != start_of_line)
+            x += " "
+          end
+
+          current_whitespace_start = -1
+        end
+
+        if character == "\n"
+          start_of_line = i + 1
+        end
+
+        if !is_inline_whitespace
+          x << character
         end
       end
-      cleaned_string = x.compact.join("\n")
 
-      cleaned_string
+      # debugger
+      return x
+
+      # x = string.each_line(chomp: true).map do |line|
+      #   if line.empty?
+      #     nil
+      #   else
+      #     line.strip.gsub(MULTIPLE_WHITESPACE_REGEX, ' ') + "\n"
+      #   end
+      # end
+      # cleaned_string = x.compact.join("\n")
+
+      # cleaned_string
     end
 
     def has_patch?
@@ -609,6 +641,7 @@ module RubyRedInk
           end
         # De-duplicate newlines, and don't ever lead with a newline
         elsif object.is_newline?
+          puts "😂 #{output_stream_ends_in_newline?}"
           if output_stream_ends_in_newline? || !output_stream_contains_content?
             include_in_output = false
           end
