@@ -558,7 +558,7 @@ class OriginalSpecTest < Minitest::Test
   def test_knot_thread_interaction_2
     json = load_json_export("test/fixtures/original-specs/test-knot-thread-interaction-2.ink.json")
     story = RubyRedInk::Story.new(json)
-    story.start_profiling
+
     result = <<~STORY
     I’m in a tunnel
     When should this get printed?
@@ -575,9 +575,154 @@ class OriginalSpecTest < Minitest::Test
     I’m an option
     Finishing thread.
     STORY
-    story.profiler.mega_log
 
     assert_equal result, story.continue_maximially
     assert !story.has_errors?
+  end
+
+  def test_knot_gather
+    json = load_json_export("test/fixtures/original-specs/test-leading-newline-multiline-sequence.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "a line after an empty line\n", story.continue
+  end
+
+  def test_logic_in_choices
+    json = load_json_export("test/fixtures/original-specs/test-logic-in-choices.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "", story.continue_maximially
+
+    assert_equal 1, story.current_choices.size
+    assert_equal "'Hello Joe, your name is Joe.'", story.current_choices[0].text
+
+    picked = story.choose_choice_index(0)
+
+    result = <<~STORY
+    'Hello Joe,' I said, knowing full well that his name was Joe.
+    STORY
+
+    assert_equal result, story.continue_maximially
+    assert !story.has_errors?
+  end
+
+  def test_multiple_constant_references
+    json = load_json_export("test/fixtures/original-specs/test-multiple-constant-references.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "success\n", story.continue
+  end
+
+  def test_multi_thread
+    json = load_json_export("test/fixtures/original-specs/test-multi-thread.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    This is place 1.
+    This is place 2.
+    STORY
+
+    assert_equal result, story.continue_maximially
+
+    picked = story.choose_choice_index(0)
+
+    result = <<~STORY
+    choice in place 1
+    The end
+    STORY
+
+    assert_equal result, story.continue_maximially
+    assert !story.has_errors?
+  end
+
+  def test_nested_include
+    json = load_json_export("test/fixtures/original-specs/test-nested-include.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    The value of a variable in test file 2 is 5.
+    This is the main file
+    The value when accessed from knot_in_2 is 5.
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_nested_pass_by_reference
+    json = load_json_export("test/fixtures/original-specs/test-nested-pass-by-reference.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    5
+    625
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_non_text_in_choice_inner_content
+    json = load_json_export("test/fixtures/original-specs/test-non-text-in-choice-inner-content.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    story.continue
+
+    story.choose_choice_index(0)
+
+    assert_equal "option text. Conditional bit. Next.\n", story.continue
+  end
+
+  def test_once_only_choices_can_link_back_to_self
+    json = load_json_export("test/fixtures/original-specs/test-once-only-choices-can-link-back-to-self.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    story.continue_maximially
+
+    assert_equal 1, story.current_choices.size
+    assert_equal "First choice", story.current_choices[0].text
+
+    story.choose_choice_index(0)
+    story.continue_maximially
+
+    assert_equal 1, story.current_choices.size
+    assert_equal "Second choice", story.current_choices[0].text
+
+    story.choose_choice_index(0)
+    story.continue_maximially
+
+    assert_nil story.current_errors
+  end
+
+  def test_once_only_choices_content_with_own_content
+    json = load_json_export("test/fixtures/original-specs/test-once-only-choices-with-own-content.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    story.continue_maximially
+
+    assert_equal 3, story.current_choices.size
+
+    story.choose_choice_index(0)
+    story.continue_maximially
+
+    assert_equal 2, story.current_choices.size
+
+    story.choose_choice_index(0)
+    story.continue_maximially
+
+    assert_equal 1, story.current_choices.size
+
+    story.choose_choice_index(0)
+    story.continue_maximially
+
+    assert_equal 0, story.current_choices.size
+  end
+
+  def test_path_to_self
+    json = load_json_export("test/fixtures/original-specs/test-path-to-self.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    story.continue
+    story.choose_choice_index(0)
+    story.continue
+    story.choose_choice_index(0)
   end
 end
