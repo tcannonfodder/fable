@@ -822,4 +822,23 @@ class OriginalSpecTest < Minitest::Test
 
     assert_equal 2, story.current_choices.size
   end
+
+  def test_simple_glue
+    json = load_json_export("test/fixtures/original-specs/test-simple-glue.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "Some content with glue.\n", story.continue_maximially
+  end
+
+  def test_sticky_choices_stay_sticky
+    json = load_json_export("test/fixtures/original-specs/test-sticky-choices-stay-sticky.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    story.continue_maximially
+    assert_equal 2, story.current_choices.size
+
+    story.choose_choice_index(0)
+    story.continue_maximially
+    assert_equal 2, story.current_choices.size
+  end
 end
