@@ -38,7 +38,7 @@ module RubyRedInk
 
       # Seed the shuffle random numbers
       time_seed = Time.now.to_r * 1_000.0
-      self.story_seed = Random.new(time_seed).rand(100)
+      self.story_seed = IntValue.new(Random.new(time_seed).rand(100))
       self.previous_random = 0
 
       self.current_choices = []
