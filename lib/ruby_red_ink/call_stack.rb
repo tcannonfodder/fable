@@ -50,9 +50,10 @@ module RubyRedInk
     def current_thread=(value)
       if threads.size != 1
         raise StoryError, "Shouldn't be directly setting the current thread when we have a stack of them"
-        threads.clear
-        threads << value
       end
+
+      threads.clear
+      threads << value
     end
 
     def can_pop_thread?
