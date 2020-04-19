@@ -725,4 +725,40 @@ class OriginalSpecTest < Minitest::Test
     story.continue
     story.choose_choice_index(0)
   end
+
+  def test_print_num
+    json = load_json_export("test/fixtures/original-specs/test-print-num.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    . four .
+    . fifteen .
+    . thirty-seven .
+    . one hundred and one .
+    . two hundred and twenty-two .
+    . one thousand two hundred and thirty-four .
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_quote_character_significance
+    json = load_json_export("test/fixtures/original-specs/test-quote-character-significance.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "My name is \"Joe\"\n", story.continue_maximially
+  end
+
+  def test_read_count_across_callstack
+    json = load_json_export("test/fixtures/original-specs/test-read-count-across-callstack.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    1) Seen first 1 times.
+    In second.
+    2) Seen first 1 times.
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
 end
