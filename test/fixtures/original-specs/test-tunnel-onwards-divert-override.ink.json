@@ -1,0 +1,1 @@
+﻿{"inkVersion":19,"root":[[{"->t->":"A"},"^We will never return to here!","\n",["done",{"#f":5,"#n":"g-0"}],null],"done",{"A":["^This is A","\n","ev",{"^->":"B"},"/ev","->->",{"#f":1}],"B":["^Now in B.","\n","end",{"#f":1}],"#f":1}],"listDefs":{}}

@@ -841,4 +841,652 @@ class OriginalSpecTest < Minitest::Test
     story.continue_maximially
     assert_equal 2, story.current_choices.size
   end
+
+  def test_string_constants
+    json = load_json_export("test/fixtures/original-specs/test-string-constants.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "hi\n", story.continue_maximially
+  end
+
+  def test_strings_in_choices
+    json = load_json_export("test/fixtures/original-specs/test-strings-in-choices.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    story.continue_maximially
+    assert_equal 1, story.current_choices.size
+    assert_equal "test1 \"test2 test 3\"", story.current_choices[0].text
+
+    story.choose_choice_index(0)
+    assert_equal "test1 test4", story.continue
+  end
+
+  def test_string_type_coercion
+    json = load_json_export("test/fixtures/original-specs/test-string-type-coercion.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    same
+    different
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_temporaries_at_global_scope
+    json = load_json_export("test/fixtures/original-specs/test-temporaries-at-global-scope.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    54
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_thread_done
+    json = load_json_export("test/fixtures/original-specs/test-thread-done.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    This is a thread example
+    Hello.
+    The example is now complete.
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_tunnel_onwards_after_tunnel
+    json = load_json_export("test/fixtures/original-specs/test-tunnel-onwards-after-tunnel.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    Hello...
+    ...world.
+    The End.
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_tunnel_vs_thread_behavior
+    json = load_json_export("test/fixtures/original-specs/test-tunnel-vs-thread-behavior.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert !story.continue_maximially.include?("Finished tunnel")
+
+    assert_equal 2, story.current_choices.size
+
+    story.choose_choice_index(0)
+
+    assert_match "Finished tunnel", story.continue_maximially
+    assert_equal 3, story.current_choices.size
+
+    story.choose_choice_index(2)
+
+    assert_match "Done.", story.continue_maximially
+  end
+
+  def test_turns_since
+    json = load_json_export("test/fixtures/original-specs/test-turns-since.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    -1
+    0
+    STORY
+
+    assert_equal result, story.continue_maximially
+
+    story.choose_choice_index(0)
+
+    assert_equal "1\n", story.continue_maximially
+
+    story.choose_choice_index(0)
+
+    assert_equal "2\n", story.continue_maximially
+  end
+
+  def test_turns_since_nested
+    json = load_json_export("test/fixtures/original-specs/test-turns-since-nested.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    -1 = -1
+    STORY
+
+    assert_equal result, story.continue_maximially
+
+    assert_equal 1, story.current_choices.size
+    story.choose_choice_index(0)
+
+    result = <<~STORY
+    stuff
+    0 = 0
+    STORY
+
+    assert_equal result, story.continue_maximially
+
+    assert_equal 1, story.current_choices.size
+    story.choose_choice_index(0)
+
+    result = <<~STORY
+    more stuff
+    1 = 1
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_turns_since_with_variable_target
+    json = load_json_export("test/fixtures/original-specs/test-turns-since-with-variable-target.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    0
+    0
+    STORY
+
+    assert_equal result, story.continue_maximially
+
+    story.choose_choice_index(0)
+
+    assert_equal "1\n", story.continue_maximially
+  end
+
+  def test_unbalanced_weave_indentation
+    json = load_json_export("test/fixtures/original-specs/test-unbalanced-weave-indentation.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "", story.continue_maximially
+
+    assert_equal 1, story.current_choices.size
+    assert_equal "First", story.current_choices[0].text
+
+    story.choose_choice_index(0)
+
+    result = <<~STORY
+    First
+    STORY
+
+    assert_equal result, story.continue_maximially
+
+    assert_equal 1, story.current_choices.size
+    story.choose_choice_index(0)
+
+    result = <<~STORY
+    Very indented
+    End
+    STORY
+
+    assert_equal result, story.continue_maximially
+
+    assert_equal 0, story.current_choices.size
+  end
+
+  def test_variable_declaration_in_conditional
+    json = load_json_export("test/fixtures/original-specs/test-variable-declaration-in-conditional.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    5
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_variable_divert_target
+    json = load_json_export("test/fixtures/original-specs/test-variable-divert-target.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    Here.
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_variable_get_set_api
+    json = load_json_export("test/fixtures/original-specs/test-variable-get-set-api.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "5\n", story.continue_maximially
+    assert_equal 5, story.variables_state["x"]
+
+    story.variables_state["x"] = 10
+
+    story.choose_choice_index(0)
+    assert_equal "10\n", story.continue_maximially
+    assert_equal 10, story.variables_state["x"]
+
+    story.variables_state["x"] = 8.5
+
+    story.choose_choice_index(0)
+    assert_equal "8.5\n", story.continue_maximially
+    assert_equal 8.5, story.variables_state["x"]
+
+    story.variables_state["x"] = "a string"
+
+    story.choose_choice_index(0)
+    assert_equal "a string\n", story.continue_maximially
+    assert_equal "a string", story.variables_state["x"]
+
+    assert_nil story.variables_state["z"]
+
+    assert_raises RubyRedInk::StoryError do
+      story.variables_state["x"] = Set.new
+    end
+  end
+
+  def test_variable_observer
+    json = load_json_export("test/fixtures/original-specs/test-variable-observer.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    current_variable_value = 0
+    observer_call_count = 0
+
+    story.observe_variable("testVar") do |variable_name, new_value|
+      current_variable_value = new_value
+      observer_call_count += 1
+    end
+
+    story.continue_maximially
+
+    assert_equal 15, current_variable_value
+    assert_equal 1, observer_call_count
+    assert_equal 1, story.current_choices.size
+
+    story.choose_choice_index(0)
+    story.continue
+
+    assert_equal 25, current_variable_value
+    assert_equal 2, observer_call_count
+  end
+
+  def test_variable_pointer_reference_from_knot
+    json = load_json_export("test/fixtures/original-specs/test-variable-pointer-reference-from-knot.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "6\n", story.continue
+  end
+
+  def test_variable_swap_recursive
+    json = load_json_export("test/fixtures/original-specs/test-variable-swap-recursive.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "1 2\n", story.continue
+  end
+
+  def test_variable_tunnel
+    json = load_json_export("test/fixtures/original-specs/test-variable-tunnel.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "STUFF\n", story.continue_maximially
+  end
+
+  def test_weave_gathers
+    json = load_json_export("test/fixtures/original-specs/test-weave-gathers.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    story.continue_maximially
+
+    assert_equal 2, story.current_choices.size
+    assert_equal "one", story.current_choices[0].text
+    assert_equal "four", story.current_choices[1].text
+
+    story.choose_choice_index(0)
+    story.continue_maximially
+
+    assert_equal 1, story.current_choices.size
+    assert_equal "two", story.current_choices[0].text
+
+    story.choose_choice_index(0)
+
+    result = <<~STORY
+    two
+    three
+    six
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_weave_options
+    json = load_json_export("test/fixtures/original-specs/test-weave-options.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    story.continue
+
+    assert_equal "Hello.", story.current_choices[0].text
+
+    story.choose_choice_index(0)
+
+    assert_equal "Hello, world.", story.continue_maximially
+  end
+
+  def test_whitespace
+    json = load_json_export("test/fixtures/original-specs/test-whitespace.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    Hello!
+    World.
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_visit_counts_when_choosing
+    json = load_json_export("test/fixtures/original-specs/test-visit-counts-when-choosing.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal 0, story.state.visit_count_at_path_string("TestKnot")
+    assert_equal 0, story.state.visit_count_at_path_string("TestKnot2")
+
+    story.choose_path_string("TestKnot")
+
+    assert_equal 1, story.state.visit_count_at_path_string("TestKnot")
+    assert_equal 0, story.state.visit_count_at_path_string("TestKnot2")
+
+    story.continue
+
+    assert_equal 1, story.state.visit_count_at_path_string("TestKnot")
+    assert_equal 0, story.state.visit_count_at_path_string("TestKnot2")
+
+    story.choose_choice_index(0)
+
+    assert_equal 1, story.state.visit_count_at_path_string("TestKnot")
+    assert_equal 0, story.state.visit_count_at_path_string("TestKnot2")
+
+    story.continue
+
+    assert_equal 1, story.state.visit_count_at_path_string("TestKnot")
+    assert_equal 1, story.state.visit_count_at_path_string("TestKnot2")
+  end
+
+  def test_visit_count_bug_due_to_nested_containers
+    json = load_json_export("test/fixtures/original-specs/text-visit-count-bug-due-to-nested-containers.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "1\n", story.continue
+
+    story.choose_choice_index(0)
+
+    result = <<~STORY
+    choice
+    1
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_temp_global_conflict
+    json = load_json_export("test/fixtures/original-specs/test-temp-global-conflict.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "0\n", story.continue
+  end
+
+  def test_thread_in_logic
+    json = load_json_export("test/fixtures/original-specs/test-thread-in-logic.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "Content\n", story.continue
+  end
+
+  def test_temp_usage_in_options
+    json = load_json_export("test/fixtures/original-specs/test-thread-in-logic.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    story.continue
+    assert_equal 1, story.current_choices.size
+    assert_equal "1", story.current_choices[0].text
+    story.choose_choice_index(0)
+
+    result = <<~STORY
+    1
+    End of choice
+    this another
+    STORY
+
+    assert_equal result, story.continue_maximially
+    assert_equal 0, story.current_choices.size
+  end
+
+  def test_evaluating_ink_function_from_game
+    json = load_json_export("test/fixtures/original-specs/test-evaluating-ink-function-from-game.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    story.continue
+
+    returned_divert_target = story.evaluate_function("test")
+    assert_equal "somewhere.here", returned_divert_target
+  end
+
+  def test_evaluating_ink_function_from_game_2
+    json = load_json_export("test/fixtures/original-specs/test-evaluating-ink-function-from-game-2.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    results = story.evaluate_function("func1", return_text_output: true)
+
+    assert_equal "This is a function\n", results[:text_output]
+    assert_equal 5, results[:return_value]
+
+    assert_equal "One\n", story.continue
+
+    results = story.evaluate_function("func2", return_text_output: true)
+
+    assert_equal "This is a function without a return value\n", results[:text_output]
+    assert_nil results[:return_value]
+
+    assert_equal "Two\n", story.continue
+
+    results = story.evaluate_function("add", 1, 2, return_text_output: true)
+
+    assert_equal "x = 1, y = 2\n", results[:text_output]
+    assert_equal 3, results[:return_value]
+
+    assert_equal "Three\n", story.continue
+  end
+
+  def test_evaluating_function_variable_state_bug
+    json = load_json_export("test/fixtures/original-specs/test-evaluating-function-variable-state-bug.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "Start\n", story.continue
+    assert_equal "In tunnel.\n", story.continue
+
+    result = story.evaluate_function("func1")
+    assert_equal "RIGHT", result
+
+    assert_equal "End\n", story.continue
+  end
+
+  def test_done_stops_thread
+    json = load_json_export("test/fixtures/original-specs/test-done-stops-thread.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    assert_equal "", story.continue_maximially
+  end
+
+  def test_right_left_glue_matching
+    json = load_json_export("test/fixtures/original-specs/test-right-left-glue-matching.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    A line.
+    Another line.
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_set_nonexistent_variable
+    json = load_json_export("test/fixtures/original-specs/test-set-nonexistent-variable.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    Hello world.
+    STORY
+
+    assert_equal result, story.continue_maximially
+
+    assert_raises RubyRedInk::StoryError do
+      story.variables_state["y"] = "earth"
+    end
+  end
+
+  def test_tags
+    json = load_json_export("test/fixtures/original-specs/test-tags.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    global_tags = ["author: Joe", "title: My Great Story"]
+    knot_tags = ["knot tag"]
+    knot_tag_when_continued_twice = ["end of knot tag"]
+    stitch_tags = ["stitch tag"]
+
+    assert_equal global_tags, story.global_tags
+
+    result = <<~STORY
+    This is the content
+    STORY
+
+    assert_equal result, story.continue
+    assert_equal global_tags, story.current_tags
+
+    knot_tags, story.tags_for_content_at_path("knot")
+    stitch_tags, story.tags_for_content_at_path("knot.stitch")
+
+    story.choose_path_string("knot")
+
+    result = <<~STORY
+    Knot content
+    STORY
+
+    assert_equal result, story.continue
+    assert_equal knot_tags, story.current_tags
+    assert_equal "", story.continue
+    assert_equal knot_tag_when_continued_twice, story.current_tags
+  end
+
+  def test_tunnel_onwards_divert_override
+    json = load_json_export("test/fixtures/original-specs/test-tunnel-onwards-divert-override.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    This is A
+    Now in B.
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_list_basic_operations
+    json = load_json_export("test/fixtures/original-specs/test-list-basic-operations.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    b, d
+    a, b, c, e
+    b, c
+    0
+    1
+    1
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_more_list_operations
+    json = load_json_export("test/fixtures/original-specs/test-more-list-operations.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    1
+    l
+    n
+    l, m
+    n
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_empty_list_origin
+    json = load_json_export("test/fixtures/original-specs/test-list-empty-origin.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    a, b
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_empty_list_origin_after_assignment
+    json = load_json_export("test/fixtures/original-specs/test-empty-list-origin-after-assignment.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    a, b, c
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_list_save_load
+    json = load_json_export("test/fixtures/original-specs/test-list-save-load.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    a, x, c
+    STORY
+
+    assert_equal result, story.continue_maximially
+
+    saved_state = story.state.to_hash
+
+    story = RubyRedInk::Story.new(json)
+
+    story.state.from_hash!(saved_state)
+
+    story.choose_path_string("elsewhere")
+
+    assert_equal "a, x, c, z\n", story.continue_maximially
+  end
+
+  def test_author_warning_inside_content_list_bug
+    json = load_json_export("test/fixtures/original-specs/test-author-warning-inside-content-list-bug.ink.json")
+    story = RubyRedInk::Story.new(json)
+    assert !story.has_errors?
+  end
+
+  def test_weave_within_sequence
+    json = load_json_export("test/fixtures/original-specs/test-weave-within-sequence.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    story.continue
+    assert_equal 1, story.current_choices.size
+
+    story.choose_choice_index(0)
+
+    result = <<~STORY
+    choice
+    nextline
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_tunnel_onwards_divert_after_with_arg
+    json = load_json_export("test/fixtures/original-specs/test-weave-within-sequence.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    8
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
 end
