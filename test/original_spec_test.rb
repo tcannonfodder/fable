@@ -140,7 +140,7 @@ class OriginalSpecTest < Minitest::Test
 
     story.choose_choice_index(0)
 
-    assert_equal "Text", story.continue
+    assert_equal "Text\n", story.continue
   end
 
   def test_compare_divert_targets
@@ -210,7 +210,7 @@ class OriginalSpecTest < Minitest::Test
     bottom gather
     STORY
 
-    assert_equal result, story.continue
+    assert_equal result, story.continue_maximially
     assert_equal 0, story.current_choices.size
   end
 
@@ -250,7 +250,7 @@ class OriginalSpecTest < Minitest::Test
     json = load_json_export("test/fixtures/original-specs/test-const.ink.json")
     story = RubyRedInk::Story.new(json)
 
-    assert_equal "5", story.continue
+    assert_equal "5\n", story.continue
     assert_equal 0, story.current_choices.size
   end
 
@@ -269,7 +269,7 @@ class OriginalSpecTest < Minitest::Test
 
     picked = story.choose_choice_index(0)
 
-    assert_equal "After choice", story.continue
+    assert_equal "After choice\n", story.continue
 
     assert_equal 1, story.current_choices.size
 
@@ -277,14 +277,14 @@ class OriginalSpecTest < Minitest::Test
 
     picked = story.choose_choice_index(0)
 
-    assert_equal "After choice\nThis is default.", story.continue_maximially
+    assert_equal "After choice\nThis is default.\n", story.continue_maximially
   end
 
   def test_default_simple_gather
     json = load_json_export("test/fixtures/original-specs/test-default-simple-gather.ink.json")
     story = RubyRedInk::Story.new(json)
 
-    assert_equal "x", story.continue
+    assert_equal "x\n", story.continue
   end
 
   def test_divert_in_conditionals
@@ -373,7 +373,7 @@ class OriginalSpecTest < Minitest::Test
     json = load_json_export("test/fixtures/original-specs/test-end.ink.json")
     story = RubyRedInk::Story.new(json)
 
-    assert_equal "hello", story.continue_maximially
+    assert_equal "hello\n", story.continue_maximially
     assert !story.has_errors?
   end
 
@@ -381,7 +381,7 @@ class OriginalSpecTest < Minitest::Test
     json = load_json_export("test/fixtures/original-specs/test-end-2.ink.json")
     story = RubyRedInk::Story.new(json)
 
-    assert_equal "hello", story.continue_maximially
+    assert_equal "hello\n", story.continue_maximially
     assert !story.has_errors?
   end
 
@@ -389,7 +389,7 @@ class OriginalSpecTest < Minitest::Test
     json = load_json_export("test/fixtures/original-specs/test-escape-character.ink.json")
     story = RubyRedInk::Story.new(json)
 
-    assert_equal "this is a '|' character", story.continue_maximially
+    assert_equal "this is a '|' character\n", story.continue_maximially
     assert !story.has_errors?
   end
 
@@ -420,7 +420,7 @@ class OriginalSpecTest < Minitest::Test
     json = load_json_export("test/fixtures/original-specs/test-factorial-by-reference.ink.json")
     story = RubyRedInk::Story.new(json)
 
-    assert_equal "120", story.continue_maximially
+    assert_equal "120\n", story.continue_maximially
     assert !story.has_errors?
   end
 
@@ -428,7 +428,7 @@ class OriginalSpecTest < Minitest::Test
     json = load_json_export("test/fixtures/original-specs/test-factorial-recursive.ink.json")
     story = RubyRedInk::Story.new(json)
 
-    assert_equal "120", story.continue_maximially
+    assert_equal "120\n", story.continue_maximially
     assert !story.has_errors?
   end
 
@@ -457,21 +457,21 @@ class OriginalSpecTest < Minitest::Test
     json = load_json_export("test/fixtures/original-specs/test-hello-world.ink.json")
     story = RubyRedInk::Story.new(json)
 
-    assert_equal "Hello world", story.continue_maximially
+    assert_equal "Hello world\n", story.continue_maximially
   end
 
   def test_identifiers_can_start_with_numbers
     json = load_json_export("test/fixtures/original-specs/test-identifiers-can-start-with-numbers.ink.json")
     story = RubyRedInk::Story.new(json)
 
-    assert_equal "512x2 = 1024\n512x2p2 = 1026", story.continue_maximially
+    assert_equal "512x2 = 1024\n512x2p2 = 1026\n", story.continue_maximially
   end
 
   def test_implicit_inline_glue
     json = load_json_export("test/fixtures/original-specs/test-implicit-inline-glue.ink.json")
     story = RubyRedInk::Story.new(json)
 
-    assert_equal "I have five eggs.", story.continue_maximially
+    assert_equal "I have five eggs.\n", story.continue_maximially
   end
 
   def test_implicit_inline_glue_b
@@ -527,7 +527,7 @@ class OriginalSpecTest < Minitest::Test
     json = load_json_export("test/fixtures/original-specs/test-knot-gather.ink.json")
     story = RubyRedInk::Story.new(json)
 
-    assert_equal "g", story.continue_maximially
+    assert_equal "g\n", story.continue_maximially
   end
 
   def test_knot_thread_interaction
@@ -568,7 +568,7 @@ class OriginalSpecTest < Minitest::Test
 
     assert_equal 1, story.current_choices.size
     assert_equal "I’m an option", story.current_choices[0].text
-    debugger
+
     picked = story.choose_choice_index(0)
 
     result = <<~STORY
@@ -576,7 +576,7 @@ class OriginalSpecTest < Minitest::Test
     Finishing thread.
     STORY
     story.profiler.mega_log
-    debugger
+
     assert_equal result, story.continue_maximially
     assert !story.has_errors?
   end
