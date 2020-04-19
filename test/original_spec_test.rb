@@ -2,6 +2,21 @@ require_relative "test_helper"
 
 # tests ported from the main Ink API
 class OriginalSpecTest < Minitest::Test
+  def test_paths
+    # Different instances should ensure different instances of individual components
+    path1 = RubyRedInk::Path.new("hello.1.world")
+    path2 = RubyRedInk::Path.new("hello.1.world")
+
+    path3 = RubyRedInk::Path.new(".hello.1.world")
+    path4 = RubyRedInk::Path.new(".hello.1.world")
+
+    assert_equal path1, path2
+    assert_equal path3, path4
+
+    assert  path1 != path3
+  end
+
+
   # include PrettyDiffs
   # Minitest::Test.make_my_diffs_pretty!
   def test_arithmetic
