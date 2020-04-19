@@ -451,8 +451,7 @@ module RubyRedInk
       copy.output_stream += self.output_stream
       copy.output_stream_dirty!
 
-      copy.current_choices += self.current_choices
-
+      copy.current_choices += @current_choices
       if has_error?
         copy.current_errors = []
         copy.current_errors += self.current_errors
