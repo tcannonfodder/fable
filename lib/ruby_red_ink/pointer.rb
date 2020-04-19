@@ -22,6 +22,10 @@ module RubyRedInk
       return container.content[index]
     end
 
+    def clone
+      self.class.new(self.container, self.index)
+    end
+
     def null_pointer?
       container.nil?
     end
