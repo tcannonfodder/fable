@@ -33,7 +33,7 @@ class OriginalSpecTest < Minitest::Test
     8
     STORY
 
-    assert_equal result, story.continue_maximially + "\n"
+    assert_equal result, story.continue_maximially
   end
 
   def test_basic_string_literals
@@ -46,14 +46,14 @@ class OriginalSpecTest < Minitest::Test
     Hello world 2.
     STORY
 
-    assert_equal result, story.continue_maximially + "\n"
+    assert_equal result, story.continue_maximially
   end
 
   def test_basic_tunnel
     json = load_json_export("test/fixtures/original-specs/basic-tunnel.ink.json")
     story = RubyRedInk::Story.new(json)
 
-    assert_equal "Hello world\n", story.continue_maximially + "\n"
+    assert_equal "Hello world\n", story.continue_maximially
   end
 
   def test_blanks_in_inline_sequences
@@ -79,7 +79,7 @@ class OriginalSpecTest < Minitest::Test
     3.
     STORY
 
-    assert_equal result, story.continue_maximially + "\n"
+    assert_equal result, story.continue_maximially
   end
 
   def test_all_sequence_types
@@ -98,21 +98,21 @@ class OriginalSpecTest < Minitest::Test
     Shuffle once: one two
     STORY
 
-    assert_equal result, story.continue_maximially + "\n"
+    assert_equal result, story.continue_maximially
   end
 
   def test_call_stack_evaluation
     json = load_json_export("test/fixtures/original-specs/test-call-stack-evaluation.ink.json")
     story = RubyRedInk::Story.new(json)
 
-    assert_equal "8\n", story.continue_maximially + "\n"
+    assert_equal "8\n", story.continue_maximially
   end
 
   def test_choice_count
     json = load_json_export("test/fixtures/original-specs/choice-count.ink.json")
     story = RubyRedInk::Story.new(json)
 
-    assert_equal "2\n", story.continue_maximially + "\n"
+    assert_equal "2\n", story.continue_maximially
   end
 
   def test_choice_diverts_to_done
@@ -156,7 +156,7 @@ class OriginalSpecTest < Minitest::Test
     same knot
     STORY
 
-    assert_equal result, story.continue_maximially + "\n"
+    assert_equal result, story.continue_maximially
   end
 
   def test_call_complex_tunnels
@@ -170,7 +170,7 @@ class OriginalSpecTest < Minitest::Test
     three (3)
     STORY
 
-    assert_equal result, story.continue_maximially + "\n"
+    assert_equal result, story.continue_maximially
   end
 
   def test_conditional_choice_in_weave_1
@@ -181,14 +181,13 @@ class OriginalSpecTest < Minitest::Test
     start
     gather should be seen
     STORY
-
-    assert_equal result, story.continue_maximially + "\n"
+    story.start_profiling
+    assert_equal result, story.continue_maximially
 
     assert_equal 1, story.current_choices.size
-
     picked = story.choose_choice_index(0)
 
-    assert_equal "result", story.continue_maximially
+    assert_equal "result\n", story.continue_maximially
     assert_equal 0, story.current_choices.size
   end
 
@@ -200,7 +199,7 @@ class OriginalSpecTest < Minitest::Test
     first gather
     STORY
 
-    assert_equal result, story.continue + "\n"
+    assert_equal result, story.continue
 
     assert_equal 2, story.current_choices.size
 
@@ -211,7 +210,7 @@ class OriginalSpecTest < Minitest::Test
     bottom gather
     STORY
 
-    assert_equal result, story.continue + "\n"
+    assert_equal result, story.continue
     assert_equal 0, story.current_choices.size
   end
 
@@ -243,7 +242,7 @@ class OriginalSpecTest < Minitest::Test
     right?
     STORY
 
-    assert_equal result, story.continue_maximially + "\n"
+    assert_equal result, story.continue_maximially
     assert_equal 0, story.current_choices.size
   end
 
@@ -307,7 +306,7 @@ class OriginalSpecTest < Minitest::Test
     second time round
     STORY
 
-    assert_equal result, story.continue_maximially + "\n"
+    assert_equal result, story.continue_maximially
     assert_equal 0, story.current_choices.size
   end
 
@@ -322,7 +321,7 @@ class OriginalSpecTest < Minitest::Test
     other
     STORY
 
-    assert_equal result, story.continue_maximially + "\n"
+    assert_equal result, story.continue_maximially
     assert_equal 0, story.current_choices.size
   end
 
@@ -366,7 +365,7 @@ class OriginalSpecTest < Minitest::Test
     Done.
     STORY
 
-    assert_equal result, story.continue_maximially + "\n"
+    assert_equal result, story.continue_maximially
     assert_equal 0, story.current_choices.size
   end
 
@@ -484,7 +483,7 @@ class OriginalSpecTest < Minitest::Test
     X
     STORY
 
-    assert_equal result, story.continue_maximially + "\n"
+    assert_equal result, story.continue_maximially
   end
 
   def test_implicit_inline_glue_c
@@ -496,7 +495,7 @@ class OriginalSpecTest < Minitest::Test
     C
     STORY
 
-    assert_equal result, story.continue_maximially + "\n"
+    assert_equal result, story.continue_maximially
   end
 
   def test_include
@@ -509,7 +508,7 @@ class OriginalSpecTest < Minitest::Test
     This is the main file.
     STORY
 
-    assert_equal result, story.continue_maximially + "\n"
+    assert_equal result, story.continue_maximially
   end
 
   def test_increment
@@ -521,7 +520,7 @@ class OriginalSpecTest < Minitest::Test
     5
     STORY
 
-    assert_equal result, story.continue_maximially + "\n"
+    assert_equal result, story.continue_maximially
   end
 
   def test_knot_gather
@@ -539,7 +538,7 @@ class OriginalSpecTest < Minitest::Test
     blah blah
     STORY
 
-    assert_equal result, story.continue + "\n"
+    assert_equal result, story.continue
 
     assert_equal 2, story.current_choices.size
     assert_equal "option", story.current_choices[0].text
@@ -552,7 +551,7 @@ class OriginalSpecTest < Minitest::Test
     THE END
     STORY
 
-    assert_equal result, story.continue_maximially + "\n"
+    assert_equal result, story.continue_maximially
     assert !story.has_errors?
   end
 
@@ -565,7 +564,7 @@ class OriginalSpecTest < Minitest::Test
     When should this get printed?
     STORY
 
-    assert_equal result, story.continue_maximially + "\n"
+    assert_equal result, story.continue_maximially
 
     assert_equal 1, story.current_choices.size
     assert_equal "I’m an option", story.current_choices[0].text
@@ -578,7 +577,7 @@ class OriginalSpecTest < Minitest::Test
     STORY
     story.profiler.mega_log
     debugger
-    assert_equal result, story.continue_maximially + "\n"
+    assert_equal result, story.continue_maximially
     assert !story.has_errors?
   end
 end
