@@ -172,14 +172,6 @@ module RubyRedInk
       io << "]"
     end
 
-    def build_string_of_hierarchy
-      io = StringIO.new
-      build_string_of_hierarchy(io, 0, nil)
-
-      io.rewind
-      return io.read
-    end
-
     def path_to_first_leaf_content
       @path_to_first_leaf_content ||= path.path_by_appending_path(internal_path_to_first_lead_content)
     end
