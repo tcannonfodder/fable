@@ -72,7 +72,7 @@ module RubyRedInk
       element.evaluation_stack_height_when_pushed = options[:external_evaluation_stack_height]
       element.function_start_in_output_stream = options[:output_stream_length_when_pushed]
 
-      call_stack << element
+      self.call_stack << element
     end
 
     def can_pop?(type = nil)
