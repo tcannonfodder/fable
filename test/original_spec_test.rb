@@ -1355,8 +1355,8 @@ class OriginalSpecTest < Minitest::Test
     assert_equal result, story.continue
     assert_equal global_tags, story.current_tags
 
-    knot_tags, story.tags_for_content_at_path("knot")
-    stitch_tags, story.tags_for_content_at_path("knot.stitch")
+    assert_equal knot_tags, story.tags_for_content_at_path("knot")
+    assert_equal stitch_tags, story.tags_for_content_at_path("knot.stitch")
 
     story.choose_path_string("knot")
 
