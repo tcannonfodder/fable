@@ -1842,7 +1842,7 @@ class OriginalSpecTest < Minitest::Test
     story = RubyRedInk::Story.new(json)
 
     result = <<~STORY
-    Should be 1 not 0: 1
+    Should be 1 not 0: 1.
     STORY
 
     assert_equal result, story.continue_maximially
