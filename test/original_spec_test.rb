@@ -1489,4 +1489,411 @@ class OriginalSpecTest < Minitest::Test
 
     assert_equal result, story.continue_maximially
   end
+
+  def test_various_default_choices
+    json = load_json_export("test/fixtures/original-specs/test-various-default-choices.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    1
+    2
+    3
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_tunnel_onwards_with_parameter_default_choice
+    json = load_json_export("test/fixtures/original-specs/test-tunnel-onwards-with-parameter-default-choice.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    8
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+   def test_read_count_variable_target
+    json = load_json_export("test/fixtures/original-specs/test-read-count-variable-target.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    Count start: 0 0 0
+    1
+    2
+    3
+    Count end: 3 3 3
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_divert_targets_with_parameters
+    json = load_json_export("test/fixtures/original-specs/test-divert-targets-with-parameters.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    5
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_tag_on_choice
+    json = load_json_export("test/fixtures/original-specs/test-tag-on-choice.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    story.continue
+
+    story.choose_choice_index(0)
+
+
+    assert_equal "Hello", story.continue
+    assert_equal ["hey"], story.current_tags
+
+    result = <<~STORY
+    5
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_string_contains
+    json = load_json_export("test/fixtures/original-specs/test-string-contains.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    1
+    0
+    1
+    1
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_evaluation_stack_leaks
+    json = load_json_export("test/fixtures/original-specs/test-evaluation-stack-leaks.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    else
+    else
+    hi
+    STORY
+
+    assert_equal result, story.continue_maximially
+    assert_equal 0, story.state.evaluation_stack.size
+  end
+
+
+  def test_ink_game_back_and_forth
+    json = load_json_export("test/fixtures/original-specs/test-game-ink-back-and-forth.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    # Crazy game/ink callstack:
+    # - Game calls "topExternal(5)" (Game -> ink)
+    # - topExternal calls gameInc(5) (ink -> Game)
+    # - gameInk increments to 6
+    # - gameInk calls inkInc(6) (Game -> ink)
+    # - inkInc just increments to 7 (ink)
+    # And the whole thing unwinds again back to game.
+
+    story.bind_external_function("gameInc") do |x|
+      x += 1
+      x = story.evaluate_function("inkInc", x)
+      return x
+    end
+
+    final_result = story.evaluate_function("topExternal", 5, return_text_output: true)
+
+    assert_equal 7, final_result[:return_value]
+    assert_equal "In top external\n", final_result[:text_output]
+  end
+
+  def test_newlines_with_string_eval
+    json = load_json_export("test/fixtures/original-specs/test-newlines-with-string-eval.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    A
+    B
+    A
+    3
+    B
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_newlines_trimming_with_functional_external_callback
+    json = load_json_export("test/fixtures/original-specs/test-newlines-trimming-with-functional-external-fallback.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    story.allow_external_function_fallbacks = true
+
+    result = <<~STORY
+    Phrase 1
+    Phrase 2
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_multiline_logic_with_glue
+    json = load_json_export("test/fixtures/original-specs/test-multiline-logic-with-glue.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    a b
+    a b
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_newline_at_start_of_multiline_conditional
+    json = load_json_export("test/fixtures/original-specs/text-newline-at-start-of-multiline-conditional.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    X
+    x
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_temp_not_found
+    json = load_json_export("test/fixtures/original-specs/test-temp-not-found.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    0
+    hello
+    STORY
+
+    assert_equal result, story.continue_maximially
+    assert story.has_warnings?
+  end
+
+  def test_top_flow_terminator_shouldnt_kill_thread_choices
+    json = load_json_export("test/fixtures/original-specs/test-top-flow-terminator-shouldnt-kill-thread-choices.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    Limes
+    STORY
+
+    assert_equal result, story.continue_maximially
+    assert_equal 1, story.current_choices.size
+  end
+
+  def test_newline_consistency
+    json = load_json_export("test/fixtures/original-specs/test-newline-consistency-1.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    hello world
+    STORY
+
+    assert_equal result, story.continue_maximially
+
+
+    json = load_json_export("test/fixtures/original-specs/test-newline-consistency-2.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    hello world
+    STORY
+
+    story.continue
+    story.choose_choice_index(0)
+    assert_equal result, story.continue_maximially
+
+    json = load_json_export("test/fixtures/original-specs/test-newline-consistency-3.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    hello
+    world
+    STORY
+
+    story.continue
+    story.choose_choice_index(0)
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_list_random
+    json = load_json_export("test/fixtures/original-specs/test-list-random.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    while story.can_continue?
+      assert_includes ["B\n", "C\n", "D\n"], story.continue
+    end
+  end
+
+  def test_turns
+    json = load_json_export("test/fixtures/original-specs/test-turns.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    10.times do |n|
+      assert_equal "#{n}\n", story.continue
+      story.choose_choice_index(0)
+    end
+  end
+
+  def test_logic_lines_with_newlines
+    json = load_json_export("test/fixtures/original-specs/test-logic-lines-with-newlines.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    text1
+    text 2
+    text1
+    text 2
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+
+  def test_floor_ceiling_and_casts
+    json = load_json_export("test/fixtures/original-specs/test-floor-ceiling-and-casts.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    1
+    1
+    2
+    0.6666667
+    0
+    1
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_list_range
+    json = load_json_export("test/fixtures/original-specs/test-list-range.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    Pound, Pizza, Euro, Pasta, Dollar, Curry, Paella
+    Euro, Pasta, Dollar, Curry
+    Two, Three, Four, Five, Six
+    Pizza, Pasta
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_knot_stitch_gather_counts
+    json = load_json_export("test/fixtures/original-specs/test-knot-stitch-gather-counts.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    1 1
+    2 2
+    3 3
+    1 1
+    2 1
+    3 1
+    1 2
+    2 2
+    3 2
+    1 1
+    2 1
+    3 1
+    1 2
+    2 2
+    3 2
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  def test_choice_thread_forking
+    json = load_json_export("test/fixtures/original-specs/test-choice-thread-forking.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    # generate the choice with the forked thread
+    story.continue
+
+    # Save/Reload
+    saved_state = story.state.to_hash
+    story = RubyRedInk::Story.new(json)
+    story.state.from_hash!(saved_state)
+
+    # Load the choice, it should have its own thread still
+    # that still has the captured temp x
+    story.choose_choice_index(0)
+    story.continue_maximially
+
+    # Don't want this warning:
+    # RUNTIME WARNING: '' line 7: Variable not found: 'x'
+    assert !story.has_warnings?
+  end
+
+
+  def test_fallback_choice_on_thread
+    json = load_json_export("test/fixtures/original-specs/test-fallback-choice-on-thread.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    Should be 1 not 0: 1
+    STORY
+
+    assert_equal result, story.continue_maximially
+  end
+
+  # Test for bug where after a call to ChoosePathString,
+  # the callstack is not fully/cleanly reset, e.g. leaving
+  # "inExpressionEvaluation" variable left to true, as set during
+  # the call to {RunAThing()}.
+  # This was when we unwound the callstack, but we didn't reset
+  # the base element.
+  def test_clean_callstack_reset_on_path_choice
+    json = load_json_export("test/fixtures/original-specs/test-clean-callstack-reset-on-path-choice.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    The first line.
+    STORY
+
+    assert_equal result, story.continue
+
+    story.choose_path_string("SomewhereElse")
+
+    result = <<~STORY
+    somewhere else
+    STORY
+
+    assert_equal result, story.continue
+  end
+
+  # Test for bug where choice's owned thread would get 
+  # reused between re-runs after a state reset, and in
+  # this case would be in the middle of expression evaluation
+  # at the time, causing an error.
+  # Fixed by re-forking the choice thread
+  # in TryFollowDefaultInvisibleChoice
+  def test_state_rollback_over_default_choice
+    json = load_json_export("test/fixtures/original-specs/test-state-rollback-over-default-choice.ink.json")
+    story = RubyRedInk::Story.new(json)
+
+    result = <<~STORY
+    Text.
+    STORY
+
+    assert_equal result, story.continue
+
+
+    result = <<~STORY
+    5
+    STORY
+
+    assert_equal result, story.continue
+  end
 end

@@ -1,0 +1,1 @@
+﻿{"inkVersion":19,"root":[[{"->t->":"tunnel"},["done",{"#f":5,"#n":"g-0"}],null],"done",{"tunnel":[[{"*":".^.c-0","flg":24},{"c-0":["ev",8,{"^->":"elsewhere"},"/ev","->->","\n",{"#f":5}]}],{"#f":1}],"elsewhere":[{"temp=":"x"},"ev",{"VAR?":"x"},"out","/ev","\n","end",{"#f":1}],"#f":1}],"listDefs":{}}
