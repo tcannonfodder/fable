@@ -110,7 +110,7 @@ module RubyRedInk
         return global_path
       end
 
-      number_of_upwards_moves = (own_path.length - 1) - last_shared_path_comp_index
+      number_of_upwards_moves = (own_path.length - 1) - last_shared_path_comp_index - 1
       new_path_components = []
 
       (0..number_of_upwards_moves).each do |i|

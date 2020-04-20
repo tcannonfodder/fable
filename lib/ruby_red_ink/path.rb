@@ -58,7 +58,8 @@ module RubyRedInk
         end
       end
 
-      components_to_add_at_this_level = (0..(components.size - upward_moves))
+      upward_jumps_to_make = (components.size - upward_moves-1)
+      components_to_add_at_this_level = (0..upward_jumps_to_make)
 
       components_to_add_at_this_level.each do |i|
         new_path.components << components[i]
