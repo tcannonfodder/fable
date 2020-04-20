@@ -539,7 +539,7 @@ module RubyRedInk
       choice.thread_at_generation = state.callstack.fork_thread!
 
       # set the final text for the choice
-      choice.text = "#{start_text} #{choice_only_text}".strip
+      choice.text = "#{start_text}#{choice_only_text}".strip
 
       return choice
     end
