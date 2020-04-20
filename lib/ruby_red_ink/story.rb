@@ -691,7 +691,7 @@ module RubyRedInk
             add_error("TURNS SINCE expected a divert target (knot, stitch, label name), but saw #{target}#{extra_note}")
           end
 
-          container = content_at_path(target.target)
+          container = content_at_path(target.target_path).container
 
           if !container.nil?
             if element == :TURNS_SINCE
