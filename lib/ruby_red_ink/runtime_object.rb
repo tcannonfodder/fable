@@ -40,7 +40,7 @@ module RubyRedInk
     end
 
     def path
-      if @path.nil?
+      if !defined?(@path) || @path.nil?
         if parent.nil?
           @path = Path.new("")
         else
