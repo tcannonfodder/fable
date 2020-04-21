@@ -13,17 +13,17 @@ module RubyRedInk
       # The main name of the item as defined in ink
       attr_accessor :item_name
 
-      def initialize(origin_name, item_name)
-        self.origin_name = origin_name
-        self.item_name = item_name
-      end
-
-      # Create an item from a dot-separated string of the form
-      # `list_definition_name.list_item_name`
-      def initialize(full_name)
-        name_parts = full_name.split(".")
-        self.origin_name = name_parts[0]
-        self.item_name = name_parts[1]
+      def initialize(options)
+        # Create an item from a dot-separated string of the form
+        # `list_definition_name.list_item_name`
+        if options.has_key?(:full_name)
+          name_parts = options[:full_name].split(".")
+          self.origin_name = name_parts[0]
+          self.item_name = name_parts[1]
+        else
+          self.origin_name = options[:origin_name]
+          self.item_name = options[:item_name]
+        end
       end
 
       def self.Null
@@ -57,29 +57,36 @@ module RubyRedInk
 
     # Create a new empty ink list
     def initialize
+      self.list = {}
+      self.origins = []
     end
 
     # Create a new ink list that contains the same contents as another list
-    def initialize(other_list_or_single_item)
+    def self.new_from_list_contents(other_list_or_single_item)
+      ink_list = self.new
+
       if other_list_or_single_item.is_a?(Array)
-        list = Hash[[other_list_or_single_item]]
+        ink_list.list = Hash[[other_list_or_single_item]]
       else
-        list = Hash[other_list_or_single_item.list]
-        self.origin_names = other_list_or_single_item.origin_names
+        ink_list.list = Hash[other_list_or_single_item.list]
+        ink_list.origin_names = other_list_or_single_item.origin_names
       end
+
+      return ink_list
     end
 
-    # Create a ne wempty ink list that's intended to hold items from a
+    # Create a new empty ink list that's intended to hold items from a
     # particular origin list definition. The origin story is needed in order
     # to be able to look up that definition
-    def initialize(single_origin_list_name, origin_story)
-      set_initial_origin_name(single_origin_list_name)
+    def self.new_for_origin_definition_and_story(single_origin_list_name, origin_story)
+      ink_list = self.new
+      ink_list.set_initial_origin_name(single_origin_list_name)
 
       list_definition = origin_story.list_definitions[single_origin_list_name]
       if list_definition.nil?
         raise Error("InkList origin could not be found in story when constructing new list: #{single_origin_list_name}")
       else
-        self.origins = [list_definition]
+        ink_list.origins = [list_definition]
       end
     end
 
@@ -147,7 +154,7 @@ module RubyRedInk
         raise Error("Could not add the item '#{item_name}' to this list because it isn't known to any list definitions previously associated with this list.")
       end
 
-      item = InkListItem.new(found_list_definition.name, item_name)
+      item = InkListItem.new(origin_name: found_list_definition.name, item_name: item_name)
       item_value = found_list_definition.value_for_item(item)
       self.items[item] = item_value
     end

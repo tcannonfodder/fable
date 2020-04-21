@@ -298,12 +298,12 @@ module RubyRedInk
       raise bad_cast_exception(new_type)
     end
 
-    def initialize
-      super(InkList.new)
-    end
-
-    def initialize(single_item, single_value)
-      self.value = InkList.new([single_item, single_value])
+    def initialize(single_item=nil, single_value=nil)
+      if single_item.nil? && single_value.nil?
+        super(InkList.new)
+      else
+        super(InkList.new_from_list_contents([single_item, single_value]))
+      end
     end
 
     def self.retain_list_origins_for_assignment(old_value, new_value)

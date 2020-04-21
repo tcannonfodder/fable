@@ -12,7 +12,7 @@ module RubyRedInk
       if @items.nil?
         @items = {}
         @item_name_to_values.each do |key, value|
-          item = InkList::InkListItem.new(name, key)
+          item = InkList::InkListItem.new(origin_name: name, item_name: key)
           @items[item] = value
         end
       end

@@ -281,8 +281,8 @@ module RubyRedInk
           end
 
           list_content.each do |key, value|
-            item = InkList::InkListItem.new(key)
-            raw_list.add(item, value.to_i)
+            item = InkList::InkListItem.new(full_name: key)
+            raw_list.list[item] = value.to_i
           end
 
           return ListValue.new(raw_list)
