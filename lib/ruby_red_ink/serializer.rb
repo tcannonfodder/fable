@@ -137,7 +137,7 @@ module RubyRedInk
         # "^" conflicts with the way we identify strings, so now
         # we know it's not a string, we can convert back to the proper symbol
         # for this operator
-        if string == "L"
+        if string == "L^"
           string = "^"
         end
 
@@ -296,9 +296,9 @@ module RubyRedInk
         return array_to_container(object)
       when NilClass
         return nil
-      else
-        raise Error, "Failed to convert to runtime object: #{object}"
       end
+
+      raise Error, "Failed to convert to runtime object: #{object}"
     end
 
     def self.object_to_choice(object)
