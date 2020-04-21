@@ -44,11 +44,11 @@ module RubyRedInk
     end
 
     def flags=(flag)
-      self.has_condition = (flag & 0x1) > 0
-      self.has_start_content = (flag & 0x2) > 0
-      self.has_choice_only_content = (flag & 0x4) > 0
-      self.invisible_default = (flag & 0x8) > 0
-      self.once_only = (flag & 0x16) > 0
+      self.has_condition = (flag & 1) > 0
+      self.has_start_content = (flag & 2) > 0
+      self.has_choice_only_content = (flag & 4) > 0
+      self.invisible_default = (flag & 8) > 0
+      self.once_only = (flag & 16) > 0
     end
 
     def to_s

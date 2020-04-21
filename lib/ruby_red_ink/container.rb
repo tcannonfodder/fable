@@ -186,9 +186,9 @@ module RubyRedInk
 
     def process_bit_flags
       if has_bit_flags?
-        self.visits_should_be_counted = (bit_flags & 0x1) > 0
-        self.turn_index_should_be_counted = (bit_flags & 0x2) > 0
-        self.counting_at_start_only = (bit_flags & 0x4) > 0
+        self.visits_should_be_counted = (bit_flags & 1) > 0
+        self.turn_index_should_be_counted = (bit_flags & 2) > 0
+        self.counting_at_start_only = (bit_flags & 4) > 0
       else
         self.visits_should_be_counted = false
         self.turn_index_should_be_counted = false
