@@ -105,7 +105,7 @@ module RubyRedInk
 
     def record_turn_index_visit_to_container!(container)
       if has_patch?
-        path.set_turn_index(container, current_turn_index)
+        patch.set_turn_index(container, current_turn_index)
         return
       end
 
