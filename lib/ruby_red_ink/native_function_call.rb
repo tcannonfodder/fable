@@ -290,7 +290,7 @@ module RubyRedInk
       when :FLOOR
         return self.class.floor(parameters[0])
       when :CEILING
-        return self.class.ceil(parameters[0])
+        return self.class.ceiling(parameters[0])
       when :INT_VALUE
         return self.class.int_value(parameters[0])
       when :FLOAT_VALUE
