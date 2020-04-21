@@ -855,10 +855,10 @@ class OriginalSpecTest < Minitest::Test
 
     story.continue_maximially
     assert_equal 1, story.current_choices.size
-    assert_equal "test1 \"test2 test 3\"", story.current_choices[0].text
+    assert_equal "test1 \"test2 test3\"", story.current_choices[0].text
 
     story.choose_choice_index(0)
-    assert_equal "test1 test4", story.continue
+    assert_equal "test1 test4\n", story.continue
   end
 
   def test_string_type_coercion
@@ -1162,7 +1162,7 @@ class OriginalSpecTest < Minitest::Test
 
     story.choose_choice_index(0)
 
-    assert_equal "Hello, world.", story.continue_maximially
+    assert_equal "Hello, world.\n", story.continue_maximially
   end
 
   def test_whitespace
