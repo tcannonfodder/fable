@@ -360,7 +360,7 @@ module RubyRedInk
         return convert_from_string_value(object)
       end
 
-      if object.is_a?(ListValue)
+      if object.is_a?(ListValue) || object.is_a?(InkList)
         return convert_from_list(object)
       end
 
@@ -461,7 +461,11 @@ module RubyRedInk
 
     def self.convert_from_list(list_value)
       result = {}
-      raw_list = list_value.value
+      if list_value.is_a?(ListValue)
+        raw_list = list_value.value
+      else
+        raw_list = list_value
+      end
 
       raw_list.list.each do |list_item, value|
         result[list_item.full_name] = value
@@ -471,7 +475,7 @@ module RubyRedInk
         result["origins"] = raw_list.origin_names
       end
 
-      return result
+      return {"list" => result}
     end
 
     def self.convert_divert_target_value(divert_target_value)
