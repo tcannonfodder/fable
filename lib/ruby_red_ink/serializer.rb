@@ -453,7 +453,7 @@ module RubyRedInk
 
     def self.convert_from_string_value(string_value)
       if string_value.is_newline?
-        return "\\n"
+        return "\n"
       else
         return "^#{string_value.value}"
       end
