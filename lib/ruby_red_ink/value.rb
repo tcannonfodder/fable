@@ -301,8 +301,10 @@ module RubyRedInk
     def initialize(single_item=nil, single_value=nil)
       if single_item.nil? && single_value.nil?
         super(InkList.new)
+      elsif single_item.is_a?(InkList)
+        super(InkList.copy_list(single_item))
       else
-        super(InkList.new_from_list_contents([single_item, single_value]))
+        super(InkList.new_with_single_item(single_item, single_value))
       end
     end
 

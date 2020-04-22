@@ -27,7 +27,7 @@ module RubyRedInk
       end
 
       def self.Null
-        return self.new(nil, nil)
+        return self.new(origin_name: nil, item_name: nil)
       end
 
       def null_item?
@@ -61,16 +61,18 @@ module RubyRedInk
       self.origins = []
     end
 
-    # Create a new ink list that contains the same contents as another list
-    def self.new_from_list_contents(other_list_or_single_item)
+    def self.copy_list(other_list)
       ink_list = self.new
+      other_list_data = other_list.list.map{|item, int_value| [InkList::InkListItem.new(full_name: item.full_name), int_value] }
+      ink_list.list = Hash[other_list_data]
+      ink_list.origins = other_list.origins
 
-      if other_list_or_single_item.is_a?(Array)
-        ink_list.list = Hash[[other_list_or_single_item]]
-      else
-        ink_list.list = Hash[other_list_or_single_item.list]
-        ink_list.origin_names = other_list_or_single_item.origin_names
-      end
+      return ink_list
+    end
+
+    def self.new_with_single_item(item, value)
+      ink_list = self.new
+      ink_list.list[item] = value
 
       return ink_list
     end
@@ -88,6 +90,8 @@ module RubyRedInk
       else
         ink_list.origins = [list_definition]
       end
+
+      return ink_list
     end
 
     # Converts a string to an ink list, and returns for use in the Story
@@ -96,8 +100,11 @@ module RubyRedInk
       if list_value.nil?
         raise Error("Could not find the InkListItem from the string '#{my_list_item}' to create an InkList because it doesn't exist in the original list definition in ink.")
       else
-        return self.new(list_value)
+        ink_list = self.new
+        ink_list.list = list_value
       end
+
+      return ink_list
     end
 
     def add_item(item_or_item_name)
@@ -244,7 +251,7 @@ module RubyRedInk
     # Return a new list that is a combination of the current list and
     # one that's passed in. The equivalent of calling (list1 + list2) in ink.
     def +(other_list)
-      union_list = self.class.new(self)
+      union_list = self.class.copy_list(self)
       other_list.list.each do |item, int_value|
         union_list[item] = int_value
       end
@@ -269,7 +276,7 @@ module RubyRedInk
     # given items removed that are in the passed-in list. Equivalent to calling
     # (list1 - list2) in ink.
     def -(other_list)
-      without_list = self.class.new(self)
+      without_list = self.class.copy_list(self)
       other_list.list.each do |item, int_value|
         without_list.delete(item)
       end
@@ -335,7 +342,7 @@ module RubyRedInk
       if self.list.empty?
         return self.class.new
       else
-        return self.class.new(max_item)
+        return self.class.new_with_single_item(max_item)
       end
     end
 
@@ -343,7 +350,7 @@ module RubyRedInk
       if self.list.empty?
         return self.class.new
       else
-        return self.class.new(min_item)
+        return self.class.new_with_single_item(min_item)
       end
     end
 
