@@ -9,7 +9,8 @@ module RubyRedInk
     attr_accessor :original_object, :state, :profiler,
       :list_definitions, :main_content_container,
       :allow_external_function_fallbacks,
-      :on_make_choice, :external_functions
+      :on_make_choice, :external_functions,
+      :on_choose_path_string
 
 
     alias_method :allow_external_function_fallbacks?, :allow_external_function_fallbacks
@@ -888,7 +889,7 @@ module RubyRedInk
     # will throw an exception.
     def choose_path_string(path_string, reset_callstack=true, arguments = [])
       if !on_choose_path_string.nil?
-        on_choose_path_string(path_string, arguments)
+        on_choose_path_string.call(path_string, arguments)
       end
 
       if reset_callstack
