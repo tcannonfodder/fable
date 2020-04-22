@@ -85,7 +85,7 @@ module RubyRedInk
       @globals = {}
       @default_global_variables.each do |key, value|
         if hash_to_use.has_key?(key)
-          @globals[key] = hash_to_use[key]
+          @globals[key] = Serializer.convert_to_runtime_object(hash_to_use[key])
         else
           @globals[key] = value
         end
