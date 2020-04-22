@@ -870,7 +870,7 @@ module RubyRedInk
           choice.thread_at_generation = found_active_thread.copy
         else
           saved_choice_thread = saved_choice_threads[choice.original_thread_index.to_s]
-          c.thread_at_generation = CallStack::Thread.new(saved_choice_thread, story)
+          choice.thread_at_generation = CallStack::Thread.new(saved_choice_thread, story)
         end
       end
     end

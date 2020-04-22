@@ -1127,7 +1127,7 @@ module RubyRedInk
       flow_container = content_at_path(path).container
 
       while true
-        first_content = flow_container.content.first
+        first_content = flow_container.contents.first
         if first_content.is_a?(Container)
           flow_container = first_content
         else
@@ -1135,7 +1135,7 @@ module RubyRedInk
         end
       end
 
-      return content.tags
+      return first_content.tags
     end
 
     # Useful when debugging a (very short) story, to visualise the state of the
