@@ -253,7 +253,7 @@ module RubyRedInk
     def +(other_list)
       union_list = self.class.copy_list(self)
       other_list.list.each do |item, int_value|
-        union_list[item] = int_value
+        union_list.list[item] = int_value
       end
 
       return union_list
@@ -263,9 +263,9 @@ module RubyRedInk
     # one that's passed in. The equivalent of calling (list1 ^ list2) in ink.
     def &(other_list)
       intersection_list = self.class.new
-      self.list.items do |item, int_value|
-        if other_list.list.has_key?(item)
-          intersection_list[item] = int_value
+      self.list.each do |item, int_value|
+        if other_list.list.any?{|other_item, other_value| other_item.equal?(item)}
+          intersection_list.list[item] = int_value
         end
       end
 
@@ -287,7 +287,7 @@ module RubyRedInk
     # Returns true if the current list contains all the items that are in the
     # list that is passed in. Equivalent to calling (list1 ? list2) in ink.
     def contains?(other_list)
-      other_list.list.all?{|item, int_value| self.list.has_key?(item) }
+      other_list.list.all?{|other_item, other_value| self.list.any?{|item, value| other_item.equal?(item) }}
     end
 
     # Returns true if all the item values in the current list are greater than
