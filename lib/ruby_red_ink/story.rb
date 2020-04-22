@@ -695,13 +695,13 @@ module RubyRedInk
           container = content_at_path(target.target_path).container
 
           if !container.nil?
-            if element == :TURNS_SINCE
+            if element.command_type == :TURNS_SINCE
               count = state.turns_since_for_container(container)
             else
               count = state.visit_count_for_container(container)
             end
           else
-            if element == :TURNS_SINCE
+            if element.command_type == :TURNS_SINCE
               count = -1 #turn count, default to never/unknown
             else
               count = 0 #visit count, assume 0 to default to allowing entry
