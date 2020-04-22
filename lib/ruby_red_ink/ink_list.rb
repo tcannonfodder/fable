@@ -200,16 +200,16 @@ module RubyRedInk
     end
 
     def set_initial_origin_names(initial_origin_names)
-      @origin_names = initial_origin_name
+      @origin_names = initial_origin_names
     end
 
     def count
-      items.size
+      list.size
     end
 
     # Get the maximum item in the list, equivalent to calling LIST_MAX(list) in ink.
     def max_item
-      items.max do |a, b|
+      list.max do |a, b|
         return -1 if a[0].null_item?
         return 1 if b[0].null_item?
         a[1] <=> b[1]
@@ -218,7 +218,7 @@ module RubyRedInk
 
     # Get the minimum item in the list, equivalent to calling LIST_MIN(list) in ink.
     def min_item
-      items.min do |a, b|
+      list.min do |a, b|
         return -1 if a[0].null_item?
         return 1 if b[0].null_item?
         a[1] <=> b[1]
@@ -245,7 +245,7 @@ module RubyRedInk
       new_list = self.class.new
       origins.each do |origin|
         origin.items.each do |item, int_value|
-          new_list.list[item, int_value]
+          new_list.list[item] = int_value
         end
       end
 
