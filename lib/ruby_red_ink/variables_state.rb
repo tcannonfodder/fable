@@ -134,7 +134,7 @@ module RubyRedInk
       end
 
       if object_1.is_a?(Value)
-        return object_1.value_object.equals(object_2.value_object)
+        return object_1.value_object.equal?(object_2.value_object)
       end
 
       raise Error, "FastRoughDefinitelyEquals: Unsupported runtime object type: #{object_1.class}"
