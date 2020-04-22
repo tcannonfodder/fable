@@ -107,6 +107,10 @@ module RubyRedInk
       return ink_list
     end
 
+    def item_with_value(value)
+      list.key(value)
+    end
+
     def add_item(item_or_item_name)
       if item_or_item_name.is_a?(InkListItem)
         add_ink_list_item(item_or_item_name)
