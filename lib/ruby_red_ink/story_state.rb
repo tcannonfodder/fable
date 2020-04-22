@@ -807,8 +807,8 @@ module RubyRedInk
 
       result["callstackThreads"] = callstack.to_hash
       result["variablesState"] = variables_state.to_hash
-      result["evalStack"] = Serializer.convert_to_runtime_objects(self.evaluation_stack)
-      result["outputStream"] = Serializer.convert_to_runtime_objects(self.output_stream)
+      result["evalStack"] = Serializer.convert_array_of_runtime_objects(self.evaluation_stack)
+      result["outputStream"] = Serializer.convert_array_of_runtime_objects(self.output_stream)
       result["currentChoices"] = Serializer.convert_choices(@current_choices)
 
       if !self.diverted_pointer.null_pointer?
@@ -839,14 +839,14 @@ module RubyRedInk
         raise Error, "Ink save format isn't compatible with the current version (saw #{loaded_state["inkSaveVersion"]}, but minimum is #{MINIMUM_COMPATIBLE_INK_LOAD_VERSION}), so can't load."
       end
 
-      self.callstack.from_hash!(loaded["callstackThreads"], story)
-      self.variables_state.from_hash!(loaded["variablesState"])
+      self.callstack.from_hash!(loaded_state["callstackThreads"], story)
+      self.variables_state.from_hash!(loaded_state["variablesState"])
 
       self.evaluation_stack = Serializer.convert_to_runtime_objects(loaded_state["evalStack"])
       self.output_stream = Serializer.convert_to_runtime_objects(loaded_state["outputStream"])
       self.output_stream_dirty!
 
-      self.current_choices = Serializer.convert_to_runtime_objects(loaded_state["current_choices"])
+      self.current_choices = Serializer.convert_to_runtime_objects(loaded_state["currentChoices"])
 
       if loaded_state.has_key?("currentDivertTarget")
         divert_path = Path.new(loaded_state["currentDivertTarget"])
