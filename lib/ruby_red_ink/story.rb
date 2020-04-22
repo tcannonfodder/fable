@@ -780,15 +780,15 @@ module RubyRedInk
             raise StoryError, "Failed to find LIST called #{list_name}"
           end
         when :LIST_RANGE
-          max = state.pop_evaluation_stack
-          min = state.pop_evaluation_stack
-          target_list = state.pop_evaluation_stack
+          max = state.pop_evaluation_stack.value
+          min = state.pop_evaluation_stack.value
+          target_list = state.pop_evaluation_stack.value
 
           if target_list.nil? || min.nil? || max.nil?
             raise StoryError, "Expected list, minimum, and maximum for LIST_RANGE"
           end
 
-          stack.push_evaluation_stack(target_list.sublist(min, max))
+          state.push_evaluation_stack(ListValue.new(target_list.list_with_subrange(min, max)))
         when :LIST_RANDOM
           list_value = state.pop_evaluation_stack
           list = list_value.value
