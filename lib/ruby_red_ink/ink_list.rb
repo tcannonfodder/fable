@@ -66,6 +66,7 @@ module RubyRedInk
       other_list_data = other_list.list.map{|item, int_value| [InkList::InkListItem.new(full_name: item.full_name), int_value] }
       ink_list.list = Hash[other_list_data]
       ink_list.origins = other_list.origins
+      ink_list.set_initial_origin_names(other_list.origin_names)
 
       return ink_list
     end
