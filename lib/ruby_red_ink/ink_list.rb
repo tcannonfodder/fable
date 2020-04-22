@@ -84,7 +84,7 @@ module RubyRedInk
       ink_list = self.new
       ink_list.set_initial_origin_name(single_origin_list_name)
 
-      list_definition = origin_story.list_definitions[single_origin_list_name]
+      list_definition = origin_story.list_definitions.find_list(single_origin_list_name)
       if list_definition.nil?
         raise Error("InkList origin could not be found in story when constructing new list: #{single_origin_list_name}")
       else
