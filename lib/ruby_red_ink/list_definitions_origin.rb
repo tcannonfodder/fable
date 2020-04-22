@@ -18,8 +18,8 @@ module RubyRedInk
 
           # May be ambiguous, but compiler should've caught that,
           # so we may be doing some replacement here, but that's okay
-          all_unambiguous_list_value_cache[item.item_name] = list_value
-          all_unambiguous_list_value_cache[item.full_name] = list_value
+          self.all_unambiguous_list_value_cache[item.item_name] = list_value
+          self.all_unambiguous_list_value_cache[item.full_name] = list_value
         end
       end
     end
