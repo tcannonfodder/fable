@@ -773,8 +773,8 @@ module RubyRedInk
             raise StoryError, "Passed non-integer when creating a list element from a numerical value."
           end
 
-          if list_definitions[list_name]
-            state.push_evaluation_stack(list_definitions[list_name][integer_value])
+          if list_definitions.find_list(list_name.value)
+            state.push_evaluation_stack(list_definitions.find_list(list_name.value).item_for_value(integer_value.value))
           else
             raise StoryError, "Failed to find LIST called #{list_name}"
           end
