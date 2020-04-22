@@ -6,6 +6,10 @@ module RubyRedInk
       self._lists.map{|k,v| v}
     end
 
+    def find_list(name)
+      self._lists[name]
+    end
+
     def initialize(lists)
       self._lists = {}
       self.all_unambiguous_list_value_cache = {}

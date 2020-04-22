@@ -232,7 +232,7 @@ module RubyRedInk
           raw_list.origins.clear
 
           raw_list.origin_names.each do |name|
-            list_definition = story.list_definitions[name]
+            list_definition = story.list_definitions.find_list(name)
             if !raw_list.origins.include?(list_definition)
               raw_list.origins << list_definition
             end
