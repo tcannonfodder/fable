@@ -795,7 +795,7 @@ module RubyRedInk
 
       self.current_choices.each do |choice|
         choice.original_thread_index = choice.thread_at_generation.thread_index
-        if callstack.thread_with_index(c.original_thread_index).nil?
+        if callstack.thread_with_index(choice.original_thread_index).nil?
           if !has_choice_threads
             has_choice_threads = true
             result["choiceThreads"]= {}
@@ -807,8 +807,8 @@ module RubyRedInk
 
       result["callstackThreads"] = callstack.to_hash
       result["variablesState"] = variables_state.to_hash
-      result["evalStack"] = Serializer.convert_runtime_objects(self.evaluation_stack)
-      result["outputStream"] = Serializer.convert_runtime_objects(self.output_stream)
+      result["evalStack"] = Serializer.convert_to_runtime_objects(self.evaluation_stack)
+      result["outputStream"] = Serializer.convert_to_runtime_objects(self.output_stream)
       result["currentChoices"] = Serializer.convert_choices(@current_choices)
 
       if !self.diverted_pointer.null_pointer?
@@ -824,7 +824,7 @@ module RubyRedInk
 
       result["inkSaveVersion"] = CURRENT_INK_SAVE_STATE_VERSION
 
-      result["inkFormatVersion"] = Story.CURRENT_INK_VERSION
+      result["inkFormatVersion"] = Story::CURRENT_INK_VERSION
 
       return result
     end
