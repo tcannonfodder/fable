@@ -260,7 +260,7 @@ module RubyRedInk
     end
 
     def truthy?
-      return value.size > 0
+      return value.count > 0
     end
 
     def cast(new_type)
