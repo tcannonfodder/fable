@@ -789,26 +789,27 @@ module RubyRedInk
 
           stack.push_evaluation_stack(target_list.sublist(min, max))
         when :LIST_RANDOM
-          list = state.pop_evaluation_stack
+          list_value = state.pop_evaluation_stack
+          list = list_value.value
 
           if list.nil?
             raise StoryError, "Expected list for LIST_RANDOM"
           end
 
           # list was empty, return empty list
-          if list.size == 0
-            new_list = List.new
+          if list.count == 0
+            new_list = InkList.new
           else
             #non-empty source list
-            result_seed = state.story_seed + state.previous_random
-            random = new Random(result_seed)
-            list_item_index = random.rand(0, list.size)
+            result_seed = state.story_seed.value + state.previous_random
+            random = Random.new(result_seed)
+            list_item_index = random.rand(list.count)
 
-            random_item = list[list_item_index]
+            random_item_pair = list.list.to_a[list_item_index]
 
             # Origin list is simply the origin of the one element
-            new_list = List.new(list.key.origin_name, self)
-            new_list[random_item.key, random_item.value]
+            new_list = InkList.new_for_origin_definition_and_story(random_item_pair[0].origin_name, self)
+            new_list.list[random_item_pair[0]] = random_item_pair[1]
 
             state.previous_random = list_item_index
           end
