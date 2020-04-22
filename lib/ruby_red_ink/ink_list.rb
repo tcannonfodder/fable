@@ -226,8 +226,8 @@ module RubyRedInk
       new_list = self.class.new
       origins.each do |origin|
         origin.items.each do |item, int_value|
-          if !self.list.include?(item)
-            new_list.list[item, int_value]
+          if self.list.none?{|item_to_search, other_value| item_to_search.equal?(item)}
+            new_list.list[item] = int_value
           end
         end
       end
@@ -278,7 +278,7 @@ module RubyRedInk
     def -(other_list)
       without_list = self.class.copy_list(self)
       other_list.list.each do |item, int_value|
-        without_list.delete(item)
+        without_list.list.delete_if{ |without_list_item, other_value| without_list_item.equal?(item)}
       end
 
       return without_list
