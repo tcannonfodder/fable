@@ -109,7 +109,13 @@ module RubyRedInk
     end
 
     def has_not(x,y)
-      !has(x,y) ? 1 : 0
+      has_return = has(x,y)
+      # Need to invert values
+      if has_return == 0
+        return 1
+      else
+        return 0
+      end
     end
 
     def intersection(x,y)
