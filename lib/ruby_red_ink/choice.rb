@@ -20,11 +20,11 @@ module RubyRedInk
     # The target path that the story should be diverted to
     # if the choice is chosen
     def path_string_on_choice
-      return target_path.to_s
+      return self.target_path.to_s
     end
 
     def path_string_on_choice=(value)
-      target_path = Path.new(value)
+      self.target_path = Path.new(value)
       value
     end
   end
