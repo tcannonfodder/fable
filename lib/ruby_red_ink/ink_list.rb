@@ -379,9 +379,9 @@ module RubyRedInk
       end
 
       if max_bound.is_a?(Numeric)
-        max_value = max_value
+        max_value = max_bound
       elsif max_bound.is_a?(InkList) && !max_bound.list.empty?
-        max_value = max_bound.max_bound[1]
+        max_value = max_bound.max_item[1]
       end
 
       sublist = self.class.new
