@@ -170,7 +170,7 @@ module RubyRedInk
 
       # Normal (list X list) operation
       if value_1.is_a?(ListValue) && value_2.is_a?(ListValue)
-        return run_operation(value_1.value, value_2.value)
+        return ListValue.new(run_operation(value_1.value, value_2.value))
       end
 
       raise Error, "Can not call '#{name}' operation on '#{value_1.class}' and '#{value_2.class}'"
