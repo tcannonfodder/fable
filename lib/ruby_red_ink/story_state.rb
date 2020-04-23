@@ -292,17 +292,22 @@ module RubyRedInk
         function_start_point = 0
       end
 
+      i = @output_stream.count - 1
+
       # Trim whitespace from END of function call
-      @output_stream.reverse_each.each_with_index do |object, index|
+      while i >= function_start_point
+        object = output_stream[i]
         break if object.is_a?(ControlCommand)
         next if !object.is_a?(StringValue)
 
         if object.is_newline? || object.is_inline_whitespace?
-          @output_stream.delete(object)
+          @output_stream.delete_at(i)
           output_stream_dirty!
         else
           break
         end
+
+        i -= 1
       end
     end
 
