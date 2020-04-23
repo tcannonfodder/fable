@@ -65,12 +65,13 @@ module RubyRedInk
     end
 
     def push(type, options = {external_evaluation_stack_height: 0, output_stream_length_when_pushed: 0})
+      external_evaluation_stack_height = options[:external_evaluation_stack_height] || 0
+      output_stream_length_when_pushed = options[:output_stream_length_when_pushed] || 0
       # When pushing to callstack, maintain the current content path, but jump
       # out of expressions by default
       element = Element.new(type, current_element.current_pointer, in_expression_evaluation: false)
-
-      element.evaluation_stack_height_when_pushed = options[:external_evaluation_stack_height]
-      element.function_start_in_output_stream = options[:output_stream_length_when_pushed]
+      element.evaluation_stack_height_when_pushed = external_evaluation_stack_height
+      element.function_start_in_output_stream = output_stream_length_when_pushed
 
       self.call_stack << element
     end
@@ -233,6 +234,7 @@ module RubyRedInk
         self.current_pointer = pointer.dup
         self.in_expression_evaluation = options[:in_expression_evaluation]
         self.temporary_variables = {}
+        self.function_start_in_output_stream = 0
         self.type = type
       end
 
