@@ -1546,17 +1546,12 @@ class OriginalSpecTest < Minitest::Test
 
     story.continue
 
-    story.choose_choice_index(0)
+    assert_nil story.current_tags
 
+    story.choose_choice_index(0)
 
     assert_equal "Hello", story.continue
     assert_equal ["hey"], story.current_tags
-
-    result = <<~STORY
-    5
-    STORY
-
-    assert_equal result, story.continue_maximially
   end
 
   def test_string_contains
