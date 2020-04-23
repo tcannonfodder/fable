@@ -1546,7 +1546,7 @@ class OriginalSpecTest < Minitest::Test
 
     story.continue
 
-    assert_nil story.current_tags
+    assert_equal [], story.current_tags
 
     story.choose_choice_index(0)
 

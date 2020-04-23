@@ -1150,11 +1150,7 @@ module RubyRedInk
         end
       end
 
-      if tags_to_return.empty?
-        return nil
-      else
-        return tags_to_return
-      end
+      return tags_to_return
     end
 
     # Useful when debugging a (very short) story, to visualise the state of the
