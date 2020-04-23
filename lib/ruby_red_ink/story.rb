@@ -997,7 +997,7 @@ module RubyRedInk
 
     def call_external_function(function_name, number_of_arguments)
       function = external_functions[function_name]
-      if !function.nil?
+      if function.nil?
         if allow_external_function_fallbacks?
           fallback_function_container = knot_container_with_name(function_name)
           if fallback_function_container.nil?
@@ -1005,12 +1005,12 @@ module RubyRedInk
           end
 
           # Divert directly into the fallback function and we're done
-          state.callstack.push(:POP_FUNCTION, output_stream_length_when_pushed: state.output_stream.count)
+          state.callstack.push(PushPopType::TYPES[:function], output_stream_length_when_pushed: state.output_stream.count)
           state.diverted_pointer = Pointer.start_of(fallback_function_container)
           return
+        else
+          raise StoryError, "Trying to call EXTERNAL function #{function_name}, which has not been defined (and ink fallbacks disabled)"
         end
-      else
-        raise StoryError, "Trying to call EXTERNAL function #{function_name}, which has not been defined (and ink fallbacks disabled)"
       end
 
       arguments = []
