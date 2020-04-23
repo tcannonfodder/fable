@@ -1480,7 +1480,7 @@ class OriginalSpecTest < Minitest::Test
   end
 
   def test_tunnel_onwards_divert_after_with_arg
-    json = load_json_export("test/fixtures/original-specs/test-weave-within-sequence.ink.json")
+    json = load_json_export("test/fixtures/original-specs/test-tunnel-onwards-divert-after-with-arg.ink.json")
     story = RubyRedInk::Story.new(json)
 
     result = <<~STORY
