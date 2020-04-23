@@ -41,6 +41,7 @@ module RubyRedInk
     end
 
     def continue(&block)
+      validate_external_bindings!
       internal_continue(&block)
       return current_text
     end
@@ -1063,27 +1064,29 @@ module RubyRedInk
     end
 
     def missing_external_bindings(container)
-      missing_externals = Set.new
+      missing_externals = []
       container.content.each do |item|
         if item.is_a?(Container)
-          missing_externals.merge(missing_external_bindings(item))
+          missing_externals += missing_external_bindings(item)
           return missing_externals
         end
 
-        if item.is_a?(ExternalFunctionDivert)
-          if allow_external_function_fallbacks?
-            fallback_found = main_content_container.named_content.has_key?(item.target)
-            if !fallback_found
-              missing_externals << item.target
+        if item.is_a?(Divert) && item.is_external?
+          if !external_functions.has_key?(item.target_path_string)
+            if allow_external_function_fallbacks?
+              fallback_found = main_content_container.named_content.has_key?(item.target_path_string)
+              if !fallback_found
+                missing_externals << item.target_path_string
+              end
+            else
+              missing_externals << item.target_path_string
             end
-          else
-            missing_externals << item.target
           end
         end
       end
 
       container.named_content.each do |key, container|
-        missing_externals.merge(missing_external_bindings(container))
+        missing_externals += missing_external_bindings(container)
       end
 
       return missing_externals
