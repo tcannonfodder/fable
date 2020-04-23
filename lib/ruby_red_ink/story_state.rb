@@ -595,16 +595,21 @@ module RubyRedInk
         # If we're in string evaluation within the current function, we don't want to
         # trim back further than the length of the current string
         glue_trim_index = -1
-        @output_stream.reverse.each_with_index do |object, i|
-          if object.is_a?(Glue)
+
+        i = @output_stream.count - 1
+        while i >= 0
+          item_to_check = @output_stream[i]
+          if item_to_check.is_a?(Glue)
             glue_trim_index = i
             break
-          elsif ControlCommand.is_instance_of?(object, :BEGIN_STRING_EVALUATION_MODE)
+          elsif ControlCommand.is_instance_of?(item_to_check, :BEGIN_STRING_EVALUATION_MODE)
             if i >= function_trim_index
-              function_trim_index=  -1
+              function_trim_index =  -1
             end
             break
           end
+
+          i -= 1
         end
 
         # Where is the most aggresive (earliest) trim point?
@@ -632,8 +637,8 @@ module RubyRedInk
             # Tell all functionms in callstack that we have seen proper text,
             # so trimming whitespace at the start is done
             if function_trim_index > -1
-              callstack.elements.each do |element|
-                if element == PushPopType::TYPES[:function]
+              callstack.elements.reverse_each do |element|
+                if element.type == PushPopType::TYPES[:function]
                   element.function_start_in_output_stream = -1
                 else
                   break
