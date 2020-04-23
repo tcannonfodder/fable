@@ -28,7 +28,7 @@ class OriginalSpecTest < Minitest::Test
     2
     3
     2
-    2.333333
+    2.3333333
     8
     8
     STORY

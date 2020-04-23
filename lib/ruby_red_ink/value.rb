@@ -115,7 +115,11 @@ module RubyRedInk
     end
 
     def to_s
-      value.truncate(6).to_s
+      if value % 1 == 0
+        value.to_i.to_s
+      else
+        value.round(7).to_s
+      end
     end
   end
 

@@ -85,11 +85,11 @@ module RubyRedInk
     end
 
     def floor(x)
-      x.floor
+      x.floor.to_f
     end
 
     def ceiling(x)
-      x.ceil
+      x.ceil.to_f
     end
 
     def int_value(x)
