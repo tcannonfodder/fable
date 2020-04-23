@@ -61,7 +61,7 @@ module RubyRedInk
     end
 
     def element_is_evaluate_from_game?
-      current_element.type == :function_evaluation_from_game
+      current_element.type == PushPopType::TYPES[:function_evaluation_from_game]
     end
 
     def push(type, options = {external_evaluation_stack_height: 0, output_stream_length_when_pushed: 0})
@@ -235,6 +235,7 @@ module RubyRedInk
         self.in_expression_evaluation = options[:in_expression_evaluation]
         self.temporary_variables = {}
         self.function_start_in_output_stream = 0
+        self.evaluation_stack_height_when_pushed = 0
         self.type = type
       end
 

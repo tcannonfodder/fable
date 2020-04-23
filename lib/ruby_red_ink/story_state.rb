@@ -331,10 +331,16 @@ module RubyRedInk
       end
     end
 
+    def start_function_evaluation_from_game(function_container, arguments)
+      callstack.push(PushPopType::TYPES[:function_evaluation_from_game], output_stream_length_when_pushed: evaluation_stack.size)
+      callstack.current_element.current_pointer = Pointer.start_of(function_container)
+      pass_arguments_to_evaluation_stack(arguments)
+    end
+
     def exit_function_evaluation_from_game?
       if callstack.current_element.type == PushPopType::TYPES[:function_evaluation_from_game]
-        current_pointer = Pointer.null_pointer
-        did_safe_exit = true
+        self.current_pointer = Pointer.null_pointer
+        self.did_safe_exit = true
         return true
       end
 
@@ -352,6 +358,7 @@ module RubyRedInk
       # Potentially pop multiple values off the stack, in case we need to clean up after ourselves
       # (e.g: caller of evaluate_function may have passed too many arguments, and we currently have no way
       # to check for that)
+      returned_object = nil
       while evaluation_stack.size > original_evaluation_stack_height
         popped_object = pop_evaluation_stack
         if returned_object.nil?
@@ -370,7 +377,7 @@ module RubyRedInk
 
         # DivertTargets get returned as the string of components
         # (rather than a Path, which isn't public)
-        if returned_object.value_type == ValueType.DivertTarget
+        if returned_object.is_a?(DivertTargetValue)
           return returned_object.value_object.to_s
         end
 

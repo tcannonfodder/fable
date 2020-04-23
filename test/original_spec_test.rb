@@ -1074,7 +1074,7 @@ class OriginalSpecTest < Minitest::Test
 
     assert_nil story.variables_state["z"]
 
-    assert_raises RubyRedInk::StoryError do
+    assert_raises RubyRedInk::Error, "Invalid value passed to VariableState: #<Set: {}>" do
       story.variables_state["x"] = Set.new
     end
   end
@@ -1087,6 +1087,7 @@ class OriginalSpecTest < Minitest::Test
     observer_call_count = 0
 
     story.observe_variable("testVar") do |variable_name, new_value|
+      debugger
       current_variable_value = new_value
       observer_call_count += 1
     end
@@ -1261,31 +1262,33 @@ class OriginalSpecTest < Minitest::Test
     story.continue
 
     returned_divert_target = story.evaluate_function("test")
-    assert_equal "somewhere.here", returned_divert_target
+    assert_equal ({
+      result: "somewhere.here",
+      text_output: ""
+    }), returned_divert_target
   end
 
   def test_evaluating_ink_function_from_game_2
     json = load_json_export("test/fixtures/original-specs/test-evaluating-ink-function-from-game-2.ink.json")
     story = RubyRedInk::Story.new(json)
 
-    results = story.evaluate_function("func1", return_text_output: true)
-
+    results = story.evaluate_function("func1")
     assert_equal "This is a function\n", results[:text_output]
-    assert_equal 5, results[:return_value]
+    assert_equal 5, results[:result]
 
     assert_equal "One\n", story.continue
 
-    results = story.evaluate_function("func2", return_text_output: true)
+    results = story.evaluate_function("func2")
 
     assert_equal "This is a function without a return value\n", results[:text_output]
-    assert_nil results[:return_value]
+    assert_nil results[:result]
 
     assert_equal "Two\n", story.continue
 
-    results = story.evaluate_function("add", 1, 2, return_text_output: true)
+    results = story.evaluate_function("add", 1, 2)
 
     assert_equal "x = 1, y = 2\n", results[:text_output]
-    assert_equal 3, results[:return_value]
+    assert_equal 3, results[:result]
 
     assert_equal "Three\n", story.continue
   end
@@ -1332,7 +1335,7 @@ class OriginalSpecTest < Minitest::Test
 
     assert_equal result, story.continue_maximially
 
-    assert_raises RubyRedInk::StoryError do
+    assert_raises RubyRedInk::Error, "Cannot assign to a variable (y) that hasn't been declared in the story" do
       story.variables_state["y"] = "earth"
     end
   end

@@ -5,8 +5,33 @@ module RubyRedInk
   class VariablesState
     attr_accessor :patch, :batch_observing_variable_changes,
       :changed_variables_for_batch_observing, :callstack,
-      :globals, :list_definitions_origins, :variable_did_change_event,
-      :default_global_variables
+      :globals, :list_definitions_origins,
+      :default_global_variables,
+      :variable_observers
+
+    def has_variable_observers?
+      self.variable_observers.all?{|name, observers| !observers.empty? }
+    end
+
+    def add_variable_observer(variable_name, &block)
+      self.variable_observers[variable_name] ||= []
+      self.variable_observers[variable_name] << block
+      return true
+    end
+
+    def remove_variable_observer(variable_name, &block)
+      self.variable_observers[variable_name] ||= []
+      self.variable_observers[variable_name].delete(block)
+      return true
+    end
+
+    def variable_changed_event(variable_name, current_value)
+      if variable_observers.has_key?(variable_name)
+        variable_observers[variable_name].each do |block|
+          block.call(variable_name, current_value.value)
+        end
+      end
+    end
 
     def batch_observing_variable_changes=(value)
       @batch_observing_variable_changes = value
@@ -65,6 +90,7 @@ module RubyRedInk
       self.callstack = callstack
       self.list_definitions_origins = list_definitions_origins
       self.dont_save_default_values = true
+      self.variable_observers = {}
     end
 
     def apply_patch!
@@ -164,7 +190,7 @@ module RubyRedInk
     end
 
     def get_raw_variable_with_name(variable_name, context_index)
-      varibale_value = nil
+      variable_value = nil
       if context_index == 0 || context_index == -1
         if !patch.nil? && patch.get_global(variable_name)
           return patch.get_global(variable_name)
@@ -249,8 +275,8 @@ module RubyRedInk
       else
         self.globals[variable_name] = value
       end
-
-      if !variable_did_change_event.nil? && !value.equals(old_value)
+      
+      if has_variable_observers? && !value.equal?(old_value)
         if batch_observing_variable_changes
           if !patch.nil?
             patch.add_changed_variable(variable_name)

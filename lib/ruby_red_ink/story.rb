@@ -10,7 +10,8 @@ module RubyRedInk
       :list_definitions, :main_content_container,
       :allow_external_function_fallbacks,
       :on_make_choice, :external_functions,
-      :on_choose_path_string
+      :on_choose_path_string,
+      :on_evaluate_function, :on_complete_evaluate_function
 
 
     alias_method :allow_external_function_fallbacks?, :allow_external_function_fallbacks
@@ -74,6 +75,10 @@ module RubyRedInk
 
     def current_warnings
       return self.state.current_warnings
+    end
+
+    def variables_state
+      return self.state.variables_state
     end
 
     def has_errors?
@@ -185,6 +190,7 @@ module RubyRedInk
       @state_snapshot_at_last_newline.restore_after_patch!
       self.state = @state_snapshot_at_last_newline
       @state_snapshot_at_last_newline = nil
+      self.state.apply_any_patch!
     end
 
     def discard_snapshot!
@@ -202,6 +208,13 @@ module RubyRedInk
 
       state.did_safe_exit = false
       state.reset_output!
+
+      # It's possible for ink to call game to call ink to call game etc
+      # In this case, we only want to batch observe variable changes
+      # for the outermost call.
+      if @recursive_content_count == 1
+        state.variables_state.batch_observing_variable_changes = true
+      end
 
       output_stream_ends_in_newline = false
 
@@ -248,8 +261,8 @@ module RubyRedInk
 
           state.did_safe_exit = false
 
-          if !block.nil?
-            yield block
+          if @recursive_content_count == 1
+            state.variables_state.batch_observing_variable_changes = false
           end
         end
       end
@@ -942,12 +955,26 @@ module RubyRedInk
       choose_path(choice_to_choose.target_path)
     end
 
+    def observe_variable(variable_name, &block)
+      self.variables_state.add_variable_observer(variable_name, &block)
+    end
+
+    def observe_variables(variable_names, &block)
+      variable_names.each do |variable_name|
+        self.observe_variable(variable_name, block)
+      end
+    end
+
+    def remove_variable_observer(variable_name, &block)
+      self.variables_state.remove_variable_observer(variable_name, &block)
+    end
+
     def has_function?(function_name)
       !knot_container_with_name(function_name).nil?
     end
 
     # Evaluates a function defined in ink
-    def evaluate_function(function_name, arguments = [])
+    def evaluate_function(function_name, *arguments)
       if !on_evaluate_function.nil?
         on_evaluate_function(function_name, arguments)
       end
@@ -966,11 +993,11 @@ module RubyRedInk
       state.reset_output!
 
       # State will temporarily replace the callstack in order to evaluate
-      state.start_function_evaluation_from_game!(function_container, arguments)
+      state.start_function_evaluation_from_game(function_container, arguments)
 
       # Evaluate the function, and collect the string output
       string_output = StringIO.new
-      while can_continue
+      while can_continue?
         string_output << continue
       end
 
@@ -983,7 +1010,7 @@ module RubyRedInk
       state.reset_output!(output_stream_before)
 
       # Finish evaluation, and see whether anything was produced
-      result = state.complete_function_evaluation_from_game!
+      result = state.complete_function_evaluation_from_game
 
       if !on_complete_evaluate_function.nil?
         on_complete_evaluate_function(function_name, arguments, text_output, result)

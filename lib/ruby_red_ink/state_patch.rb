@@ -17,31 +17,31 @@ module RubyRedInk
     end
 
     def get_global(name)
-      return globals[name]
+      return self.globals[name]
     end
 
     def set_global(name, value)
-      globals[name] = value
+      self.globals[name] = value
     end
 
     def add_changed_variable(name)
-      changed_variables << name
+      self.changed_variables << name
     end
 
     def get_visit_count(container)
-      visit_counts[container]
+      self.visit_counts[container]
     end
 
     def set_visit_count(container, count)
-      visit_counts[container] = count
+      self.visit_counts[container] = count
     end
 
     def set_turn_index(container, count)
-      turn_indicies[container] = count
+      self.turn_indicies[container] = count
     end
 
     def get_turn_index(container)
-      turn_indicies[container]
+      self.turn_indicies[container]
     end
   end
 end
