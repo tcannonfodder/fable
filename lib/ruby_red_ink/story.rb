@@ -1130,7 +1130,7 @@ module RubyRedInk
       flow_container = content_at_path(path).container
 
       while true
-        first_content = flow_container.contents.first
+        first_content = flow_container.content.first
         if first_content.is_a?(Container)
           flow_container = first_content
         else
