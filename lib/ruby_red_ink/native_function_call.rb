@@ -155,12 +155,12 @@ module RubyRedInk
       value_2 = parameters[1]
 
       # List-Int addition/subtraction returns a List (eg: "alpha" + 1 = "beta")
-      if (name == FUNCTIONS[:ADDITION] || name == FUNCTIONS[:SUBTRACTION]) && value_1.is_a?(ListValue) && value_2.is_a?(IntValue)
+      if (name == :ADDITION || name == :SUBTRACTION) && value_1.is_a?(ListValue) && value_2.is_a?(IntValue)
         return call_list_increment_operation(parameters)
       end
 
       # And/or with any other types required coercion to bool (int)
-      if (name == FUNCTIONS[:AND] || FUNCTIONS[:OR]) && (!value_1.is_a?(ListValue) || !value_2.is_a?(ListValue))
+      if (name == :AND || :OR) && (!value_1.is_a?(ListValue) || !value_2.is_a?(ListValue))
         value_1_as_boolean = value_1.truthy? ? 1 : 0
         value_2_as_boolean = value_2.truthy? ? 1 : 0
 
@@ -170,7 +170,12 @@ module RubyRedInk
 
       # Normal (list X list) operation
       if value_1.is_a?(ListValue) && value_2.is_a?(ListValue)
-        return ListValue.new(run_operation(value_1.value, value_2.value))
+        if name == :HAS || name == :HAS_NOT
+          return run_operation(value_1.value, value_2.value)
+        else
+          result = run_operation(value_1.value, value_2.value)
+          return ListValue.new(result)
+        end
       end
 
       raise Error, "Can not call '#{name}' operation on '#{value_1.class}' and '#{value_2.class}'"
