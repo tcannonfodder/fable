@@ -1236,7 +1236,7 @@ class OriginalSpecTest < Minitest::Test
   end
 
   def test_temp_usage_in_options
-    json = load_json_export("test/fixtures/original-specs/test-thread-in-logic.ink.json")
+    json = load_json_export("test/fixtures/original-specs/test-temp-usage-in-options.ink.json")
     story = RubyRedInk::Story.new(json)
 
     story.continue
