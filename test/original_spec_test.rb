@@ -1087,7 +1087,6 @@ class OriginalSpecTest < Minitest::Test
     observer_call_count = 0
 
     story.observe_variable("testVar") do |variable_name, new_value|
-      debugger
       current_variable_value = new_value
       observer_call_count += 1
     end
