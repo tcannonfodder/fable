@@ -194,6 +194,7 @@ module RubyRedInk
     end
 
     def discard_snapshot!
+      self.state.apply_any_patch!
       @state_snapshot_at_last_newline = nil
     end
 
