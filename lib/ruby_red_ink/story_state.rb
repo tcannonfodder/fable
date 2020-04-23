@@ -281,7 +281,6 @@ module RubyRedInk
     # The start whitespace is discard as it is generated, and the end
     # whitespace is trimmed in one go here when we pop the function.
     def trim_whitespace_from_function_end!
-      # debugger
       assert!(callstack.current_element.type == PushPopType::TYPES[:function])
 
       function_start_point = callstack.current_element.function_start_in_output_stream
@@ -425,7 +424,6 @@ module RubyRedInk
         end
       end
 
-      # debugger
       return x
 
       # x = string.each_line(chomp: true).map do |line|
