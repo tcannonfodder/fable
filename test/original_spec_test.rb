@@ -1299,8 +1299,8 @@ class OriginalSpecTest < Minitest::Test
     assert_equal "Start\n", story.continue
     assert_equal "In tunnel.\n", story.continue
 
-    result = story.evaluate_function("func1")
-    assert_equal "RIGHT", result
+    result = story.evaluate_function("function_to_evaluate")
+    assert_equal ({result: "RIGHT", text_output: ""}), result
 
     assert_equal "End\n", story.continue
   end
@@ -1603,9 +1603,9 @@ class OriginalSpecTest < Minitest::Test
       return x
     end
 
-    final_result = story.evaluate_function("topExternal", 5, return_text_output: true)
+    final_result = story.evaluate_function("topExternal", 5)
 
-    assert_equal 7, final_result[:return_value]
+    assert_equal 7, final_result[:result]
     assert_equal "In top external\n", final_result[:text_output]
   end
 
