@@ -1127,6 +1127,7 @@ module RubyRedInk
     def tags_at_start_of_flow_container_with_path_string(path_string)
       path = Path.new(path_string)
 
+      # Expected to be global story, knot or stitch
       flow_container = content_at_path(path).container
 
       while true
@@ -1138,7 +1139,22 @@ module RubyRedInk
         end
       end
 
-      return first_content.tags
+      # Any initial tag objects count as the "main tags" associated with
+      # that story/knot/stitch
+      tags_to_return = []
+      flow_container.content.each do |item|
+        if item.is_a?(Tag)
+          tags_to_return << item.text
+        else
+          break
+        end
+      end
+
+      if tags_to_return.empty?
+        return nil
+      else
+        return tags_to_return
+      end
     end
 
     # Useful when debugging a (very short) story, to visualise the state of the
