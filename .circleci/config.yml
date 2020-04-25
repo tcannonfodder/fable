@@ -26,7 +26,7 @@ jobs:
           name: Tests
           command: bin/test
       - store_artifacts:
-        path: coverage
+          path: coverage
 
 # What to do next? Set up a test job. Please see
 # https://circleci.com/docs/2.0/configuration-reference/, for more  info on how to get started.
