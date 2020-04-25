@@ -31,4 +31,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "highline"
   spec.add_development_dependency "minitest-line"
   spec.add_development_dependency "pretty-diffs"
+  spec.add_development_dependency "skunk"
 end
