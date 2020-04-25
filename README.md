@@ -1,2 +1,2 @@
-# ruby-red-ink
+# fable
 A Ruby parser for Ink

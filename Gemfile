@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-# Specify your gem's dependencies in ruby_red_ink.gemspec
+# Specify your gem's dependencies in fable.gemspec
 gemspec
 
 gem "rake", "~> 12.0"

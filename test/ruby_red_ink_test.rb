@@ -1,7 +1,7 @@
 require_relative "test_helper"
 
-class RubyRedInkTest < Minitest::Test
+class FableTest < Minitest::Test
   def test_that_it_has_a_version_number
-    refute_nil ::RubyRedInk::VERSION
+    refute_nil ::Fable::VERSION
   end
 end
