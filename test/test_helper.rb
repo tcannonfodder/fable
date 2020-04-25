@@ -2,6 +2,8 @@ $LOAD_PATH.unshift File.expand_path("../lib", __dir__)
 require "fable"
 
 Bundler.require(:default, :development)
+require 'simplecov'
+SimpleCov.start
 
 require "minitest/autorun"
 require 'pretty_diffs'

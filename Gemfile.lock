@@ -97,6 +97,7 @@ DEPENDENCIES
   minitest-line
   pretty-diffs
   rake (~> 12.0)
+  simplecov
   skunk
 
 BUNDLED WITH
