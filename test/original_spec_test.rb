@@ -4,11 +4,11 @@ require_relative "test_helper"
 class OriginalSpecTest < Minitest::Test
   def test_paths
     # Different instances should ensure different instances of individual components
-    path1 = RubyRedInk::Path.new("hello.1.world")
-    path2 = RubyRedInk::Path.new("hello.1.world")
+    path1 = Fable::Path.new("hello.1.world")
+    path2 = Fable::Path.new("hello.1.world")
 
-    path3 = RubyRedInk::Path.new(".hello.1.world")
-    path4 = RubyRedInk::Path.new(".hello.1.world")
+    path3 = Fable::Path.new(".hello.1.world")
+    path4 = Fable::Path.new(".hello.1.world")
 
     assert_equal path1, path2
     assert_equal path3, path4
@@ -21,7 +21,7 @@ class OriginalSpecTest < Minitest::Test
   # Minitest::Test.make_my_diffs_pretty!
   def test_arithmetic
     json = load_json_export("test/fixtures/original-specs/arithmetic.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     36
@@ -38,7 +38,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_basic_string_literals
     json = load_json_export("test/fixtures/original-specs/basic-string-literals.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
     story.start_profiling
 
     result = <<~STORY
@@ -51,14 +51,14 @@ class OriginalSpecTest < Minitest::Test
 
   def test_basic_tunnel
     json = load_json_export("test/fixtures/original-specs/basic-tunnel.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "Hello world\n", story.continue_maximially
   end
 
   def test_blanks_in_inline_sequences
     json = load_json_export("test/fixtures/original-specs/blanks-in-inline-sequences.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     1. a
@@ -84,7 +84,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_all_sequence_types
     json = load_json_export("test/fixtures/original-specs/test-all-sequence-types.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     # Switched the order of "shuffle once" because it's still got the job done,
     # just at a different order
@@ -103,21 +103,21 @@ class OriginalSpecTest < Minitest::Test
 
   def test_call_stack_evaluation
     json = load_json_export("test/fixtures/original-specs/test-call-stack-evaluation.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "8\n", story.continue_maximially
   end
 
   def test_choice_count
     json = load_json_export("test/fixtures/original-specs/choice-count.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "2\n", story.continue_maximially
   end
 
   def test_choice_diverts_to_done
     json = load_json_export("test/fixtures/original-specs/choice-diverts-to-done.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "", story.continue
 
@@ -131,7 +131,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_choice_with_brackets_only
     json = load_json_export("test/fixtures/original-specs/choice-with-brackets-only.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "", story.continue
     assert_equal 1, story.current_choices.size
@@ -145,7 +145,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_compare_divert_targets
     json = load_json_export("test/fixtures/original-specs/compare-divert-targets.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     different knot
@@ -161,7 +161,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_call_complex_tunnels
     json = load_json_export("test/fixtures/original-specs/complex-tunnels.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     one (1)
@@ -175,7 +175,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_conditional_choice_in_weave_1
     json = load_json_export("test/fixtures/original-specs/conditional-choice-in-weave-1.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     start
@@ -193,7 +193,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_conditional_choice_in_weave_2
     json = load_json_export("test/fixtures/original-specs/conditional-choice-in-weave-2.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     first gather
@@ -216,7 +216,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_conditional_choices
     json = load_json_export("test/fixtures/original-specs/test-conditional-choices.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "", story.continue_maximially
 
@@ -230,7 +230,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_conditionals
     json = load_json_export("test/fixtures/original-specs/test-conditionals.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     true
@@ -248,7 +248,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_const
     json = load_json_export("test/fixtures/original-specs/test-const.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "5\n", story.continue
     assert_equal 0, story.current_choices.size
@@ -256,7 +256,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_default_choice
     json = load_json_export("test/fixtures/original-specs/test-default-choice.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
     story.start_profiling
 
     assert_equal "", story.continue
@@ -282,21 +282,21 @@ class OriginalSpecTest < Minitest::Test
 
   def test_default_simple_gather
     json = load_json_export("test/fixtures/original-specs/test-default-simple-gather.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "x\n", story.continue
   end
 
   def test_divert_in_conditionals
     json = load_json_export("test/fixtures/original-specs/test-divert-in-conditionals.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "", story.continue_maximially
   end
 
   def test_divert_to_weave_points
     json = load_json_export("test/fixtures/original-specs/test-divert-to-weave-points.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     gather
@@ -312,7 +312,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_else_branches
     json = load_json_export("test/fixtures/original-specs/test-else-branches.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     other
@@ -327,21 +327,21 @@ class OriginalSpecTest < Minitest::Test
 
   def test_empty
     json = load_json_export("test/fixtures/original-specs/test-empty.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "", story.continue_maximially
   end
 
   def test_empty_multiline_conditional_branch
     json = load_json_export("test/fixtures/original-specs/text-empty-multiline-conditional-branch.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "", story.continue_maximially
   end
 
   def test_all_switch_branches_fail_is_clean
     json = load_json_export("test/fixtures/original-specs/test-all-switch-branches-fail-is-clean.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "", story.continue_maximially
     assert_equal 0, story.state.evaluation_stack.size
@@ -349,7 +349,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_trivial_condition
     json = load_json_export("test/fixtures/original-specs/test-trivial-condition.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "", story.continue_maximially
     assert !story.has_errors?
@@ -357,7 +357,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_empty_sequence_content
     json = load_json_export("test/fixtures/original-specs/test-empty-sequence-content.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     Wait for it....
@@ -371,7 +371,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_end
     json = load_json_export("test/fixtures/original-specs/test-end.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "hello\n", story.continue_maximially
     assert !story.has_errors?
@@ -379,7 +379,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_end_2
     json = load_json_export("test/fixtures/original-specs/test-end-2.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "hello\n", story.continue_maximially
     assert !story.has_errors?
@@ -387,7 +387,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_escape_character
     json = load_json_export("test/fixtures/original-specs/test-escape-character.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "this is a '|' character\n", story.continue_maximially
     assert !story.has_errors?
@@ -395,7 +395,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_external_binding
     json = load_json_export("test/fixtures/original-specs/test-external-binding.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     message = nil
 
@@ -418,7 +418,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_factorial_by_reference
     json = load_json_export("test/fixtures/original-specs/test-factorial-by-reference.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "120\n", story.continue_maximially
     assert !story.has_errors?
@@ -426,7 +426,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_factorial_recursive
     json = load_json_export("test/fixtures/original-specs/test-factorial-recursive.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "120\n", story.continue_maximially
     assert !story.has_errors?
@@ -434,7 +434,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_gather_choice_same_line
     json = load_json_export("test/fixtures/original-specs/test-gather-choice-same-line.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "", story.continue
     assert_equal "hello", story.current_choices[0].text
@@ -447,7 +447,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_has_read_on_choice
     json = load_json_export("test/fixtures/original-specs/test-has-read-on-choice.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "", story.continue
     assert_equal "visible choice", story.current_choices[0].text
@@ -455,28 +455,28 @@ class OriginalSpecTest < Minitest::Test
 
   def test_hello_world
     json = load_json_export("test/fixtures/original-specs/test-hello-world.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "Hello world\n", story.continue_maximially
   end
 
   def test_identifiers_can_start_with_numbers
     json = load_json_export("test/fixtures/original-specs/test-identifiers-can-start-with-numbers.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "512x2 = 1024\n512x2p2 = 1026\n", story.continue_maximially
   end
 
   def test_implicit_inline_glue
     json = load_json_export("test/fixtures/original-specs/test-implicit-inline-glue.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "I have five eggs.\n", story.continue_maximially
   end
 
   def test_implicit_inline_glue_b
     json = load_json_export("test/fixtures/original-specs/test-implicit-inline-glue-b.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     A
@@ -488,7 +488,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_implicit_inline_glue_c
     json = load_json_export("test/fixtures/original-specs/test-implicit-inline-glue-c.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     A
@@ -500,7 +500,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_include
     json = load_json_export("test/fixtures/original-specs/test-include.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     This is include 1.
@@ -513,7 +513,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_increment
     json = load_json_export("test/fixtures/original-specs/test-increment.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     6
@@ -525,14 +525,14 @@ class OriginalSpecTest < Minitest::Test
 
   def test_knot_gather
     json = load_json_export("test/fixtures/original-specs/test-knot-gather.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "g\n", story.continue_maximially
   end
 
   def test_knot_thread_interaction
     json = load_json_export("test/fixtures/original-specs/test-knot-thread-interaction.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     blah blah
@@ -557,7 +557,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_knot_thread_interaction_2
     json = load_json_export("test/fixtures/original-specs/test-knot-thread-interaction-2.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     I’m in a tunnel
@@ -582,14 +582,14 @@ class OriginalSpecTest < Minitest::Test
 
   def test_knot_gather
     json = load_json_export("test/fixtures/original-specs/test-leading-newline-multiline-sequence.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "a line after an empty line\n", story.continue
   end
 
   def test_logic_in_choices
     json = load_json_export("test/fixtures/original-specs/test-logic-in-choices.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "", story.continue_maximially
 
@@ -608,14 +608,14 @@ class OriginalSpecTest < Minitest::Test
 
   def test_multiple_constant_references
     json = load_json_export("test/fixtures/original-specs/test-multiple-constant-references.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "success\n", story.continue
   end
 
   def test_multi_thread
     json = load_json_export("test/fixtures/original-specs/test-multi-thread.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     This is place 1.
@@ -637,7 +637,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_nested_include
     json = load_json_export("test/fixtures/original-specs/test-nested-include.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     The value of a variable in test file 2 is 5.
@@ -650,7 +650,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_nested_pass_by_reference
     json = load_json_export("test/fixtures/original-specs/test-nested-pass-by-reference.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     5
@@ -662,7 +662,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_non_text_in_choice_inner_content
     json = load_json_export("test/fixtures/original-specs/test-non-text-in-choice-inner-content.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     story.continue
 
@@ -673,7 +673,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_once_only_choices_can_link_back_to_self
     json = load_json_export("test/fixtures/original-specs/test-once-only-choices-can-link-back-to-self.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     story.continue_maximially
 
@@ -694,7 +694,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_once_only_choices_content_with_own_content
     json = load_json_export("test/fixtures/original-specs/test-once-only-choices-with-own-content.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     story.continue_maximially
 
@@ -718,7 +718,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_path_to_self
     json = load_json_export("test/fixtures/original-specs/test-path-to-self.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     story.continue
     story.choose_choice_index(0)
@@ -728,7 +728,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_print_num
     json = load_json_export("test/fixtures/original-specs/test-print-num.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     . four .
@@ -744,14 +744,14 @@ class OriginalSpecTest < Minitest::Test
 
   def test_quote_character_significance
     json = load_json_export("test/fixtures/original-specs/test-quote-character-significance.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "My name is \"Joe\"\n", story.continue_maximially
   end
 
   def test_read_count_across_callstack
     json = load_json_export("test/fixtures/original-specs/test-read-count-across-callstack.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     1) Seen first 1 times.
@@ -764,7 +764,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_read_count_across_threads
     json = load_json_export("test/fixtures/original-specs/test-read-count-across-threads.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     1
@@ -776,7 +776,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_read_count_dot_separated_path
     json = load_json_export("test/fixtures/original-specs/test-read-count-dot-separated-path.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     hi
@@ -790,7 +790,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_same_line_divert_is_newline
     json = load_json_export("test/fixtures/original-specs/test-same-line-divert-is-inline.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     We hurried home to Savile Row as fast as we could.
@@ -801,7 +801,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_shouldnt_gather_due_to_choice
     json = load_json_export("test/fixtures/original-specs/test-shouldnt-gather-due-to-choice.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "", story.continue_maximially
     story.choose_choice_index(0)
@@ -816,7 +816,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_shuffle_stack_muddying
     json = load_json_export("test/fixtures/original-specs/shuffle-stack-muddying.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "", story.continue
 
@@ -825,14 +825,14 @@ class OriginalSpecTest < Minitest::Test
 
   def test_simple_glue
     json = load_json_export("test/fixtures/original-specs/test-simple-glue.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "Some content with glue.\n", story.continue_maximially
   end
 
   def test_sticky_choices_stay_sticky
     json = load_json_export("test/fixtures/original-specs/test-sticky-choices-stay-sticky.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     story.continue_maximially
     assert_equal 2, story.current_choices.size
@@ -844,14 +844,14 @@ class OriginalSpecTest < Minitest::Test
 
   def test_string_constants
     json = load_json_export("test/fixtures/original-specs/test-string-constants.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "hi\n", story.continue_maximially
   end
 
   def test_strings_in_choices
     json = load_json_export("test/fixtures/original-specs/test-strings-in-choices.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     story.continue_maximially
     assert_equal 1, story.current_choices.size
@@ -863,7 +863,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_string_type_coercion
     json = load_json_export("test/fixtures/original-specs/test-string-type-coercion.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     same
@@ -875,7 +875,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_temporaries_at_global_scope
     json = load_json_export("test/fixtures/original-specs/test-temporaries-at-global-scope.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     54
@@ -886,7 +886,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_thread_done
     json = load_json_export("test/fixtures/original-specs/test-thread-done.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     This is a thread example
@@ -899,7 +899,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_tunnel_onwards_after_tunnel
     json = load_json_export("test/fixtures/original-specs/test-tunnel-onwards-after-tunnel.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     Hello...
@@ -912,7 +912,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_tunnel_vs_thread_behavior
     json = load_json_export("test/fixtures/original-specs/test-tunnel-vs-thread-behavior.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert !story.continue_maximially.include?("Finished tunnel")
 
@@ -930,7 +930,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_turns_since
     json = load_json_export("test/fixtures/original-specs/test-turns-since.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     -1
@@ -950,7 +950,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_turns_since_nested
     json = load_json_export("test/fixtures/original-specs/test-turns-since-nested.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     -1 = -1
@@ -981,7 +981,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_turns_since_with_variable_target
     json = load_json_export("test/fixtures/original-specs/test-turns-since-with-variable-target.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     0
@@ -997,7 +997,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_unbalanced_weave_indentation
     json = load_json_export("test/fixtures/original-specs/test-unbalanced-weave-indentation.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "", story.continue_maximially
 
@@ -1027,7 +1027,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_variable_declaration_in_conditional
     json = load_json_export("test/fixtures/original-specs/test-variable-declaration-in-conditional.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     5
@@ -1038,7 +1038,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_variable_divert_target
     json = load_json_export("test/fixtures/original-specs/test-variable-divert-target.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     Here.
@@ -1049,7 +1049,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_variable_get_set_api
     json = load_json_export("test/fixtures/original-specs/test-variable-get-set-api.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "5\n", story.continue_maximially
     assert_equal 5, story.variables_state["x"]
@@ -1074,14 +1074,14 @@ class OriginalSpecTest < Minitest::Test
 
     assert_nil story.variables_state["z"]
 
-    assert_raises RubyRedInk::Error, "Invalid value passed to VariableState: #<Set: {}>" do
+    assert_raises Fable::Error, "Invalid value passed to VariableState: #<Set: {}>" do
       story.variables_state["x"] = Set.new
     end
   end
 
   def test_variable_observer
     json = load_json_export("test/fixtures/original-specs/test-variable-observer.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     current_variable_value = 0
     observer_call_count = 0
@@ -1106,28 +1106,28 @@ class OriginalSpecTest < Minitest::Test
 
   def test_variable_pointer_reference_from_knot
     json = load_json_export("test/fixtures/original-specs/test-variable-pointer-reference-from-knot.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "6\n", story.continue
   end
 
   def test_variable_swap_recursive
     json = load_json_export("test/fixtures/original-specs/test-variable-swap-recursive.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "1 2\n", story.continue
   end
 
   def test_variable_tunnel
     json = load_json_export("test/fixtures/original-specs/test-variable-tunnel.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "STUFF\n", story.continue_maximially
   end
 
   def test_weave_gathers
     json = load_json_export("test/fixtures/original-specs/test-weave-gathers.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     story.continue_maximially
 
@@ -1154,7 +1154,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_weave_options
     json = load_json_export("test/fixtures/original-specs/test-weave-options.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     story.continue
 
@@ -1167,7 +1167,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_whitespace
     json = load_json_export("test/fixtures/original-specs/test-whitespace.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     Hello!
@@ -1179,7 +1179,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_visit_counts_when_choosing
     json = load_json_export("test/fixtures/original-specs/test-visit-counts-when-choosing.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal 0, story.state.visit_count_at_path_string("TestKnot")
     assert_equal 0, story.state.visit_count_at_path_string("TestKnot2")
@@ -1207,7 +1207,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_visit_count_bug_due_to_nested_containers
     json = load_json_export("test/fixtures/original-specs/text-visit-count-bug-due-to-nested-containers.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "1\n", story.continue
 
@@ -1223,21 +1223,21 @@ class OriginalSpecTest < Minitest::Test
 
   def test_temp_global_conflict
     json = load_json_export("test/fixtures/original-specs/test-temp-global-conflict.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "0\n", story.continue
   end
 
   def test_thread_in_logic
     json = load_json_export("test/fixtures/original-specs/test-thread-in-logic.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "Content\n", story.continue
   end
 
   def test_temp_usage_in_options
     json = load_json_export("test/fixtures/original-specs/test-temp-usage-in-options.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     story.continue
     assert_equal 1, story.current_choices.size
@@ -1256,7 +1256,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_evaluating_ink_function_from_game
     json = load_json_export("test/fixtures/original-specs/test-evaluating-ink-function-from-game.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     story.continue
 
@@ -1269,7 +1269,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_evaluating_ink_function_from_game_2
     json = load_json_export("test/fixtures/original-specs/test-evaluating-ink-function-from-game-2.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     results = story.evaluate_function("func1")
     assert_equal "This is a function\n", results[:text_output]
@@ -1294,7 +1294,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_evaluating_function_variable_state_bug
     json = load_json_export("test/fixtures/original-specs/test-evaluating-function-variable-state-bug.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "Start\n", story.continue
     assert_equal "In tunnel.\n", story.continue
@@ -1307,14 +1307,14 @@ class OriginalSpecTest < Minitest::Test
 
   def test_done_stops_thread
     json = load_json_export("test/fixtures/original-specs/test-done-stops-thread.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     assert_equal "", story.continue_maximially
   end
 
   def test_right_left_glue_matching
     json = load_json_export("test/fixtures/original-specs/test-right-left-glue-matching.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     A line.
@@ -1326,7 +1326,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_set_nonexistent_variable
     json = load_json_export("test/fixtures/original-specs/test-set-nonexistent-variable.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     Hello world.
@@ -1334,14 +1334,14 @@ class OriginalSpecTest < Minitest::Test
 
     assert_equal result, story.continue_maximially
 
-    assert_raises RubyRedInk::Error, "Cannot assign to a variable (y) that hasn't been declared in the story" do
+    assert_raises Fable::Error, "Cannot assign to a variable (y) that hasn't been declared in the story" do
       story.variables_state["y"] = "earth"
     end
   end
 
   def test_tags
     json = load_json_export("test/fixtures/original-specs/test-tags.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     global_tags = ["author: Joe", "title: My Great Story"]
     knot_tags = ["knot tag"]
@@ -1374,7 +1374,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_tunnel_onwards_divert_override
     json = load_json_export("test/fixtures/original-specs/test-tunnel-onwards-divert-override.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     This is A
@@ -1386,7 +1386,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_list_basic_operations
     json = load_json_export("test/fixtures/original-specs/test-list-basic-operations.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     b, d
@@ -1402,7 +1402,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_more_list_operations
     json = load_json_export("test/fixtures/original-specs/test-more-list-operations.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     1
@@ -1417,7 +1417,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_empty_list_origin
     json = load_json_export("test/fixtures/original-specs/test-list-empty-origin.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     a, b
@@ -1428,7 +1428,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_empty_list_origin_after_assignment
     json = load_json_export("test/fixtures/original-specs/test-empty-list-origin-after-assignment.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     a, b, c
@@ -1439,7 +1439,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_list_save_load
     json = load_json_export("test/fixtures/original-specs/test-list-save-load.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     a, x, c
@@ -1449,7 +1449,7 @@ class OriginalSpecTest < Minitest::Test
 
     saved_state = story.state.to_hash
 
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     story.state.from_hash!(saved_state)
 
@@ -1460,13 +1460,13 @@ class OriginalSpecTest < Minitest::Test
 
   def test_author_warning_inside_content_list_bug
     json = load_json_export("test/fixtures/original-specs/test-author-warning-inside-content-list-bug.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
     assert !story.has_errors?
   end
 
   def test_weave_within_sequence
     json = load_json_export("test/fixtures/original-specs/test-weave-within-sequence.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     story.continue
     assert_equal 1, story.current_choices.size
@@ -1483,7 +1483,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_tunnel_onwards_divert_after_with_arg
     json = load_json_export("test/fixtures/original-specs/test-tunnel-onwards-divert-after-with-arg.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     8
@@ -1494,7 +1494,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_various_default_choices
     json = load_json_export("test/fixtures/original-specs/test-various-default-choices.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     1
@@ -1507,7 +1507,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_tunnel_onwards_with_parameter_default_choice
     json = load_json_export("test/fixtures/original-specs/test-tunnel-onwards-with-parameter-default-choice.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     8
@@ -1518,7 +1518,7 @@ class OriginalSpecTest < Minitest::Test
 
    def test_read_count_variable_target
     json = load_json_export("test/fixtures/original-specs/test-read-count-variable-target.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     Count start: 0 0 0
@@ -1533,7 +1533,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_divert_targets_with_parameters
     json = load_json_export("test/fixtures/original-specs/test-divert-targets-with-parameters.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     5
@@ -1544,7 +1544,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_tag_on_choice
     json = load_json_export("test/fixtures/original-specs/test-tag-on-choice.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     story.continue
 
@@ -1558,7 +1558,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_string_contains
     json = load_json_export("test/fixtures/original-specs/test-string-contains.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     1
@@ -1572,7 +1572,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_evaluation_stack_leaks
     json = load_json_export("test/fixtures/original-specs/test-evaluation-stack-leaks.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     else
@@ -1587,7 +1587,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_ink_game_back_and_forth
     json = load_json_export("test/fixtures/original-specs/test-game-ink-back-and-forth.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     # Crazy game/ink callstack:
     # - Game calls "topExternal(5)" (Game -> ink)
@@ -1611,7 +1611,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_newlines_with_string_eval
     json = load_json_export("test/fixtures/original-specs/test-newlines-with-string-eval.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     A
@@ -1626,7 +1626,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_newlines_trimming_with_functional_external_callback
     json = load_json_export("test/fixtures/original-specs/test-newlines-trimming-with-functional-external-fallback.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     story.allow_external_function_fallbacks = true
 
@@ -1640,7 +1640,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_multiline_logic_with_glue
     json = load_json_export("test/fixtures/original-specs/test-multiline-logic-with-glue.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     a b
@@ -1652,7 +1652,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_newline_at_start_of_multiline_conditional
     json = load_json_export("test/fixtures/original-specs/text-newline-at-start-of-multiline-conditional.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     X
@@ -1664,7 +1664,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_temp_not_found
     json = load_json_export("test/fixtures/original-specs/test-temp-not-found.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     0
@@ -1677,7 +1677,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_top_flow_terminator_shouldnt_kill_thread_choices
     json = load_json_export("test/fixtures/original-specs/test-top-flow-terminator-shouldnt-kill-thread-choices.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     Limes
@@ -1689,7 +1689,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_newline_consistency
     json = load_json_export("test/fixtures/original-specs/test-newline-consistency-1.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     hello world
@@ -1699,7 +1699,7 @@ class OriginalSpecTest < Minitest::Test
 
 
     json = load_json_export("test/fixtures/original-specs/test-newline-consistency-2.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     hello world
@@ -1710,7 +1710,7 @@ class OriginalSpecTest < Minitest::Test
     assert_equal result, story.continue_maximially
 
     json = load_json_export("test/fixtures/original-specs/test-newline-consistency-3.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     hello
@@ -1724,7 +1724,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_list_random
     json = load_json_export("test/fixtures/original-specs/test-list-random.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     while story.can_continue?
       assert_includes ["B\n", "C\n", "D\n"], story.continue
@@ -1733,7 +1733,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_turns
     json = load_json_export("test/fixtures/original-specs/test-turns.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     10.times do |n|
       assert_equal "#{n}\n", story.continue
@@ -1743,7 +1743,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_logic_lines_with_newlines
     json = load_json_export("test/fixtures/original-specs/test-logic-lines-with-newlines.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     text1
@@ -1758,7 +1758,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_floor_ceiling_and_casts
     json = load_json_export("test/fixtures/original-specs/test-floor-ceiling-and-casts.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     1
@@ -1774,7 +1774,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_list_range
     json = load_json_export("test/fixtures/original-specs/test-list-range.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     Pound, Pizza, Euro, Pasta, Dollar, Curry, Paella
@@ -1788,7 +1788,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_knot_stitch_gather_counts
     json = load_json_export("test/fixtures/original-specs/test-knot-stitch-gather-counts.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     1 1
@@ -1813,14 +1813,14 @@ class OriginalSpecTest < Minitest::Test
 
   def test_choice_thread_forking
     json = load_json_export("test/fixtures/original-specs/test-choice-thread-forking.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     # generate the choice with the forked thread
     story.continue
 
     # Save/Reload
     saved_state = story.state.to_hash
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
     story.state.from_hash!(saved_state)
 
     # Load the choice, it should have its own thread still
@@ -1836,7 +1836,7 @@ class OriginalSpecTest < Minitest::Test
 
   def test_fallback_choice_on_thread
     json = load_json_export("test/fixtures/original-specs/test-fallback-choice-on-thread.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     Should be 1 not 0: 1.
@@ -1853,7 +1853,7 @@ class OriginalSpecTest < Minitest::Test
   # the base element.
   def test_clean_callstack_reset_on_path_choice
     json = load_json_export("test/fixtures/original-specs/test-clean-callstack-reset-on-path-choice.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     The first line.
@@ -1878,7 +1878,7 @@ class OriginalSpecTest < Minitest::Test
   # in TryFollowDefaultInvisibleChoice
   def test_state_rollback_over_default_choice
     json = load_json_export("test/fixtures/original-specs/test-state-rollback-over-default-choice.ink.json")
-    story = RubyRedInk::Story.new(json)
+    story = Fable::Story.new(json)
 
     result = <<~STORY
     Text.

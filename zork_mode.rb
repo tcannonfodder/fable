@@ -2,7 +2,7 @@ require 'rubygems'
 require 'bundler/setup'
 Bundler.require(:default, :development)
 
-require 'ruby_red_ink'
+require 'fable'
 
 require 'highline'
 
