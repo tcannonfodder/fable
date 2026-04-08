@@ -6,8 +6,8 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    addressable (2.8.0)
-      public_suffix (>= 2.0.2, < 5.0)
+    addressable (2.9.0)
+      public_suffix (>= 2.0.2, < 8.0)
     ast (2.4.2)
     axiom-types (0.1.1)
       descendants_tracker (~> 0.0.4)
@@ -42,7 +42,7 @@ GEM
       ast (~> 2.4.1)
     path_expander (1.1.0)
     pretty-diffs (1.0.2)
-    public_suffix (4.0.6)
+    public_suffix (4.0.7)
     rainbow (3.0.0)
     rake (12.3.3)
     reek (6.0.6)
